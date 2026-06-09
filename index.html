@@ -51,7 +51,9 @@
   <div id="authScreen" class="auth-screen">
     <!-- View Inicial -->
     <div class="auth-initial" style="position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; z-index:1; padding: 20px; box-sizing: border-box;">
-      <div id="logo3d" style="width: 200px; height: 200px; margin-bottom: 8px; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.15));"></div>
+      <div id="logo3d" style="width: 200px; height: 200px; margin-bottom: 8px; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.15)); display:flex; align-items:center; justify-content:center;">
+        <img id="logoFallback" src="icons/estudy-logo.svg" alt="Estudy" style="width:120px; height:120px; border-radius:50%; transition: opacity 0.5s;">
+      </div>
       <h1 class="header-title text-shine" data-i18n="app.name" style="font-size:40px; font-weight:800; text-align:center; margin-bottom: 16px; text-transform: lowercase;">Estudy</h1>
       <p style="text-align:center; color:var(--ds-text-secondary); margin-bottom:40px; max-width: 300px;">Seu planejador de estudos inteligente. Sincronize seus ciclos e alcance suas metas de aprovação.</p>
       
@@ -433,9 +435,10 @@
   <script src="auth.js"></script>
   <script src="app.js"></script>
   <script type="module">
-    // Init 3D logo on auth screen
+    // Init 3D logo on auth screen — hide 2D fallback when 3D loads
     import SVG3D from './svg3d.js';
     const logoEl = document.getElementById('logo3d');
+    const fallback = document.getElementById('logoFallback');
     if (logoEl) {
       window._logo3d = SVG3D.create(logoEl, {
         svg: 'icons/estudy-logo-3d.svg',
@@ -452,6 +455,7 @@
         interactive: true,
         lightIntensity: 1.5,
         ambientIntensity: 0.5,
+        onReady() { if (fallback) fallback.style.opacity = '0'; },
       });
     }
   </script>

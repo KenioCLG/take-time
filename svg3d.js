@@ -85,10 +85,13 @@ function parseSVGToShapes(svgString) {
 
   data.paths.forEach(path => {
     const style = path.userData?.style;
-    const hasFill = style?.fill && style.fill !== 'none' && style.fill !== 'transparent';
+    const fillVal = style?.fill;
+    // Treat as filled if: explicit fill color, OR no fill/stroke set at all (SVG default is black fill)
+    const hasFill = fillVal && fillVal !== 'none' && fillVal !== 'transparent';
+    const noFillAttr = !fillVal || fillVal === '';
     const hasStroke = style?.stroke && style.stroke !== 'none' && style.stroke !== 'transparent';
 
-    if (hasFill || (!hasFill && !hasStroke)) {
+    if (hasFill || (noFillAttr && !hasStroke)) {
       SVGLoader.createShapes(path).forEach(shape => {
         // Skip shapes that cover the entire viewBox (backgrounds)
         if (vbW && vbH) {
@@ -198,6 +201,7 @@ class SVG3DRenderer {
       ambientIntensity: 0.4,
       intro: 'zoom',       // zoom, fade, none
       introDuration: 2.0,
+      onReady: null,       // callback when first frame renders
     }, opts);
 
     this._destroyed = false;
@@ -367,6 +371,7 @@ class SVG3DRenderer {
     this._resizeObs.observe(container);
 
     // Start render loop
+    this._readyFired = false;
     this._animate = this._animate.bind(this);
     this._rafId = requestAnimationFrame(this._animate);
   }
@@ -378,6 +383,12 @@ class SVG3DRenderer {
     const delta = this._lastTime ? (time - this._lastTime) / 1000 : 0.016;
     this._lastTime = time;
     if (delta > 0.1) return; // skip large gaps (tab switch)
+
+    // Fire onReady after first render
+    if (!this._readyFired) {
+      this._readyFired = true;
+      if (typeof this.opts.onReady === 'function') this.opts.onReady();
+    }
 
     this._elapsed += delta * this.opts.animateSpeed;
 
