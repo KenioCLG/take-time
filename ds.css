@@ -581,6 +581,9 @@ html {
   align-items: flex-end;
   justify-content: center;
   animation: ds-fadeIn var(--ds-duration-fast) var(--ds-ease-default);
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 .ds-overlay--center { align-items: center; }
@@ -613,6 +616,7 @@ html {
   overscroll-behavior: contain;
   flex: 1;
   min-height: 0;
+  touch-action: pan-y;
 }
 
 .ds-sheet-handle {

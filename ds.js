@@ -208,6 +208,25 @@ const DS = (() => {
     let velocityY = 0;
     let bodyScrollY = 0;
 
+    function onOverlayTouchMove(e) {
+      const sheetBody = e.target.closest('.ds-sheet-body');
+      if (!sheetBody) {
+        e.preventDefault();
+        return;
+      }
+      // Allow scroll inside sheet body, but contain it
+      const atTop = sheetBody.scrollTop <= 0;
+      const atBottom = sheetBody.scrollTop + sheetBody.clientHeight >= sheetBody.scrollHeight - 1;
+      const isScrollingUp = e.touches[0].clientY > (lastTouchY || 0);
+      lastTouchY = e.touches[0].clientY;
+
+      if ((atTop && isScrollingUp) || (atBottom && !isScrollingUp)) {
+        e.preventDefault();
+      }
+    }
+
+    let lastTouchY = 0;
+
     function lockBody() {
       bodyScrollY = window.scrollY;
       document.body.style.overflow = 'hidden';
@@ -240,6 +259,7 @@ const DS = (() => {
 
     function closeSheet(overlay) {
       const sheetEl = overlay.querySelector('.ds-sheet');
+      overlay.removeEventListener('touchmove', onOverlayTouchMove);
       if (sheetEl) {
         snapTo(sheetEl, 0, () => {
           overlay.classList.add('hidden');
@@ -262,6 +282,8 @@ const DS = (() => {
       overlay.classList.remove('hidden');
       lockBody();
       activeSheet = sheetEl;
+      lastTouchY = 0;
+      overlay.addEventListener('touchmove', onOverlayTouchMove, { passive: false });
 
       // Start from 0 and animate to peek
       sheetEl.style.height = '0';
