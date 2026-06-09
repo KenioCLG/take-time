@@ -1,5 +1,5 @@
 /*
- * StudyPlan Design System v2.0
+ * StudyPlan Design System v2.1
  * Inspirado em Apple HIG (iOS 18)
  *
  * ARCHITECTURE:
@@ -23,6 +23,7 @@
  *  18. Avatar
  *  19. Utilities
  *  20. Animations
+ *  21. Icons & Icon Animations
  */
 
 
@@ -978,3 +979,164 @@ html {
 .ds-animate-slide { animation: ds-slideUp var(--ds-duration-normal) var(--ds-ease-spring); }
 .ds-animate-scale { animation: ds-scaleIn var(--ds-duration-normal) var(--ds-ease-spring); }
 .ds-animate-pulse { animation: ds-pulse 2s var(--ds-ease-default) infinite; }
+
+
+/* ============================================================
+   21. ICONS & ICON ANIMATIONS
+   ============================================================
+
+   Usage:
+   ------
+   All icons use inline SVG with class="ds-icon" as base.
+   Size variants: ds-icon--sm (16), ds-icon--md (22, default), ds-icon--lg (28)
+
+   Animated icons use a modifier class on the <svg> element.
+   Animation only plays when a parent has .active or .ds-icon-animate.
+
+   Available animations:
+     .ds-icon--spin      — continuous rotation (clocks, loaders)
+     .ds-icon--spin-slow — slow rotation (settings gear)
+     .ds-icon--rock      — tilt back and forth (books, notifications)
+     .ds-icon--bounce    — scale bounce on enter (checkmarks, success)
+     .ds-icon--shake     — horizontal shake (errors, alerts)
+
+   Composable ray/pulse for children:
+     .ds-icon-ray        — on child elements; pulses opacity in sequence
+     .ds-icon-ray[data-delay="1..8"] — stagger delay (0.15s increments)
+
+   Example:
+     <svg class="ds-icon ds-icon--spin">
+       <circle cx="12" cy="12" r="10"/>
+       <line x1="12" y1="12" x2="12" y2="7"/>
+     </svg>
+
+     <svg class="ds-icon ds-icon--spin-slow">
+       <circle cx="12" cy="12" r="3"/>
+       <line class="ds-icon-ray" data-delay="1" .../>
+       <line class="ds-icon-ray" data-delay="2" .../>
+     </svg>
+   ============================================================ */
+
+/* --- Base icon --- */
+.ds-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  width: 22px; height: 22px;
+  vertical-align: middle;
+}
+
+/* Size variants */
+.ds-icon--sm  { width: 16px; height: 16px; }
+.ds-icon--md  { width: 22px; height: 22px; }
+.ds-icon--lg  { width: 28px; height: 28px; }
+.ds-icon--xl  { width: 36px; height: 36px; }
+
+/* Color variants */
+.ds-icon--accent  { color: var(--ds-accent); }
+.ds-icon--muted   { color: var(--ds-text-tertiary); }
+.ds-icon--danger  { color: var(--ds-danger); }
+.ds-icon--success { color: var(--ds-success); }
+
+/* --- Animation: Spin (continuous) --- */
+@keyframes ds-icon-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.active .ds-icon--spin,
+.ds-icon-animate .ds-icon--spin {
+  animation: ds-icon-spin 2s linear infinite;
+}
+
+/* --- Animation: Spin Slow (gears, settings) --- */
+.active .ds-icon--spin-slow,
+.ds-icon-animate .ds-icon--spin-slow {
+  animation: ds-icon-spin 4s linear infinite;
+}
+
+/* --- Animation: Rock (tilt, books) --- */
+@keyframes ds-icon-rock {
+  0%   { transform: skewY(0deg); }
+  100% { transform: skewY(-8deg); }
+}
+.active .ds-icon--rock,
+.ds-icon-animate .ds-icon--rock {
+  animation: ds-icon-rock 1.2s ease-in-out infinite alternate;
+  transform-origin: left center;
+}
+
+/* --- Animation: Bounce (success, checkmarks) --- */
+@keyframes ds-icon-bounce {
+  0%   { transform: scale(0.7); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.active .ds-icon--bounce,
+.ds-icon-animate .ds-icon--bounce {
+  animation: ds-icon-bounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --- Animation: Shake (errors, alerts) --- */
+@keyframes ds-icon-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-3px); }
+  40%      { transform: translateX(3px); }
+  60%      { transform: translateX(-2px); }
+  80%      { transform: translateX(2px); }
+}
+.active .ds-icon--shake,
+.ds-icon-animate .ds-icon--shake {
+  animation: ds-icon-shake 0.4s ease-in-out;
+}
+
+/* --- Animation: Wobble (notifications, bells) --- */
+@keyframes ds-icon-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(12deg); }
+  50%      { transform: rotate(-10deg); }
+  75%      { transform: rotate(6deg); }
+}
+.active .ds-icon--wobble,
+.ds-icon-animate .ds-icon--wobble {
+  animation: ds-icon-wobble 0.6s ease-in-out;
+  transform-origin: top center;
+}
+
+/* --- Ray pulse (child elements, staggered) --- */
+@keyframes ds-icon-ray-pulse {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
+}
+.active .ds-icon-ray,
+.ds-icon-animate .ds-icon-ray {
+  stroke-dasharray: 2 1;
+  animation: ds-icon-ray-pulse 1.2s ease-in-out infinite;
+}
+.ds-icon-ray[data-delay="1"] { animation-delay: 0s; }
+.ds-icon-ray[data-delay="2"] { animation-delay: 0.15s; }
+.ds-icon-ray[data-delay="3"] { animation-delay: 0.3s; }
+.ds-icon-ray[data-delay="4"] { animation-delay: 0.45s; }
+.ds-icon-ray[data-delay="5"] { animation-delay: 0.6s; }
+.ds-icon-ray[data-delay="6"] { animation-delay: 0.75s; }
+.ds-icon-ray[data-delay="7"] { animation-delay: 0.9s; }
+.ds-icon-ray[data-delay="8"] { animation-delay: 1.05s; }
+
+/* --- GPU acceleration for all animated icons --- */
+.ds-icon--spin,
+.ds-icon--spin-slow,
+.ds-icon--rock,
+.ds-icon--bounce,
+.ds-icon--shake,
+.ds-icon--wobble {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}

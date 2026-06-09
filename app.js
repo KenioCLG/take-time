@@ -1,3 +1,10 @@
+// Suppress expected SW connection error during updates
+window.addEventListener('unhandledrejection', (e) => {
+  if (e.reason?.message?.includes('Receiving end does not exist')) {
+    e.preventDefault();
+  }
+});
+
 // ===== DATA LAYER =====
 const Store = {
   _key: 'studyplan_v1',
@@ -276,7 +283,7 @@ function renderLogs() {
 
 // ===== SVG PIZZA =====
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const CX = 200, CY = 200, R_OUTER = 170, R_INNER = 100, R_LABELS = 190;
+const CX = 200, CY = 200, R_OUTER = 170, R_INNER = 120, R_LABELS = 190;
 
 function minutesToAngle(minutes) {
   const dayStart = DAY_START * 60;
@@ -480,16 +487,11 @@ function renderPizza() {
     const s = state.subjects.find(s => s.id === b.subjectId);
     return s?.type !== 'inactive';
   });
-  const mins = totalMinutes(activeBlocks);
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  $('#statHours').textContent = m > 0 ? I18n.t('duration.hours_minutes', { h, m }) : I18n.t('duration.hours', { h });
-
   const done = activeBlocks.filter(b => b.done).length;
   const pct = activeBlocks.length > 0 ? Math.round((done / activeBlocks.length) * 100) : 0;
   $('#pizzaCenterLabel').textContent = activeBlocks.length > 0
     ? I18n.t('pizza.completed', { done, total: activeBlocks.length })
-    : I18n.t('pizza.planned');
+    : '';
 
   // Progress bar
   const centerEl = $('#pizzaCenter');

@@ -260,9 +260,9 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  width: 180px;
-  height: 180px;
+  gap: 6px;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
 }
 
@@ -271,30 +271,19 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   border: none;
   background: var(--ds-accent);
   color: white;
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  margin-top: 4px;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 .pizza-add-btn:active {
   transform: scale(0.88);
   box-shadow: 0 1px 4px rgba(0, 122, 255, 0.25);
-}
-
-.pizza-center-value {
-  display: block;
-  font-size: 44px;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--ds-text-primary);
-  text-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  letter-spacing: -1.5px;
 }
 
 .pizza-center-label {
@@ -915,55 +904,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 /* ===== MOBILE PIZZA RESPONSIVE ===== */
 @media (max-width: 450px) {
-  .pizza-center-value { font-size: 20px !important; }
   .pizza-center-label { font-size: 10px !important; }
   .pizza-progress { width: 60px !important; }
-}
-
-/* ===== TAB ICON ANIMATIONS ===== */
-
-/* Clock — whole icon rotates slowly when active (hands "tick") */
-.ds-tab.active .icon-clock {
-  animation: clockSpin 6s linear infinite;
-}
-@keyframes clockSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Book — opens and closes when active */
-.ds-tab.active .icon-book {
-  animation: bookOpen 1.2s ease-in-out infinite alternate;
-  transform-origin: left center;
-}
-@keyframes bookOpen {
-  0% { transform: skewY(0deg); }
-  100% { transform: skewY(-8deg); }
-}
-
-/* Settings — whole icon spins slowly + rays pulse via stroke-dasharray */
-.ds-tab.active .icon-settings {
-  animation: settingsSpin 4s linear infinite;
-}
-@keyframes settingsSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.ds-tab.active .ray {
-  stroke-dasharray: 2 1;
-  animation: rayPulse 1.2s ease-in-out infinite;
-}
-.ds-tab.active .ray1 { animation-delay: 0s; }
-.ds-tab.active .ray2 { animation-delay: 0.15s; }
-.ds-tab.active .ray3 { animation-delay: 0.3s; }
-.ds-tab.active .ray4 { animation-delay: 0.45s; }
-.ds-tab.active .ray5 { animation-delay: 0.6s; }
-.ds-tab.active .ray6 { animation-delay: 0.75s; }
-.ds-tab.active .ray7 { animation-delay: 0.9s; }
-.ds-tab.active .ray8 { animation-delay: 1.05s; }
-@keyframes rayPulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 1; }
 }
 
 /* ===== iOS-OPTIMIZED ANIMATIONS ===== */
