@@ -56,25 +56,30 @@ if (!state.logs) state.logs = [];
 state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
 
 // ====== AUTHENTICATION FLOW ======
-$('#btnShowAuthDrawer').addEventListener('click', () => {
+// Guard all top-level listeners to prevent crash if element is missing
+const _btnShowAuth = $('#btnShowAuthDrawer');
+if (_btnShowAuth) _btnShowAuth.addEventListener('click', () => {
   $('#authDrawerOverlay').classList.remove('hidden');
   $('#authBodyLogin').classList.remove('hidden');
   $('#authBodySignup').classList.add('hidden');
   $('#authTitle').textContent = window.I18n ? window.I18n.t('auth.login') || 'Login' : 'Login';
 });
 
-$('#authCancel').addEventListener('click', () => {
+const _btnAuthCancel = $('#authCancel');
+if (_btnAuthCancel) _btnAuthCancel.addEventListener('click', () => {
   $('#authDrawerOverlay').classList.add('hidden');
 });
 
-$('#linkGoToSignup').addEventListener('click', (e) => {
+const _linkSignup = $('#linkGoToSignup');
+if (_linkSignup) _linkSignup.addEventListener('click', (e) => {
   e.preventDefault();
   $('#authBodyLogin').classList.add('hidden');
   $('#authBodySignup').classList.remove('hidden');
   $('#authTitle').textContent = window.I18n ? window.I18n.t('auth.signup') || 'Cadastro' : 'Cadastro';
 });
 
-$('#linkGoToLogin').addEventListener('click', (e) => {
+const _linkLogin = $('#linkGoToLogin');
+if (_linkLogin) _linkLogin.addEventListener('click', (e) => {
   e.preventDefault();
   $('#authBodySignup').classList.add('hidden');
   $('#authBodyLogin').classList.remove('hidden');
@@ -159,9 +164,12 @@ async function handleLoginSubmit() {
   }
 }
 
-$('#btnAuthLogin').addEventListener('click', handleLoginSubmit);
-$('#inputAuthPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
-$('#inputAuthEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
+const _btnLogin = $('#btnAuthLogin');
+if (_btnLogin) _btnLogin.addEventListener('click', handleLoginSubmit);
+const _inputPass = $('#inputAuthPassword');
+if (_inputPass) _inputPass.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
+const _inputEmail = $('#inputAuthEmail');
+if (_inputEmail) _inputEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
 
 async function handleSignupSubmit() {
   const email = $('#inputSignupEmail').value;
@@ -185,10 +193,14 @@ async function handleSignupSubmit() {
   }
 }
 
-$('#btnAuthSignup').addEventListener('click', handleSignupSubmit);
-$('#inputSignupEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignupSubmit(); });
-$('#inputSignupPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignupSubmit(); });
-$('#inputSignupPasswordRepeat').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignupSubmit(); });
+const _btnSignup = $('#btnAuthSignup');
+if (_btnSignup) _btnSignup.addEventListener('click', handleSignupSubmit);
+const _inputSignupEmail = $('#inputSignupEmail');
+if (_inputSignupEmail) _inputSignupEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignupSubmit(); });
+const _inputSignupPass = $('#inputSignupPassword');
+if (_inputSignupPass) _inputSignupPass.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignupSubmit(); });
+const _inputSignupPass2 = $('#inputSignupPasswordRepeat');
+if (_inputSignupPass2) _inputSignupPass2.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignupSubmit(); });
 // =================================
 
 let selectedDate = new Date();
@@ -361,13 +373,45 @@ function renderPizza() {
 
   // Slices
   if (dayBlocks.length === 0) {
-    const emptyText = document.createElementNS(SVG_NS, 'text');
-    emptyText.setAttribute('x', CX);
-    emptyText.setAttribute('y', CY);
-    emptyText.setAttribute('class', 'pizza-empty-text');
-    emptyText.setAttribute('dominant-baseline', 'central');
-    emptyText.textContent = I18n.t('pizza.empty');
-    svg.appendChild(emptyText);
+    // Curved text inside the inner circle, rotating slowly
+    const r = R_INNER - 12;
+    const defs = document.createElementNS(SVG_NS, 'defs');
+
+    // Full circle path clockwise — text follows the inside
+    const circPath = document.createElementNS(SVG_NS, 'path');
+    circPath.setAttribute('id', 'curveCircle');
+    circPath.setAttribute('d',
+      `M ${CX},${CY - r} A ${r},${r} 0 1,1 ${CX - 0.01},${CY - r}`
+    );
+    circPath.setAttribute('fill', 'none');
+    defs.appendChild(circPath);
+    svg.appendChild(defs);
+
+    const g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('class', 'pizza-curved-text');
+
+    // Single textPath with both phrases separated by spacing
+    const txt = document.createElementNS(SVG_NS, 'text');
+    txt.setAttribute('class', 'pizza-empty-text');
+    const tp = document.createElementNS(SVG_NS, 'textPath');
+    tp.setAttribute('href', '#curveCircle');
+    tp.setAttribute('startOffset', '0%');
+    const verses = [
+      'Lucas 1:37 \u2022 Pois nada \u00e9 imposs\u00edvel para Deus',
+      'Ef\u00e9sios 3:20 \u2022 Infinitamente mais do que pedimos ou pensamos',
+      'Filipenses 4:13 \u2022 Tudo posso naquele que me fortalece',
+      'Josu\u00e9 1:9 \u2022 Seja forte e corajoso, o Senhor est\u00e1 contigo',
+      'Jeremias 29:11 \u2022 Eu sei os planos que tenho para voc\u00ea',
+      'Prov\u00e9rbios 16:3 \u2022 Confie ao Senhor tudo o que voc\u00ea faz',
+      'Isaias 40:31 \u2022 Os que esperam no Senhor renovam suas for\u00e7as',
+      'Salmos 37:5 \u2022 Entregue o seu caminho ao Senhor',
+    ];
+    const todayVerse = verses[new Date().getDate() % verses.length];
+    tp.textContent = `\u2022  ${todayVerse}  \u2022  ${todayVerse}  `;
+    txt.appendChild(tp);
+    g.appendChild(txt);
+
+    svg.appendChild(g);
   } else {
     const dayStartMin = dayStart * 60;
     const dayEndMin = dayEnd * 60;
@@ -489,14 +533,16 @@ function renderPizza() {
   const centerEl = $('#pizzaCenter');
   const progressEl = $('#pizzaProgress');
   const fillEl = $('#pizzaProgressFill');
+  
+  // Sempre mostra o centro (0h / PLANEJADO)
+  centerEl.style.display = '';
+
   if (dayBlocks.length > 0) {
-    centerEl.style.display = '';
     progressEl.style.display = '';
     fillEl.style.width = `${pct}%`;
     if (pct === 100) fillEl.style.background = 'var(--ds-success)';
     else fillEl.style.background = 'var(--ds-accent)';
   } else {
-    centerEl.style.display = 'none';
     progressEl.style.display = 'none';
   }
 }
@@ -1269,7 +1315,10 @@ function initTabs() {
       $$('.ds-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       const p = pages[tab.dataset.tab];
-      p.show.forEach(s => { const el = $(s); if (el) el.classList.remove('hidden'); });
+      p.show.forEach(s => {
+        const el = $(s);
+        if (el) { el.classList.remove('hidden'); el.classList.add('page-enter'); el.addEventListener('animationend', () => el.classList.remove('page-enter'), { once: true }); }
+      });
       p.hide.forEach(s => { const el = $(s); if (el) el.classList.add('hidden'); });
 
       if (tab.dataset.tab === 'subjects') renderSubjects();
@@ -1430,6 +1479,15 @@ function initSettings() {
 function applyTheme(theme) {
   if (theme === 'auto') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', theme);
+  // Update meta theme-color to match current effective theme
+  updateThemeColor();
+}
+
+function updateThemeColor() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+    (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const color = isDark ? '#0a0a0c' : '#f2f2f7';
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', color));
 }
 
 // ===== DAILY BLOCKS GENERATOR FROM WEEKLY SLOTS =====
@@ -1588,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initColorPickers();
   initSettings();
 
+  $('#btnPizzaAdd').addEventListener('click', () => openBlockModal());
   $('#modalCancel').addEventListener('click', closeBlockModal);
   $('#modalSave').addEventListener('click', saveBlock);
   $('#btnDeleteBlock').addEventListener('click', deleteBlock);

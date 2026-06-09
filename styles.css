@@ -8,12 +8,33 @@
 html {
   background: var(--ds-bg-primary);
   color: var(--ds-text-primary);
+  /* Prevent rubber-band overscroll showing white behind */
+  height: 100%;
 }
 
 body {
   min-height: 100dvh;
   background: var(--ds-bg-primary);
   overscroll-behavior: none;
+  /* iOS: prevent text size adjust on rotation */
+  -webkit-text-size-adjust: 100%;
+  /* iOS: smooth momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+  /* Prevent pull-to-refresh in standalone mode */
+  overscroll-behavior-y: contain;
+}
+
+/* iOS standalone: extend bg behind status bar */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body::before {
+    content: '';
+    display: block;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: env(safe-area-inset-top);
+    background: var(--ds-bg-primary);
+    z-index: 9998;
+  }
 }
 
 #app {
@@ -26,7 +47,33 @@ body {
   padding-right: var(--ds-space-4);
 }
 
+/* Disable user-select on interactive elements for native feel */
+button, .ds-tab, .week-day, .block-check, .color-dot {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Disable long-press context menu on app shell */
+#app, .ds-tabbar, .app-header {
+  -webkit-touch-callout: none;
+}
+
+/* Remove tap highlight on iOS */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .hidden { display: none !important; }
+
+/* Page transition */
+.page-enter {
+  animation: pageEnter 0.25s ease-out;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* ===== HEADER ===== */
 .app-header {
@@ -42,7 +89,7 @@ body {
 
 .header-title {
   font-size: var(--ds-text-4xl);
-  font-weight: var(--ds-weight-bold);
+  font-weight: 300;
   letter-spacing: var(--ds-tracking-tight);
   color: var(--ds-text-primary);
   line-height: 1.1;
@@ -155,16 +202,31 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   width: 140px;
   height: 140px;
-  background: radial-gradient(circle, var(--ds-fill-quaternary) 0%, transparent 70%);
   border-radius: 50%;
-  animation: floatCenter 6s ease-in-out infinite;
 }
 
-@keyframes floatCenter {
-  0%, 100% { transform: translate(-50%, -50%); }
-  50% { transform: translate(-50%, calc(-50% - 4px)); }
+.pizza-add-btn {
+  pointer-events: auto;
+  border: none;
+  background: var(--ds-accent);
+  color: white;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-top: 4px;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.pizza-add-btn:active {
+  transform: scale(0.88);
+  box-shadow: 0 1px 4px rgba(0, 122, 255, 0.25);
 }
 
 .pizza-center-value {
@@ -172,9 +234,7 @@ body {
   font-size: 44px;
   font-weight: 800;
   line-height: 1;
-  background: linear-gradient(135deg, var(--ds-text-primary), var(--ds-accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--ds-text-primary);
   text-shadow: 0 4px 12px rgba(0,0,0,0.05);
   letter-spacing: -1.5px;
 }
@@ -210,18 +270,21 @@ body {
 .pizza-now-dot  { fill: var(--ds-danger); }
 
 .pizza-empty-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   fill: var(--ds-text-tertiary);
   font-family: var(--ds-font);
-  text-anchor: middle;
-  transform-origin: 200px 200px;
-  animation: pulseEmpty 3s infinite ease-in-out;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
-@keyframes pulseEmpty {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+.pizza-curved-text {
+  transform-origin: 200px 200px;
+  animation: curvedSpin 20s linear infinite;
+}
+@keyframes curvedSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .pizza-progress {
@@ -257,13 +320,6 @@ body {
   width: 100%; max-width: 380px; 
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1); 
   border: 1px solid rgba(255,255,255,0.08); 
-  transform: translateY(0);
-  animation: floatCard 6s ease-in-out infinite;
-}
-
-@keyframes floatCard {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
 }
 
 .auth-input {
@@ -823,6 +879,52 @@ body {
   .pizza-progress { width: 60px !important; }
 }
 
+/* ===== TAB ICON ANIMATIONS ===== */
+
+/* Clock — whole icon rotates slowly when active (hands "tick") */
+.ds-tab.active .icon-clock {
+  animation: clockSpin 6s linear infinite;
+}
+@keyframes clockSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Book — opens and closes when active */
+.ds-tab.active .icon-book {
+  animation: bookOpen 1.2s ease-in-out infinite alternate;
+  transform-origin: left center;
+}
+@keyframes bookOpen {
+  0% { transform: skewY(0deg); }
+  100% { transform: skewY(-8deg); }
+}
+
+/* Settings — whole icon spins slowly + rays pulse via stroke-dasharray */
+.ds-tab.active .icon-settings {
+  animation: settingsSpin 4s linear infinite;
+}
+@keyframes settingsSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.ds-tab.active .ray {
+  stroke-dasharray: 2 1;
+  animation: rayPulse 1.2s ease-in-out infinite;
+}
+.ds-tab.active .ray1 { animation-delay: 0s; }
+.ds-tab.active .ray2 { animation-delay: 0.15s; }
+.ds-tab.active .ray3 { animation-delay: 0.3s; }
+.ds-tab.active .ray4 { animation-delay: 0.45s; }
+.ds-tab.active .ray5 { animation-delay: 0.6s; }
+.ds-tab.active .ray6 { animation-delay: 0.75s; }
+.ds-tab.active .ray7 { animation-delay: 0.9s; }
+.ds-tab.active .ray8 { animation-delay: 1.05s; }
+@keyframes rayPulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
 /* ===== iOS-OPTIMIZED ANIMATIONS ===== */
 .pizza-slice,
 .block-card,
@@ -890,4 +992,58 @@ body {
   color: var(--ds-accent);
   font-size: var(--ds-text-base);
   font-weight: var(--ds-weight-semibold);
+}
+
+/* ===== STANDALONE / PWA MODE ===== */
+@media (display-mode: standalone) {
+  /* Tab bar flush to bottom with safe area */
+  .ds-tabbar {
+    bottom: 0;
+    border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+    width: 100%;
+    max-width: 100%;
+    left: 0;
+    transform: none;
+  }
+
+  /* Extra bottom padding to clear rounded tabbar */
+  #app {
+    padding-bottom: calc(90px + var(--ds-safe-bottom));
+  }
+}
+
+/* ===== MOBILE-SPECIFIC ===== */
+@media (max-width: 430px) {
+  /* Tighter header on small screens */
+  .app-header {
+    padding-left: var(--ds-space-2);
+    padding-right: var(--ds-space-2);
+  }
+
+  /* Full-bleed cards on small phones */
+  .block-card, .subject-card {
+    border-radius: var(--ds-radius-sm);
+  }
+
+  /* Larger touch targets */
+  .week-day {
+    min-width: 40px;
+    padding: var(--ds-space-2) 2px;
+  }
+
+  .week-day .day-number {
+    width: 32px; height: 32px;
+  }
+}
+
+/* ===== NOTCH PHONES (iPhone X+) ===== */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .app-header {
+    padding-top: calc(env(safe-area-inset-top) + 12px);
+  }
+
+  .auth-screen {
+    padding-top: calc(env(safe-area-inset-top) + var(--ds-space-6));
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--ds-space-6));
+  }
 }
