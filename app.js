@@ -963,10 +963,16 @@ function renderSubjects() {
     return;
   }
 
+  const sectionIcons = {
+    study: `<svg class="ds-icon ds-icon--rock" viewBox="0 0 24 24"><path d="M2 3c0 0 4-1 10 1v18c-6-2-10-1-10-1z"/><path d="M22 3c0 0-4-1-10 1v18c6-2 10-1 10-1z"/></svg>`,
+    training: `<svg class="ds-icon ds-icon--bounce" viewBox="0 0 24 24"><line x1="7" y1="12" x2="17" y2="12" stroke-width="2.5" stroke-linecap="round"/><rect x="2" y="7" width="4" height="10" rx="1.5"/><rect x="18" y="7" width="4" height="10" rx="1.5"/></svg>`,
+    inactive: `<svg class="ds-icon ds-icon--wobble" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><polyline points="8 12.5 11 15.5 16 9"/></svg>`,
+  };
+
   list.innerHTML = sections.map(({ type, cfg, items }) => `
     <div class="subject-section">
-      <div class="subject-section-header">
-        <span class="subject-section-icon">${DS.icon(cfg.icon, { size: 18 })}</span>
+      <div class="subject-section-header ds-icon-animate">
+        <span class="subject-section-icon">${sectionIcons[type] || DS.icon(cfg.icon, { size: 18 })}</span>
         <span class="subject-section-title">${DS.escapeHtml(I18n.t(cfg.i18nKey))}</span>
         <span class="subject-section-count">${items.length}</span>
         <button class="ds-btn ds-btn-icon-sm subject-section-add" data-type="${type}" aria-label="${I18n.t(cfg.i18nKey)}">

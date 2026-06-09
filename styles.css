@@ -533,7 +533,14 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   gap: var(--ds-space-2);
   padding: var(--ds-space-2) 0 var(--ds-space-2);
 }
-.subject-section-icon { color: var(--ds-text-tertiary); display: flex; }
+.subject-section-icon {
+  color: var(--ds-accent);
+  display: flex;
+  align-items: center;
+}
+.subject-section-icon .ds-icon {
+  width: 18px; height: 18px;
+}
 .subject-section-title {
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);

@@ -6,12 +6,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="StudyPlan">
+  <meta name="apple-mobile-web-app-title" content="Estudy">
   <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0a0a0c" media="(prefers-color-scheme: dark)">
   <meta name="description" content="Planejador de estudos pessoal - PWA">
-  <title>StudyPlan</title>
+  <title>Estudy</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/estudy-logo.svg">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="ds.css">
   <link rel="stylesheet" href="styles.css">
@@ -42,8 +43,8 @@
   <div id="authScreen" class="auth-screen">
     <!-- View Inicial -->
     <div class="auth-initial" style="position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; z-index:1; padding: 20px; box-sizing: border-box;">
-      <model-viewer src="/logo.glb" poster="/logo_3d.png" alt="StudyPlan Logo 3D" auto-rotate rotation-per-second="30deg" interaction-prompt="none" disable-zoom style="width: 200px; height: 200px; margin-bottom: 8px; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.15));"></model-viewer>
-      <h1 class="header-title text-shine" data-i18n="app.name" style="font-size:40px; font-weight:800; text-align:center; margin-bottom: 16px;">StudyPlan</h1>
+      <model-viewer src="/estudy-logo.glb" poster="icons/estudy-logo.svg" alt="Estudy Logo 3D" auto-rotate rotation-per-second="30deg" interaction-prompt="none" disable-zoom style="width: 200px; height: 200px; margin-bottom: 8px; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.15));"></model-viewer>
+      <h1 class="header-title text-shine" data-i18n="app.name" style="font-size:40px; font-weight:800; text-align:center; margin-bottom: 16px; text-transform: lowercase;">Estudy</h1>
       <p style="text-align:center; color:var(--ds-text-secondary); margin-bottom:40px; max-width: 300px;">Seu planejador de estudos inteligente. Sincronize seus ciclos e alcance suas metas de aprovação.</p>
       
       <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnShowAuthDrawer" style="width:100%; max-width:280px; position:absolute; bottom: 60px;">Fazer Login</button>
@@ -106,8 +107,9 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left" style="display:flex; align-items:center; gap:12px;">
+        <img src="icons/estudy-logo.svg" alt="Estudy Logo" style="width: 32px; height: 32px; border-radius: 50%;">
         <div>
-          <h1 class="header-title text-shine" data-i18n="app.name" style="margin:0; font-size:24px; font-weight:800;">StudyPlan</h1>
+          <h1 class="header-title text-shine" data-i18n="app.name" style="margin:0; font-size:24px; font-weight:800; text-transform: lowercase;">Estudy</h1>
           <p class="header-subtitle" id="headerDate" style="margin:0;"></p>
         </div>
       </div>
@@ -207,7 +209,7 @@
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ds-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12" y2="18.01" stroke-width="2.5"/></svg>
           </div>
           <div class="pwa-install-text">
-            <strong>Instalar StudyPlan</strong>
+            <strong>Instalar Estudy</strong>
             <span>Acesso rápido na tela inicial</span>
           </div>
           <button class="pwa-install-action" id="btnInstallPwa">Instalar</button>
@@ -301,7 +303,7 @@
         <div class="ds-list" id="logsList" style="max-height: 200px; overflow-y: auto;"></div>
       </div>
 
-      <p class="settings-footer" data-i18n="app.version">StudyPlan v1.0</p>
+      <p class="settings-footer" data-i18n="app.version">Estudy v1.0</p>
     </main>
   </div>
 
