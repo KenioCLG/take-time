@@ -22,6 +22,8 @@ body {
   position: relative;
   min-height: 100dvh;
   padding-bottom: calc(80px + var(--ds-safe-bottom));
+  padding-left: var(--ds-space-4);
+  padding-right: var(--ds-space-4);
 }
 
 .hidden { display: none !important; }
@@ -31,7 +33,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(var(--ds-safe-top) + 16px) 20px 12px;
+  padding: calc(var(--ds-safe-top) + 16px) var(--ds-space-1) 12px;
   background: var(--ds-bg-primary);
   position: sticky;
   top: 0;
@@ -70,7 +72,7 @@ body {
 .week-nav {
   display: flex;
   gap: 2px;
-  padding: var(--ds-space-2) var(--ds-space-5) var(--ds-space-3);
+  padding: var(--ds-space-2) var(--ds-space-1) var(--ds-space-3);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -127,7 +129,7 @@ body {
 .day-dot { width: 4px; height: 4px; border-radius: var(--ds-radius-full); }
 
 /* ===== PIZZA VIEW ===== */
-.pizza-container { padding: 0 var(--ds-space-5) var(--ds-space-5); }
+.pizza-container { padding: 0 0 var(--ds-space-5); }
 
 .pizza-wrapper {
   position: relative;
@@ -149,24 +151,42 @@ body {
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, var(--ds-fill-quaternary) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: floatCenter 6s ease-in-out infinite;
+}
+
+@keyframes floatCenter {
+  0%, 100% { transform: translate(-50%, -50%); }
+  50% { transform: translate(-50%, calc(-50% - 4px)); }
 }
 
 .pizza-center-value {
   display: block;
-  font-size: var(--ds-text-3xl);
-  font-weight: var(--ds-weight-bold);
-  color: var(--ds-text-primary);
+  font-size: 44px;
+  font-weight: 800;
   line-height: 1;
+  background: linear-gradient(135deg, var(--ds-text-primary), var(--ds-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  letter-spacing: -1.5px;
 }
 
 .pizza-center-label {
   display: block;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-tertiary);
-  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ds-text-secondary);
+  margin-top: 6px;
   text-transform: uppercase;
-  letter-spacing: var(--ds-tracking-wide);
-  font-weight: var(--ds-weight-medium);
+  letter-spacing: 1.5px;
+  font-weight: 700;
 }
 
 .pizza-slice {
@@ -191,9 +211,17 @@ body {
 
 .pizza-empty-text {
   font-size: 14px;
-  fill: var(--ds-text-quaternary);
+  font-weight: 600;
+  fill: var(--ds-text-tertiary);
   font-family: var(--ds-font);
   text-anchor: middle;
+  transform-origin: 200px 200px;
+  animation: pulseEmpty 3s infinite ease-in-out;
+}
+
+@keyframes pulseEmpty {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
 }
 
 .pizza-progress {
@@ -210,12 +238,15 @@ body {
   transition: width var(--ds-duration-slow) var(--ds-ease-spring);
 }
 
-.auth-screen { 
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-  background: var(--ds-bg-primary); 
-  display: flex; justify-content: center; align-items: center; 
-  z-index: 9999; padding: var(--ds-space-4); 
-} 
+.auth-screen {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--ds-bg-primary);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 9999;
+  padding: var(--ds-space-6);
+  padding-top: calc(var(--ds-safe-top) + var(--ds-space-6));
+  padding-bottom: calc(var(--ds-safe-bottom) + var(--ds-space-6));
+}
 
 .auth-card { 
   background: rgba(30, 30, 30, 0.6); 
@@ -368,7 +399,7 @@ body {
 }
 
 /* ===== PAGES ===== */
-.page { padding: 0 var(--ds-space-5) var(--ds-space-5); }
+.page { padding: 0 0 var(--ds-space-5); }
 
 .section-header {
   display: flex;
@@ -454,7 +485,7 @@ body {
 .settings-title {
   font-size: var(--ds-text-2xl);
   font-weight: var(--ds-weight-bold);
-  padding: var(--ds-space-4) 0 var(--ds-space-2);
+  padding: var(--ds-space-4) var(--ds-space-1) var(--ds-space-2);
 }
 
 .settings-section {
@@ -770,13 +801,93 @@ body {
     grid-template-columns: 420px 1fr;
   }
 }
-@ k e y f r a m e s   f l o a t   {   0 %   {   t r a n s f o r m :   t r a n s l a t e Y ( 0 p x ) ;   }   5 0 %   {   t r a n s f o r m :   t r a n s l a t e Y ( - 3 p x ) ;   }   1 0 0 %   {   t r a n s f o r m :   t r a n s l a t e Y ( 0 p x ) ;   }   }  
- 
- . t e x t - s h i n e   {   c o l o r :   # f f f f f f ;   b a c k g r o u n d :   l i n e a r - g r a d i e n t ( 1 1 0 d e g ,   # f f f f f f   4 0 % ,   r g b a ( 2 5 5 ,   2 5 5 ,   2 5 5 ,   0 . 2 )   4 5 % ,   # f f f f f f   5 0 % ) ;   b a c k g r o u n d - s i z e :   2 0 0 %   a u t o ;   - w e b k i t - b a c k g r o u n d - c l i p :   t e x t ;   - w e b k i t - t e x t - f i l l - c o l o r :   t r a n s p a r e n t ;   a n i m a t i o n :   s h i n e   4 s   l i n e a r   i n f i n i t e ;   t e x t - s h a d o w :   0   0   2 0 p x   r g b a ( 2 5 5 ,   2 5 5 ,   2 5 5 ,   0 . 1 5 ) ;   }   @ k e y f r a m e s   s h i n e   {   t o   {   b a c k g r o u n d - p o s i t i o n :   - 2 0 0 %   c e n t e r ;   }   }  
- 
- @ m e d i a   ( m a x - w i d t h :   4 5 0 p x )   {   . p i z z a - c e n t e r - v a l u e   {   f o n t - s i z e :   2 0 p x   ! i m p o r t a n t ;   }   . p i z z a - c e n t e r - l a b e l   {   f o n t - s i z e :   1 0 p x   ! i m p o r t a n t ;   }   . p i z z a - p r o g r e s s   {   w i d t h :   6 0 p x   ! i m p o r t a n t ;   }   }  
- 
- . a u t h - s c r e e n   {   p o s i t i o n :   f i x e d ;   t o p :   0 ;   l e f t :   0 ;   r i g h t :   0 ;   b o t t o m :   0 ;   b a c k g r o u n d :   v a r ( - - d s - b g - p r i m a r y ) ;   d i s p l a y :   f l e x ;   j u s t i f y - c o n t e n t :   c e n t e r ;   a l i g n - i t e m s :   c e n t e r ;   z - i n d e x :   9 9 9 9 ;   p a d d i n g :   v a r ( - - d s - s p a c e - 4 ) ;   }   . a u t h - c a r d   {   b a c k g r o u n d :   v a r ( - - d s - b g - s e c o n d a r y ) ;   b o r d e r - r a d i u s :   v a r ( - - d s - r a d i u s - x l ) ;   p a d d i n g :   v a r ( - - d s - s p a c e - 6 ) ;   w i d t h :   1 0 0 % ;   m a x - w i d t h :   4 0 0 p x ;   b o x - s h a d o w :   v a r ( - - d s - s h a d o w - l g ) ;   b o r d e r :   1 p x   s o l i d   v a r ( - - d s - b o r d e r - o p a q u e ) ;   }  
- 
- . a u t h - d r a w e r   {   p o s i t i o n :   f i x e d ;   b o t t o m :   0 ;   l e f t :   0 ;   r i g h t :   0 ;   b a c k g r o u n d :   r g b a ( 3 0 ,   3 0 ,   3 0 ,   0 . 8 ) ;   b a c k d r o p - f i l t e r :   b l u r ( 2 4 p x ) ;   - w e b k i t - b a c k d r o p - f i l t e r :   b l u r ( 2 4 p x ) ;   b o r d e r - t o p - l e f t - r a d i u s :   3 2 p x ;   b o r d e r - t o p - r i g h t - r a d i u s :   3 2 p x ;   p a d d i n g :   4 0 p x   2 4 p x ;   p a d d i n g - b o t t o m :   m a x ( 4 0 p x ,   e n v ( s a f e - a r e a - i n s e t - b o t t o m ) ) ;   b o r d e r - t o p :   1 p x   s o l i d   r g b a ( 2 5 5 , 2 5 5 , 2 5 5 , 0 . 1 ) ;   t r a n s f o r m :   t r a n s l a t e Y ( 1 0 0 % ) ;   t r a n s i t i o n :   t r a n s f o r m   0 . 5 s   c u b i c - b e z i e r ( 0 . 3 2 ,   0 . 7 2 ,   0 ,   1 ) ;   z - i n d e x :   1 0 ;   b o x - s h a d o w :   0   - 1 0 p x   4 0 p x   r g b a ( 0 , 0 , 0 , 0 . 5 ) ;   }   . a u t h - d r a w e r . o p e n   {   t r a n s f o r m :   t r a n s l a t e Y ( 0 ) ;   }  
- 
+
+/* ===== TEXT SHINE ===== */
+.text-shine {
+  background: linear-gradient(110deg, var(--ds-text-primary) 40%, var(--ds-text-tertiary) 45%, var(--ds-text-primary) 50%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shine 4s linear infinite;
+}
+
+@keyframes shine {
+  to { background-position: -200% center; }
+}
+
+/* ===== MOBILE PIZZA RESPONSIVE ===== */
+@media (max-width: 450px) {
+  .pizza-center-value { font-size: 20px !important; }
+  .pizza-center-label { font-size: 10px !important; }
+  .pizza-progress { width: 60px !important; }
+}
+
+/* ===== iOS-OPTIMIZED ANIMATIONS ===== */
+.pizza-slice,
+.block-card,
+.subject-card,
+.ds-tab,
+.week-day,
+.color-dot,
+.block-check {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.ds-sheet {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.ds-sheet,
+.content-list,
+#logsList {
+  -webkit-overflow-scrolling: touch;
+}
+
+.block-card:active,
+.subject-card:active {
+  transform: scale3d(0.98, 0.98, 1);
+  transition: transform 0.1s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.week-day:active {
+  transform: scale3d(0.95, 0.95, 1);
+  transition: transform 0.1s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ds-tab {
+  transition: color 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+              transform 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.ds-tab:active {
+  transform: scale3d(0.92, 0.92, 1);
+}
+
+.block-check.checked {
+  animation: checkBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes checkBounce {
+  0% { transform: scale(0.7); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1.05); }
+}
+
+/* PWA install button */
+.install-pwa-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  font-family: var(--ds-font);
+  color: var(--ds-accent);
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-semibold);
+}

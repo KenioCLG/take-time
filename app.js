@@ -112,8 +112,11 @@ function seedKenioWorkout() {
 function loginUser() {
   $('#authDrawerOverlay').classList.add('hidden');
   $('#authScreen').style.display = 'none';
-  $('#app').style.display = 'block';
-  // Ensure we render everything smoothly when jumping to app
+  document.documentElement.classList.add('authenticated');
+  const app = $('#app');
+  app.style.display = 'block';
+  app.classList.add('app-fade-in');
+  app.addEventListener('animationend', () => app.classList.remove('app-fade-in'), { once: true });
   if (typeof render === 'function') render();
   if (typeof renderSubjects === 'function') renderSubjects();
 }
@@ -1362,6 +1365,31 @@ function initSettings() {
     }
   });
 
+  // PWA Install button
+  const btnInstall = $('#btnInstallPwa');
+  if (btnInstall) {
+    // Show section for iOS Safari (manual instructions) even without beforeinstallprompt
+    if (isIOSSafari() && !isStandalone()) {
+      const section = $('#installPwaSection');
+      if (section) section.classList.remove('hidden');
+    }
+
+    btnInstall.addEventListener('click', async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const result = await deferredInstallPrompt.userChoice;
+        if (result.outcome === 'accepted') {
+          DS.toast(I18n.t('settings.app_installed') || 'App instalado!', 'success');
+        }
+        deferredInstallPrompt = null;
+        const section = $('#installPwaSection');
+        if (section) section.classList.add('hidden');
+      } else if (isIOSSafari()) {
+        DS.toast(I18n.t('settings.ios_install_hint') || 'Toque em Compartilhar (⎋) e depois "Adicionar à Tela Inicial"', 'info');
+      }
+    });
+  }
+
   $('#btnClearLogs').addEventListener('click', () => {
     state.logs = [];
     Store.save(state);
@@ -1378,6 +1406,7 @@ function initSettings() {
       );
       if (ok) {
         AuthService.logout();
+        document.documentElement.classList.remove('authenticated');
         $('#app').style.display = 'none';
         $('#authScreen').style.display = 'flex';
         $('#inputAuthEmail').value = '';
@@ -1514,12 +1543,40 @@ function checkNotifications() {
   });
 }
 
+// ===== PWA INSTALL PROMPT =====
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const section = document.getElementById('installPwaSection');
+  if (section) section.classList.remove('hidden');
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const section = document.getElementById('installPwaSection');
+  if (section) section.classList.add('hidden');
+  DS.toast(I18n.t('settings.app_installed') || 'App instalado!', 'success');
+});
+
+// iOS Safari detection — show manual install hint
+function isIOSSafari() {
+  const ua = navigator.userAgent;
+  return /iPhone|iPad|iPod/.test(ua) && /Safari/.test(ua) && !('beforeinstallprompt' in window);
+}
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+}
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
   // Proteção de rota: se já logado, pula authScreen
   if (AuthService.isAuthenticated()) {
     const user = AuthService.getSessionUser();
     if (user && user.email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
+    document.documentElement.classList.add('authenticated');
     $('#authScreen').style.display = 'none';
     $('#app').style.display = 'block';
   }
@@ -1570,91 +1627,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
 
-      
-      // Add Subject Bindings
-      $('#btnAddSubject').addEventListener('click', () => {
-        $('#configModal').classList.add('hidden');
-        $('#addSubjectModal').classList.remove('hidden');
-      });
-      
-      $('#btnCancelAddSubject').addEventListener('click', () => {
-        $('#addSubjectModal').classList.add('hidden');
-        $('#configModal').classList.remove('hidden');
-      });
-      
-      $('#formAddSubject').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = $('#inputNewSubjectName').value.trim();
-        const color = $('#inputNewSubjectColor').value;
-        const type = $('#inputTypeSelect').value;
-        if (name) {
-          const newSub = { id: uid(), name, color, type, syllabus: [] };
-          if (type === 'training') newSub.exercises = [];
-          if (type === 'inactive') newSub.checklist = [];
-          
-          state.subjects.push(newSub);
-          logAction(I18n.t('log.subject_add', { name }));
-          Store.save(state);
-          $('#inputNewSubjectName').value = '';
-          $('#addSubjectModal').classList.add('hidden');
-          $('#configModal').classList.remove('hidden');
-          populateSubjectSelect();
-        }
-      });
-    
-      $('#inputTypeSelect').addEventListener('change', (e) => {
-        document.querySelectorAll('.add-content-form').forEach(el => el.classList.add('hidden'));
-        const t = e.target.value;
-        if (t === 'study') $('#formAddSyllabus').classList.remove('hidden');
-        if (t === 'training') $('#formAddExercise').classList.remove('hidden');
-        if (t === 'inactive') $('#formAddChecklist').classList.remove('hidden');
-        populateSubjectSelect(t);
-      });
-    
-      // Add Syllabus Content
-      $('#btnSyllabusAdd').addEventListener('click', () => {
-        const subId = $('#inputSubject').value;
-        const title = $('#inputSyllabusTitle').value.trim();
-        const link = $('#inputSyllabusLink').value.trim();
-        const dur = parseInt($('#inputSyllabusDuration').value, 10) || 60;
-        if (!subId || !title) return alert('Selecione matéria e título');
-        const subj = state.subjects.find(s => s.id === subId);
-        if (!subj.syllabus) subj.syllabus = [];
-        subj.syllabus.push({ id: uid(), title, link, expectedDurationMin: dur });
-        Store.save(state);
-        $('#inputSyllabusTitle').value = '';
-        $('#inputSyllabusLink').value = '';
-        alert('Tópico adicionado!');
-      });
-    
-      // Add Exercise Content
-      $('#btnExerciseAdd').addEventListener('click', () => {
-        const subId = $('#inputSubject').value;
-        const name = $('#inputExerciseName').value.trim();
-        const sets = parseInt($('#inputExerciseSets').value, 10) || 3;
-        const reps = $('#inputExerciseReps').value.trim() || '12';
-        const weight = $('#inputExerciseWeight').value.trim() || '-';
-        if (!subId || !name) return alert('Selecione o treino e digite o exercício');
-        const subj = state.subjects.find(s => s.id === subId);
-        if (!subj.exercises) subj.exercises = [];
-        subj.exercises.push({ id: uid(), name, sets, reps, weight });
-        Store.save(state);
-        $('#inputExerciseName').value = '';
-        alert('Exercício adicionado!');
-      });
-    
-      // Add Checklist Content
-      $('#btnChecklistAdd').addEventListener('click', () => {
-        const subId = $('#inputSubject').value;
-        const task = $('#inputChecklistTask').value.trim();
-        if (!subId || !task) return alert('Selecione a rotina e digite a tarefa');
-        const subj = state.subjects.find(s => s.id === subId);
-        if (!subj.checklist) subj.checklist = [];
-        subj.checklist.push({ id: uid(), task });
-        Store.save(state);
-        $('#inputChecklistTask').value = '';
-        alert('Tarefa adicionada!');
-      });
     
       render();
       checkNotifications();

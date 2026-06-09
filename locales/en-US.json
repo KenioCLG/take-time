@@ -165,6 +165,9 @@
   "settings.test_notif": "Test Notification",
   "settings.test_notif_body": "StudyPlan test notification!",
   "settings.clear_logs": "Clear",
+  "settings.install_app": "Install as App",
+  "settings.app_installed": "App installed successfully!",
+  "settings.ios_install_hint": "Tap the Share button (⎋) then \"Add to Home Screen\"",
 
   "app.version": "StudyPlan v1.0"
 }

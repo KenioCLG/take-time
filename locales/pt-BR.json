@@ -165,6 +165,9 @@
   "settings.test_notif": "Testar Notificação",
   "settings.test_notif_body": "Notificação de teste do StudyPlan!",
   "settings.clear_logs": "Limpar",
+  "settings.install_app": "Instalar como App",
+  "settings.app_installed": "App instalado com sucesso!",
+  "settings.ios_install_hint": "Toque em Compartilhar (⎋) e depois \"Adicionar à Tela Inicial\"",
 
   "app.version": "StudyPlan v1.0"
 }
