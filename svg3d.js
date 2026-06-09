@@ -6,9 +6,10 @@
 
 import * as THREE from 'three';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
 // ---------------------------------------------------------------------------
-// Material Presets (from 3dsvg engine)
+// Material Presets
 // ---------------------------------------------------------------------------
 const PRESETS = {
   default:  { metalness: 0.15, roughness: 0.35, opacity: 1 },
@@ -20,6 +21,54 @@ const PRESETS = {
   clay:     { metalness: 0.0,  roughness: 1.0,  opacity: 1 },
   emissive: { metalness: 0.0,  roughness: 0.5,  opacity: 1, emissive: 0.8 },
 };
+
+// ---------------------------------------------------------------------------
+// Environment Map Generator (for realistic reflections on metallic materials)
+// ---------------------------------------------------------------------------
+function createEnvironmentMap(renderer) {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  pmrem.compileCubemapShader();
+
+  const envScene = new THREE.Scene();
+  envScene.background = new THREE.Color('#0a0a12');
+
+  // Sky dome
+  const skyGeo = new THREE.SphereGeometry(50, 32, 32);
+  const skyMat = new THREE.MeshBasicMaterial({ color: '#0a0a12', side: THREE.BackSide });
+  envScene.add(new THREE.Mesh(skyGeo, skyMat));
+
+  // Top light sphere (key light reflection)
+  const topGeo = new THREE.SphereGeometry(20, 16, 16);
+  const topMat = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+  const topLight = new THREE.Mesh(topGeo, topMat);
+  topLight.position.set(0, 25, 0);
+  envScene.add(topLight);
+
+  // Front fill
+  const frontGeo = new THREE.SphereGeometry(15, 16, 16);
+  const frontMat = new THREE.MeshBasicMaterial({ color: '#555555' });
+  const frontFill = new THREE.Mesh(frontGeo, frontMat);
+  frontFill.position.set(0, 0, 30);
+  envScene.add(frontFill);
+
+  // Side accent
+  const sideGeo = new THREE.SphereGeometry(10, 16, 16);
+  const sideMat = new THREE.MeshBasicMaterial({ color: '#333333' });
+  const sideFill = new THREE.Mesh(sideGeo, sideMat);
+  sideFill.position.set(-20, 5, 10);
+  envScene.add(sideFill);
+
+  const envMap = pmrem.fromScene(envScene, 0.04).texture;
+
+  // Cleanup
+  pmrem.dispose();
+  skyGeo.dispose(); skyMat.dispose();
+  topGeo.dispose(); topMat.dispose();
+  frontGeo.dispose(); frontMat.dispose();
+  sideGeo.dispose(); sideMat.dispose();
+
+  return envMap;
+}
 
 // ---------------------------------------------------------------------------
 // SVG → Three.js Shapes
@@ -41,16 +90,13 @@ function parseSVGToShapes(svgString) {
 
     if (hasFill || (!hasFill && !hasStroke)) {
       SVGLoader.createShapes(path).forEach(shape => {
-        // Skip full-viewBox background rects
+        // Skip shapes that cover the entire viewBox (backgrounds)
         if (vbW && vbH) {
-          const pts = shape.getPoints(4);
-          if (pts.length >= 4 && pts.length <= 5) {
-            const bb = new THREE.Box2();
-            pts.forEach(p => bb.expandByPoint(p));
-            const sz = new THREE.Vector2();
-            bb.getSize(sz);
-            if (Math.abs(sz.x - vbW) / vbW < 0.02 && Math.abs(sz.y - vbH) / vbH < 0.02) return;
-          }
+          const bb = new THREE.Box2();
+          shape.getPoints(12).forEach(p => bb.expandByPoint(p));
+          const sz = new THREE.Vector2();
+          bb.getSize(sz);
+          if (Math.abs(sz.x - vbW) / vbW < 0.05 && Math.abs(sz.y - vbH) / vbH < 0.05) return;
         }
         shapes.push(shape);
       });
@@ -86,7 +132,7 @@ function parseSVGToShapes(svgString) {
 }
 
 // ---------------------------------------------------------------------------
-// Extrude + Merge
+// Extrude + Merge (using BufferGeometryUtils)
 // ---------------------------------------------------------------------------
 function extrudeShapes(shapes, depth, smoothness) {
   if (!shapes.length) return null;
@@ -114,50 +160,19 @@ function extrudeShapes(shapes, depth, smoothness) {
 
   const geos = shapes.map(s => new THREE.ExtrudeGeometry(s, settings));
 
-  // Merge into single geometry
-  const merged = geos.length === 1 ? geos[0] : mergeGeometries(geos);
-  if (geos.length > 1) geos.forEach(g => g.dispose());
+  let merged;
+  if (geos.length === 1) {
+    merged = geos[0];
+  } else {
+    merged = BufferGeometryUtils.mergeGeometries(geos, false);
+    geos.forEach(g => g.dispose());
+  }
+
+  if (!merged) return null;
 
   merged.computeBoundingBox();
   merged.computeVertexNormals();
 
-  return merged;
-}
-
-function mergeGeometries(geos) {
-  // Simple merge without BufferGeometryUtils (avoid extra import)
-  let totalVerts = 0, totalIdx = 0;
-  geos.forEach(g => {
-    totalVerts += g.attributes.position.count;
-    totalIdx += g.index ? g.index.count : 0;
-  });
-
-  const pos = new Float32Array(totalVerts * 3);
-  const norm = new Float32Array(totalVerts * 3);
-  const idx = new Uint32Array(totalIdx);
-  let vOff = 0, iOff = 0, vBase = 0;
-
-  geos.forEach(g => {
-    const p = g.attributes.position;
-    const n = g.attributes.normal;
-    for (let i = 0; i < p.count * 3; i++) {
-      pos[vOff * 3 + i] = p.array[i];
-      norm[vOff * 3 + i] = n.array[i];
-    }
-    if (g.index) {
-      for (let i = 0; i < g.index.count; i++) {
-        idx[iOff + i] = g.index.array[i] + vBase;
-      }
-      iOff += g.index.count;
-    }
-    vBase += p.count;
-    vOff += p.count;
-  });
-
-  const merged = new THREE.BufferGeometry();
-  merged.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  merged.setAttribute('normal', new THREE.BufferAttribute(norm, 3));
-  if (totalIdx > 0) merged.setIndex(new THREE.BufferAttribute(idx, 1));
   return merged;
 }
 
@@ -168,12 +183,12 @@ class SVG3DRenderer {
   constructor(container, opts = {}) {
     this.container = typeof container === 'string' ? document.querySelector(container) : container;
     this.opts = Object.assign({
-      svg: null,           // SVG string or URL
+      svg: null,           // SVG string or URL path
       color: '#ffffff',
       material: 'default',
       depth: 1,
       smoothness: 0.2,
-      animate: 'float',    // none, spin, float, pulse, spinFloat, wobble
+      animate: 'float',    // none, spin, float, pulse, spinFloat, wobble, swing
       animateSpeed: 1,
       zoom: 8,
       fov: 50,
@@ -181,7 +196,6 @@ class SVG3DRenderer {
       background: 'transparent',
       lightIntensity: 1.2,
       ambientIntensity: 0.4,
-      shadow: true,
       intro: 'zoom',       // zoom, fade, none
       introDuration: 2.0,
     }, opts);
@@ -194,12 +208,15 @@ class SVG3DRenderer {
     this._lastPointer = { x: 0, y: 0 };
     this._velocity = { x: 0, y: 0 };
     this._baseRotation = { x: 0, y: 0 };
+    this._lastTime = 0;
 
     this._init();
   }
 
   async _init() {
     const { container, opts } = this;
+    if (!container) { console.warn('SVG3D: container not found'); return; }
+
     const w = container.clientWidth || 200;
     const h = container.clientHeight || 200;
     const dpr = Math.min(window.devicePixelRatio, 2);
@@ -208,16 +225,23 @@ class SVG3DRenderer {
     this.scene = new THREE.Scene();
 
     // Camera
-    const startZoom = opts.intro === 'zoom' ? 18 : opts.zoom;
+    const startZoom = opts.intro === 'zoom' ? 16 : opts.zoom;
     this.camera = new THREE.PerspectiveCamera(opts.fov, w / h, 0.1, 100);
     this.camera.position.z = startZoom;
 
     // Renderer
-    this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'default',
-    });
+    try {
+      this.renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: 'default',
+        failIfMajorPerformanceCaveat: false,
+      });
+    } catch (e) {
+      console.warn('SVG3D: WebGL not available', e);
+      return;
+    }
+
     this.renderer.setSize(w, h);
     this.renderer.setPixelRatio(dpr);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -230,23 +254,33 @@ class SVG3DRenderer {
 
     const canvas = this.renderer.domElement;
     canvas.style.opacity = opts.intro === 'none' ? '1' : '0';
-    canvas.style.transition = 'none';
+    canvas.style.display = 'block';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
     container.appendChild(canvas);
+
+    // Environment map (critical for metallic materials)
+    this.envMap = createEnvironmentMap(this.renderer);
+    this.scene.environment = this.envMap;
 
     // Lighting
     this.scene.add(new THREE.AmbientLight(0xffffff, opts.ambientIntensity));
 
-    const key = new THREE.DirectionalLight(0xffffff, opts.lightIntensity);
-    key.position.set(5, 8, 5);
-    this.scene.add(key);
+    const keyLight = new THREE.DirectionalLight(0xffffff, opts.lightIntensity);
+    keyLight.position.set(5, 8, 5);
+    this.scene.add(keyLight);
 
-    const fill = new THREE.DirectionalLight(0xffffff, 0.4);
-    fill.position.set(-5, 3, -3);
-    this.scene.add(fill);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
+    fillLight.position.set(-5, 3, -3);
+    this.scene.add(fillLight);
 
-    const rim = new THREE.DirectionalLight(0xffffff, 0.2);
-    rim.position.set(0, -4, 6);
-    this.scene.add(rim);
+    const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
+    rimLight.position.set(0, -4, 6);
+    this.scene.add(rimLight);
+
+    const topPoint = new THREE.PointLight(0xffffff, 0.3);
+    topPoint.position.set(0, 5, 0);
+    this.scene.add(topPoint);
 
     this.scene.add(new THREE.HemisphereLight(0xb1e1ff, 0xb97a20, 0.5));
 
@@ -258,14 +292,16 @@ class SVG3DRenderer {
     this.meshGroup = new THREE.Group();
     this.animGroup.add(this.meshGroup);
 
-    // Load SVG
+    // Load SVG — detect URLs (absolute, relative, or bare paths)
     let svgString = opts.svg;
-    if (svgString && (svgString.startsWith('/') || svgString.startsWith('http') || svgString.startsWith('./'))) {
+    if (svgString && !svgString.trim().startsWith('<')) {
+      // It's a URL/path, not inline SVG
       try {
         const resp = await fetch(svgString);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         svgString = await resp.text();
       } catch (e) {
-        console.warn('SVG3D: Failed to load SVG', e);
+        console.warn('SVG3D: Failed to load SVG from', opts.svg, e);
         return;
       }
     }
@@ -274,7 +310,10 @@ class SVG3DRenderer {
 
     // Parse + Extrude
     const shapes = parseSVGToShapes(svgString);
-    if (!shapes.length) return;
+    if (!shapes.length) {
+      console.warn('SVG3D: No shapes found in SVG');
+      return;
+    }
 
     const geometry = extrudeShapes(shapes, opts.depth, opts.smoothness);
     if (!geometry || this._destroyed) return;
@@ -307,15 +346,16 @@ class SVG3DRenderer {
       emissiveIntensity: preset.emissive || 0,
       clearcoat: transparent ? 1 : 0,
       clearcoatRoughness: 0.05,
-      side: THREE.FrontSide,
-      envMapIntensity: 1,
+      side: THREE.DoubleSide,
+      envMap: this.envMap,
+      envMapIntensity: 1.5,
     });
 
     const mesh = new THREE.Mesh(geometry, mat);
     mesh.position.set(-center.x, -center.y, -center.z);
 
     const wrapper = new THREE.Group();
-    wrapper.scale.set(scale, -scale, scale); // flip Y (SVG coord system)
+    wrapper.scale.set(scale, -scale, scale); // flip Y (SVG coordinate system)
     wrapper.add(mesh);
     this.meshGroup.add(wrapper);
 
@@ -337,6 +377,8 @@ class SVG3DRenderer {
 
     const delta = this._lastTime ? (time - this._lastTime) / 1000 : 0.016;
     this._lastTime = time;
+    if (delta > 0.1) return; // skip large gaps (tab switch)
+
     this._elapsed += delta * this.opts.animateSpeed;
 
     // Intro animation
@@ -346,7 +388,7 @@ class SVG3DRenderer {
       const canvas = this.renderer.domElement;
 
       if (this.opts.intro === 'zoom') {
-        this.camera.position.z = 18 + (this.opts.zoom - 18) * t;
+        this.camera.position.z = 16 + (this.opts.zoom - 16) * t;
         canvas.style.opacity = String(Math.min(1, t * 1.5));
       } else if (this.opts.intro === 'fade') {
         this.camera.position.z = this.opts.zoom;
@@ -395,7 +437,7 @@ class SVG3DRenderer {
       if (Math.abs(this._velocity.y) > 0.0001) this._baseRotation.y += this._velocity.y;
     }
 
-    // Smooth rotation
+    // Smooth rotation lerp
     const mg = this.meshGroup;
     mg.rotation.x += (this._baseRotation.x - mg.rotation.x) * 0.08;
     mg.rotation.y += (this._baseRotation.y - mg.rotation.y) * 0.08;
@@ -432,8 +474,6 @@ class SVG3DRenderer {
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);
     canvas.addEventListener('pointerleave', onUp);
-
-    // Touch support (prevent scroll while dragging)
     canvas.style.touchAction = 'none';
 
     this._cleanupInput = () => {
@@ -447,7 +487,7 @@ class SVG3DRenderer {
   _onResize() {
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
-    if (w === 0 || h === 0) return;
+    if (w === 0 || h === 0 || !this.camera || !this.renderer) return;
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
@@ -458,8 +498,8 @@ class SVG3DRenderer {
     if (this._rafId) cancelAnimationFrame(this._rafId);
     if (this._resizeObs) this._resizeObs.disconnect();
     if (this._cleanupInput) this._cleanupInput();
+    if (this.envMap) this.envMap.dispose();
 
-    // Dispose Three.js resources
     this.scene?.traverse(obj => {
       if (obj.geometry) obj.geometry.dispose();
       if (obj.material) {

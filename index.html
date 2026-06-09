@@ -438,16 +438,20 @@
     const logoEl = document.getElementById('logo3d');
     if (logoEl) {
       window._logo3d = SVG3D.create(logoEl, {
-        svg: 'icons/estudy-logo.svg',
+        svg: 'icons/estudy-logo-3d.svg',
         material: 'gold',
-        animate: 'float',
-        depth: 1.2,
-        smoothness: 0.3,
+        animate: 'spinFloat',
+        animateSpeed: 0.6,
+        depth: 2,
+        smoothness: 0.4,
         color: '#ffffff',
-        zoom: 7,
+        zoom: 6.5,
+        fov: 45,
         intro: 'zoom',
-        introDuration: 2,
+        introDuration: 2.5,
         interactive: true,
+        lightIntensity: 1.5,
+        ambientIntensity: 0.5,
       });
     }
   </script>
