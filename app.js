@@ -75,7 +75,7 @@ state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
 // Guard all top-level listeners to prevent crash if element is missing
 const _btnShowAuth = $('#btnShowAuthDrawer');
 if (_btnShowAuth) _btnShowAuth.addEventListener('click', () => {
-  $('#authDrawerOverlay').classList.remove('hidden');
+  DS.sheet.open($('#authDrawerOverlay'));
   $('#authBodyLogin').classList.remove('hidden');
   $('#authBodySignup').classList.add('hidden');
   $('#authTitle').textContent = __('auth.login', null, 'Login');
@@ -83,7 +83,7 @@ if (_btnShowAuth) _btnShowAuth.addEventListener('click', () => {
 
 const _btnAuthCancel = $('#authCancel');
 if (_btnAuthCancel) _btnAuthCancel.addEventListener('click', () => {
-  $('#authDrawerOverlay').classList.add('hidden');
+  DS.sheet.close($('#authDrawerOverlay'));
 });
 
 const _linkSignup = $('#linkGoToSignup');
@@ -131,7 +131,7 @@ function seedKenioWorkout() {
 }
 
 function loginUser() {
-  $('#authDrawerOverlay').classList.add('hidden');
+  DS.sheet.close($('#authDrawerOverlay'));
   $('#authScreen').style.display = 'none';
   document.documentElement.classList.add('authenticated');
   const app = $('#app');
@@ -1062,10 +1062,10 @@ function openBlockModal(blockId = null) {
     if (state.subjects.length > 0) $('#inputSubject').value = state.subjects[0].id;
   }
 
-  $('#modalBlock').classList.remove('hidden');
+  DS.sheet.open($('#modalBlock'));
 }
 
-function closeBlockModal() { $('#modalBlock').classList.add('hidden'); editingBlockId = null; }
+function closeBlockModal() { DS.sheet.close($('#modalBlock')); editingBlockId = null; }
 
 let subjectModalType = 'study';
 let currentEditingSubjectId = null;
@@ -1220,10 +1220,10 @@ function openSubjectModal(type = 'study', subjectId = null) {
   
   renderModalSlots(slots);
   renderModalContentList(databaseItems, type);
-  $('#modalSubject').classList.remove('hidden');
+  DS.sheet.open($('#modalSubject'));
 }
 
-function closeSubjectModal() { $('#modalSubject').classList.add('hidden'); currentEditingSubjectId = null; }
+function closeSubjectModal() { DS.sheet.close($('#modalSubject')); currentEditingSubjectId = null; }
 
 // Color picker
 function setColorPicker(containerSel, color) {
@@ -1770,6 +1770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initTabs();
   initColorPickers();
   initSettings();
+  DS.sheet.init();
 
   $('#btnPizzaAdd').addEventListener('click', () => openBlockModal());
   $('#modalCancel').addEventListener('click', closeBlockModal);

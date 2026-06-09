@@ -183,6 +183,202 @@ const DS = (() => {
 
 
   /* ============================================================
+     BOTTOM SHEET — drag handle, snap points, scroll lock
+     ============================================================
+
+     Usage:
+       DS.sheet.init()  — auto-binds all .ds-sheet-handle-area / .ds-sheet-handle elements
+       Sheets snap to: peek (50%), full (92%), or dismiss (close)
+       Body scroll is locked when sheet is open.
+       Swipe down on handle or overlay backdrop to dismiss.
+     ============================================================ */
+
+  const sheet = (() => {
+    const SNAP_FULL = 0.92;  // 92% of viewport
+    const SNAP_PEEK = 0.50;  // 50% of viewport
+    const DISMISS_THRESHOLD = 0.25; // below 25% → close
+    const VELOCITY_DISMISS = 800;   // px/s downward → close
+
+    let activeSheet = null;
+    let startY = 0;
+    let startHeight = 0;
+    let currentHeight = 0;
+    let lastY = 0;
+    let lastTime = 0;
+    let velocityY = 0;
+    let bodyScrollY = 0;
+
+    function lockBody() {
+      bodyScrollY = window.scrollY;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${bodyScrollY}px`;
+      document.body.style.width = '100%';
+    }
+
+    function unlockBody() {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, bodyScrollY);
+    }
+
+    function setSheetHeight(sheetEl, pct) {
+      const h = Math.max(0, Math.min(SNAP_FULL, pct));
+      sheetEl.style.height = `${h * 100}dvh`;
+      sheetEl.style.transition = 'none';
+      currentHeight = h;
+    }
+
+    function snapTo(sheetEl, pct, then) {
+      sheetEl.style.transition = 'height 0.35s cubic-bezier(0.32, 0.72, 0, 1)';
+      sheetEl.style.height = `${pct * 100}dvh`;
+      currentHeight = pct;
+      if (then) sheetEl.addEventListener('transitionend', then, { once: true });
+    }
+
+    function closeSheet(overlay) {
+      const sheetEl = overlay.querySelector('.ds-sheet');
+      if (sheetEl) {
+        snapTo(sheetEl, 0, () => {
+          overlay.classList.add('hidden');
+          sheetEl.style.height = '';
+          sheetEl.style.transition = '';
+          unlockBody();
+          activeSheet = null;
+        });
+      } else {
+        overlay.classList.add('hidden');
+        unlockBody();
+        activeSheet = null;
+      }
+    }
+
+    function openSheet(overlay) {
+      const sheetEl = overlay.querySelector('.ds-sheet');
+      if (!sheetEl) return;
+
+      overlay.classList.remove('hidden');
+      lockBody();
+      activeSheet = sheetEl;
+
+      // Start from 0 and animate to peek
+      sheetEl.style.height = '0';
+      requestAnimationFrame(() => {
+        snapTo(sheetEl, SNAP_PEEK);
+      });
+    }
+
+    function onHandleDown(e) {
+      const sheetEl = e.target.closest('.ds-sheet');
+      if (!sheetEl) return;
+
+      activeSheet = sheetEl;
+      const touch = e.touches ? e.touches[0] : e;
+      startY = touch.clientY;
+      startHeight = currentHeight || SNAP_PEEK;
+      lastY = startY;
+      lastTime = Date.now();
+      velocityY = 0;
+
+      sheetEl.style.transition = 'none';
+
+      document.addEventListener('pointermove', onHandleMove, { passive: false });
+      document.addEventListener('pointerup', onHandleUp);
+      document.addEventListener('touchmove', onHandleTouchMove, { passive: false });
+      document.addEventListener('touchend', onHandleUp);
+    }
+
+    function onHandleMove(e) {
+      if (!activeSheet) return;
+      e.preventDefault();
+      const touch = e.touches ? e.touches[0] : e;
+      const dy = startY - touch.clientY;
+      const vh = window.innerHeight;
+      const newH = startHeight + dy / vh;
+
+      // Track velocity
+      const now = Date.now();
+      const dt = (now - lastTime) / 1000;
+      if (dt > 0) velocityY = (touch.clientY - lastY) / dt;
+      lastY = touch.clientY;
+      lastTime = now;
+
+      setSheetHeight(activeSheet, newH);
+    }
+
+    function onHandleTouchMove(e) {
+      if (!activeSheet) return;
+      e.preventDefault();
+      onHandleMove(e);
+    }
+
+    function onHandleUp() {
+      document.removeEventListener('pointermove', onHandleMove);
+      document.removeEventListener('pointerup', onHandleUp);
+      document.removeEventListener('touchmove', onHandleTouchMove);
+      document.removeEventListener('touchend', onHandleUp);
+
+      if (!activeSheet) return;
+
+      const overlay = activeSheet.closest('.ds-overlay');
+
+      // Fast swipe down → dismiss
+      if (velocityY > VELOCITY_DISMISS) {
+        if (overlay) closeSheet(overlay);
+        return;
+      }
+
+      // Fast swipe up → full
+      if (velocityY < -VELOCITY_DISMISS) {
+        snapTo(activeSheet, SNAP_FULL);
+        return;
+      }
+
+      // Snap to nearest point
+      if (currentHeight < DISMISS_THRESHOLD) {
+        if (overlay) closeSheet(overlay);
+      } else if (currentHeight < (SNAP_PEEK + SNAP_FULL) / 2) {
+        snapTo(activeSheet, SNAP_PEEK);
+      } else {
+        snapTo(activeSheet, SNAP_FULL);
+      }
+    }
+
+    // Scroll containment: when sheet body scrolls to top, allow drag
+    function onSheetBodyScroll(e) {
+      const body = e.target;
+      if (body.scrollTop <= 0 && activeSheet) {
+        // At top of scroll — could start drag
+      }
+    }
+
+    function init() {
+      // Bind all handle areas (or handles directly)
+      document.querySelectorAll('.ds-sheet-handle-area, .ds-sheet-handle').forEach(handle => {
+        handle.addEventListener('pointerdown', onHandleDown);
+        handle.addEventListener('touchstart', onHandleDown, { passive: true });
+      });
+
+      // Backdrop click to dismiss
+      document.querySelectorAll('.ds-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) closeSheet(overlay);
+        });
+      });
+
+      // Scroll containment on sheet bodies
+      document.querySelectorAll('.ds-sheet-body').forEach(body => {
+        body.addEventListener('scroll', onSheetBodyScroll, { passive: true });
+      });
+    }
+
+    return { init, open: openSheet, close: closeSheet, lockBody, unlockBody };
+  })();
+
+
+  /* ============================================================
      PUBLIC API
      ============================================================ */
 
@@ -193,6 +389,7 @@ const DS = (() => {
     el,
     html,
     escapeHtml,
+    sheet,
     ICONS: ICON_PATHS,
   };
 

@@ -590,9 +590,11 @@ html {
   width: 100%;
   max-width: 600px;
   border-radius: var(--ds-radius-md) var(--ds-radius-md) 0 0;
-  animation: ds-slideUp var(--ds-duration-normal) var(--ds-ease-spring);
-  max-height: 90dvh;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  will-change: height;
+  /* height is controlled by JS via DS.sheet */
 }
 
 .ds-sheet-header {
@@ -601,16 +603,37 @@ html {
   justify-content: space-between;
   padding: var(--ds-space-4) var(--ds-space-5);
   border-bottom: 0.5px solid var(--ds-separator);
+  flex-shrink: 0;
 }
 
-.ds-sheet-body { padding: var(--ds-space-5); }
+.ds-sheet-body {
+  padding: var(--ds-space-5);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  flex: 1;
+  min-height: 0;
+}
 
 .ds-sheet-handle {
   width: 36px;
   height: 5px;
   border-radius: var(--ds-radius-full);
-  background: var(--ds-fill-primary);
-  margin: var(--ds-space-2) auto var(--ds-space-1);
+  background: var(--ds-fill-tertiary);
+  margin: 0 auto;
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.ds-sheet-handle:active { cursor: grabbing; }
+
+.ds-sheet-handle-area {
+  padding: var(--ds-space-3) 0 var(--ds-space-1);
+  flex-shrink: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Confirm dialog (centered) */
