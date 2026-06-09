@@ -41,6 +41,11 @@ const TYPES = {
   inactive: { i18nKey: 'type.inactive', icon: 'moon' },
 };
 
+// ===== UTILS =====
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
 // ===== STATE =====
 let state = Store.load();
 // Fixed 24h clock: 0h-24h always
@@ -81,10 +86,11 @@ function loginUser() {
   $('#authScreen').style.display = 'none';
   $('#app').style.display = 'block';
   // Ensure we render everything smoothly when jumping to app
-  if (typeof renderAll === 'function') renderAll();
+  if (typeof render === 'function') render();
+  if (typeof renderSubjects === 'function') renderSubjects();
 }
 
-$('#btnAuthLogin').addEventListener('click', () => {
+function handleLoginSubmit() {
   const email = $('#inputAuthEmail').value;
   const pass = $('#inputAuthPassword').value;
   if (!email || !pass) {
@@ -92,17 +98,31 @@ $('#btnAuthLogin').addEventListener('click', () => {
     else alert('Preencha e-mail e senha.');
     return;
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (window.showToast) window.showToast('E-mail inválido', 'error');
+    else alert('E-mail inválido.');
+    return;
+  }
   // Simulate login
   loginUser();
-});
+}
 
-$('#btnAuthSignup').addEventListener('click', () => {
+$('#btnAuthLogin').addEventListener('click', handleLoginSubmit);
+$('#inputAuthPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
+$('#inputAuthEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
+
+function handleSignupSubmit() {
   const email = $('#inputSignupEmail').value;
   const pass = $('#inputSignupPassword').value;
   const pass2 = $('#inputSignupPasswordRepeat').value;
   if (!email || !pass || !pass2) {
     if (window.showToast) window.showToast('Preencha os campos', 'error');
     else alert('Preencha todos os campos.');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (window.showToast) window.showToast('E-mail inválido', 'error');
+    else alert('E-mail inválido.');
     return;
   }
   if (pass !== pass2) {
@@ -113,17 +133,16 @@ $('#btnAuthSignup').addEventListener('click', () => {
   // Simulate signup
   if (window.showToast) window.showToast('Conta criada com sucesso!', 'success');
   loginUser();
-});
+}
+
+$('#btnAuthSignup').addEventListener('click', handleSignupSubmit);
+$('#inputSignupEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignupSubmit(); });
+$('#inputSignupPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignupSubmit(); });
+$('#inputSignupPasswordRepeat').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignupSubmit(); });
 // =================================
 
 let selectedDate = new Date();
 let editingBlockId = null;
-
-// ===== UTILS =====
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => document.querySelectorAll(sel);
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-
 function dateKey(d) {
   const dt = d instanceof Date ? d : new Date(d);
   return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
@@ -1474,29 +1493,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderModalContentList(modalContentItems, 'study');
   });
 
-          state.blocks.push({
-            id: uid(),
-            date: dateKey(selectedDate),
-            start, end, subjectId, type, done: false,
-            completedItems: []
-          });
-          logAction(I18n.t('log.block_add', { time: `${start}-${end}` }));
-        }
-        
-        Store.save(state);
-        hideAddModal();
-        render();
-      });
-      
-      $('#btnCancelConfig').addEventListener('click', hideAddModal);
-      $('#btnDeleteBlock').addEventListener('click', () => {
-        if (!editingBlockId) return;
-        state.blocks = state.blocks.filter(b => b.id !== editingBlockId);
-        logAction(I18n.t('log.block_del'));
-        Store.save(state);
-        hideAddModal();
-        render();
-      });
+
       
       // Add Subject Bindings
       $('#btnAddSubject').addEventListener('click', () => {
@@ -1607,5 +1604,4 @@ document.addEventListener('DOMContentLoaded', async () => {
       }, 60000);
     
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
   });
