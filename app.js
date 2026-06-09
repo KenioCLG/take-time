@@ -276,7 +276,7 @@ function renderLogs() {
 
 // ===== SVG PIZZA =====
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const CX = 200, CY = 200, R_OUTER = 170, R_INNER = 80, R_LABELS = 190;
+const CX = 200, CY = 200, R_OUTER = 170, R_INNER = 100, R_LABELS = 190;
 
 function minutesToAngle(minutes) {
   const dayStart = DAY_START * 60;
@@ -373,45 +373,7 @@ function renderPizza() {
 
   // Slices
   if (dayBlocks.length === 0) {
-    // Curved text inside the inner circle, rotating slowly
-    const r = R_INNER - 12;
-    const defs = document.createElementNS(SVG_NS, 'defs');
-
-    // Full circle path clockwise — text follows the inside
-    const circPath = document.createElementNS(SVG_NS, 'path');
-    circPath.setAttribute('id', 'curveCircle');
-    circPath.setAttribute('d',
-      `M ${CX},${CY - r} A ${r},${r} 0 1,1 ${CX - 0.01},${CY - r}`
-    );
-    circPath.setAttribute('fill', 'none');
-    defs.appendChild(circPath);
-    svg.appendChild(defs);
-
-    const g = document.createElementNS(SVG_NS, 'g');
-    g.setAttribute('class', 'pizza-curved-text');
-
-    // Single textPath with both phrases separated by spacing
-    const txt = document.createElementNS(SVG_NS, 'text');
-    txt.setAttribute('class', 'pizza-empty-text');
-    const tp = document.createElementNS(SVG_NS, 'textPath');
-    tp.setAttribute('href', '#curveCircle');
-    tp.setAttribute('startOffset', '0%');
-    const verses = [
-      'Lucas 1:37 \u2022 Pois nada \u00e9 imposs\u00edvel para Deus',
-      'Ef\u00e9sios 3:20 \u2022 Infinitamente mais do que pedimos ou pensamos',
-      'Filipenses 4:13 \u2022 Tudo posso naquele que me fortalece',
-      'Josu\u00e9 1:9 \u2022 Seja forte e corajoso, o Senhor est\u00e1 contigo',
-      'Jeremias 29:11 \u2022 Eu sei os planos que tenho para voc\u00ea',
-      'Prov\u00e9rbios 16:3 \u2022 Confie ao Senhor tudo o que voc\u00ea faz',
-      'Isaias 40:31 \u2022 Os que esperam no Senhor renovam suas for\u00e7as',
-      'Salmos 37:5 \u2022 Entregue o seu caminho ao Senhor',
-    ];
-    const todayVerse = verses[new Date().getDate() % verses.length];
-    tp.textContent = `\u2022  ${todayVerse}  \u2022  ${todayVerse}  `;
-    txt.appendChild(tp);
-    g.appendChild(txt);
-
-    svg.appendChild(g);
+    // Empty state — no slices to draw
   } else {
     const dayStartMin = dayStart * 60;
     const dayEndMin = dayEnd * 60;
@@ -722,6 +684,8 @@ function renderBlockList() {
       const block = state.blocks.find(b => b.id === btn.dataset.blockId);
       if (block) {
         block.done = !block.done;
+        // Haptic feedback
+        if (navigator.vibrate) navigator.vibrate(block.done ? [15, 30, 15] : 10);
         const subj = state.subjects.find(s => s.id === block.subjectId);
         logAction(I18n.t(block.done ? 'log.block_done' : 'log.block_undone', { name: subj?.name || block.topic }));
         try { Store.save(state); } catch(e) {};
@@ -1619,6 +1583,29 @@ window.addEventListener('appinstalled', () => {
 });
 
 // iOS Safari detection — show manual install hint
+function initVerseMarquee() {
+  const track = $('#verseTrack');
+  if (!track) return;
+  const verses = [
+    'Lucas 1:37 \u2014 Pois nada \u00e9 imposs\u00edvel para Deus',
+    'Ef\u00e9sios 3:20 \u2014 Infinitamente mais do que pedimos ou pensamos',
+    'Filipenses 4:13 \u2014 Tudo posso naquele que me fortalece',
+    'Josu\u00e9 1:9 \u2014 Seja forte e corajoso, o Senhor est\u00e1 contigo',
+    'Jeremias 29:11 \u2014 Eu sei os planos que tenho para voc\u00ea',
+    'Prov\u00e9rbios 16:3 \u2014 Confie ao Senhor tudo o que voc\u00ea faz',
+    'Isa\u00edas 40:31 \u2014 Os que esperam no Senhor renovam suas for\u00e7as',
+    'Salmos 37:5 \u2014 Entregue o seu caminho ao Senhor',
+  ];
+  // Build items: verse + dot, repeated 2x for seamless loop
+  let html = '';
+  for (let i = 0; i < 2; i++) {
+    verses.forEach(v => {
+      html += `<span>${v}</span><i class="verse-dot" aria-hidden="true"></i>`;
+    });
+  }
+  track.innerHTML = html;
+}
+
 function isIOSSafari() {
   const ua = navigator.userAgent;
   return /iPhone|iPad|iPod/.test(ua) && /Safari/.test(ua) && !('beforeinstallprompt' in window);
@@ -1689,7 +1676,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
       render();
       checkNotifications();
-    
+      initVerseMarquee();
+
       updateClock();
       setInterval(updateClock, 1000);
     

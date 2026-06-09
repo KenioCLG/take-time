@@ -137,11 +137,11 @@
 
   /* --- Motion --- */
   --ds-ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --ds-ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
-  --ds-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ds-ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ds-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --ds-duration-fast: 0.15s;
-  --ds-duration-normal: 0.25s;
-  --ds-duration-slow: 0.4s;
+  --ds-duration-normal: 0.35s; /* Slightly slower for better spring visibility */
+  --ds-duration-slow: 0.5s;
 
   /* --- Z layers --- */
   --ds-z-base: 0;

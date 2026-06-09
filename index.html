@@ -29,18 +29,20 @@
     html.authenticated #authScreen { display: none !important; }
     html.authenticated #app { display: block !important; opacity: 1; }
     /* Smooth fade-in for app after login */
-    .app-fade-in { animation: appFadeIn 0.35s ease-out; }
+    .app-fade-in { animation: appFadeIn 0.35s var(--ds-ease-spring) forwards; }
     @keyframes appFadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
   </style>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/dist/model-viewer.min.js"></script>
 </head>
 <body>
   <!-- Auth Screen -->
   <div id="authScreen" class="auth-screen">
     <!-- View Inicial -->
     <div class="auth-initial" style="position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; z-index:1; padding: 20px; box-sizing: border-box;">
+      <model-viewer src="/logo.glb" poster="/logo_3d.png" alt="StudyPlan Logo 3D" auto-rotate rotation-per-second="30deg" interaction-prompt="none" disable-zoom style="width: 200px; height: 200px; margin-bottom: 8px; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.15));"></model-viewer>
       <h1 class="header-title text-shine" data-i18n="app.name" style="font-size:40px; font-weight:800; text-align:center; margin-bottom: 16px;">StudyPlan</h1>
       <p style="text-align:center; color:var(--ds-text-secondary); margin-bottom:40px; max-width: 300px;">Seu planejador de estudos inteligente. Sincronize seus ciclos e alcance suas metas de aprovação.</p>
       
@@ -113,6 +115,11 @@
         <span class="header-clock" id="headerClock"></span>
       </div>
     </header>
+
+    <!-- Verse Marquee -->
+    <div class="verse-marquee" id="verseMarquee">
+      <div class="verse-track" id="verseTrack"></div>
+    </div>
 
     <!-- Week Navigation -->
     <nav class="week-nav" id="weekNav"></nav>

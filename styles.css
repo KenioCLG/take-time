@@ -115,6 +115,64 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   padding-right: var(--ds-space-1);
 }
 
+/* ===== VERSE MARQUEE ===== */
+.verse-marquee {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 20px;
+  margin-bottom: var(--ds-space-1);
+}
+
+/* Fade edges — gradient matches site background */
+.verse-marquee::before,
+.verse-marquee::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 40px;
+  z-index: 1;
+  pointer-events: none;
+}
+.verse-marquee::before {
+  left: 0;
+  background: linear-gradient(to right, var(--ds-bg-primary), transparent);
+}
+.verse-marquee::after {
+  right: 0;
+  background: linear-gradient(to left, var(--ds-bg-primary), transparent);
+}
+
+.verse-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  animation: marqueeScroll 25s linear infinite;
+  width: max-content;
+}
+
+.verse-track span {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ds-text-tertiary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.verse-dot {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--ds-text-quaternary);
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
 /* ===== WEEK NAV ===== */
 .week-nav {
   display: flex;
@@ -203,8 +261,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  width: 140px;
-  height: 140px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
 }
 
@@ -269,23 +327,6 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .pizza-now-line { stroke: var(--ds-danger); stroke-width: 2.5; stroke-linecap: round; }
 .pizza-now-dot  { fill: var(--ds-danger); }
 
-.pizza-empty-text {
-  font-size: 13px;
-  font-weight: 600;
-  fill: var(--ds-text-tertiary);
-  font-family: var(--ds-font);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-.pizza-curved-text {
-  transform-origin: 200px 200px;
-  animation: curvedSpin 20s linear infinite;
-}
-@keyframes curvedSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
 
 .pizza-progress {
   width: 48px; height: 3px;
@@ -976,7 +1017,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 @keyframes checkBounce {
   0% { transform: scale(0.7); }
   50% { transform: scale(1.15); }
-  100% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
 /* PWA install button */
