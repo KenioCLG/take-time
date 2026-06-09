@@ -318,7 +318,7 @@ function iconContrastColor(hex) {
   return lum > 0.55 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)';
 }
 
-// SVG icon paths for each subject type (drawn at origin, 16x16 viewbox centered on 0,0)
+// SVG icon paths for each subject type — Lucide-style, clean strokes
 function sliceIcon(type, x, y, size, fillColor) {
   const g = document.createElementNS(SVG_NS, 'g');
   g.setAttribute('transform', `translate(${x - size/2}, ${y - size/2})`);
@@ -326,72 +326,90 @@ function sliceIcon(type, x, y, size, fillColor) {
   g.setAttribute('class', `slice-icon slice-icon--${type}`);
 
   const s = size / 24; // scale factor from 24x24 viewbox
+  const sw = `${1.8 * s}`;
 
   if (type === 'study') {
-    // Book icon
-    const p1 = document.createElementNS(SVG_NS, 'path');
-    p1.setAttribute('d', `M${2*s},${3*s} h${9*s} v${18*s} h${-9*s} z`);
-    p1.setAttribute('fill', 'none');
-    p1.setAttribute('stroke', fillColor);
-    p1.setAttribute('stroke-width', `${1.5*s}`);
-    g.appendChild(p1);
-    const p2 = document.createElementNS(SVG_NS, 'path');
-    p2.setAttribute('d', `M${11*s},${3*s} h${9*s} v${18*s} h${-9*s} z`);
-    p2.setAttribute('fill', 'none');
-    p2.setAttribute('stroke', fillColor);
-    p2.setAttribute('stroke-width', `${1.5*s}`);
-    g.appendChild(p2);
-    // Spine
-    const spine = document.createElementNS(SVG_NS, 'line');
-    spine.setAttribute('x1', `${12*s}`); spine.setAttribute('y1', `${3*s}`);
-    spine.setAttribute('x2', `${12*s}`); spine.setAttribute('y2', `${21*s}`);
-    spine.setAttribute('stroke', fillColor);
-    spine.setAttribute('stroke-width', `${1.5*s}`);
-    g.appendChild(spine);
+    // Open book (Lucide book-open style)
+    const left = document.createElementNS(SVG_NS, 'path');
+    left.setAttribute('d', `M${2*s},${3*s} C${2*s},${3*s} ${6*s},${2*s} ${12*s},${4*s} L${12*s},${21*s} C${6*s},${19*s} ${2*s},${20*s} ${2*s},${20*s} Z`);
+    left.setAttribute('fill', 'none');
+    left.setAttribute('stroke', fillColor);
+    left.setAttribute('stroke-width', sw);
+    left.setAttribute('stroke-linejoin', 'round');
+    g.appendChild(left);
+    const right = document.createElementNS(SVG_NS, 'path');
+    right.setAttribute('d', `M${22*s},${3*s} C${22*s},${3*s} ${18*s},${2*s} ${12*s},${4*s} L${12*s},${21*s} C${18*s},${19*s} ${22*s},${20*s} ${22*s},${20*s} Z`);
+    right.setAttribute('fill', 'none');
+    right.setAttribute('stroke', fillColor);
+    right.setAttribute('stroke-width', sw);
+    right.setAttribute('stroke-linejoin', 'round');
+    g.appendChild(right);
   } else if (type === 'training') {
-    // Dumbbell icon
+    // Dumbbell — thick bar with rounded weights
     const bar = document.createElementNS(SVG_NS, 'line');
     bar.setAttribute('x1', `${6*s}`); bar.setAttribute('y1', `${12*s}`);
     bar.setAttribute('x2', `${18*s}`); bar.setAttribute('y2', `${12*s}`);
     bar.setAttribute('stroke', fillColor);
-    bar.setAttribute('stroke-width', `${2*s}`);
+    bar.setAttribute('stroke-width', `${2.5*s}`);
     bar.setAttribute('stroke-linecap', 'round');
     g.appendChild(bar);
-    // Left weight
-    const l = document.createElementNS(SVG_NS, 'rect');
-    l.setAttribute('x', `${3*s}`); l.setAttribute('y', `${8*s}`);
-    l.setAttribute('width', `${4*s}`); l.setAttribute('height', `${8*s}`);
-    l.setAttribute('rx', `${1*s}`);
-    l.setAttribute('fill', 'none'); l.setAttribute('stroke', fillColor);
-    l.setAttribute('stroke-width', `${1.5*s}`);
-    g.appendChild(l);
-    // Right weight
-    const r = document.createElementNS(SVG_NS, 'rect');
-    r.setAttribute('x', `${17*s}`); r.setAttribute('y', `${8*s}`);
-    r.setAttribute('width', `${4*s}`); r.setAttribute('height', `${8*s}`);
-    r.setAttribute('rx', `${1*s}`);
-    r.setAttribute('fill', 'none'); r.setAttribute('stroke', fillColor);
-    r.setAttribute('stroke-width', `${1.5*s}`);
-    g.appendChild(r);
+    // Left weight plates
+    [{ x: 2, w: 3, h: 10 }, { x: 5, w: 2, h: 7 }].forEach(p => {
+      const r = document.createElementNS(SVG_NS, 'rect');
+      r.setAttribute('x', `${p.x*s}`); r.setAttribute('y', `${(12 - p.h/2)*s}`);
+      r.setAttribute('width', `${p.w*s}`); r.setAttribute('height', `${p.h*s}`);
+      r.setAttribute('rx', `${1.2*s}`);
+      r.setAttribute('fill', fillColor); r.setAttribute('opacity', '0.25');
+      r.setAttribute('stroke', fillColor); r.setAttribute('stroke-width', sw);
+      g.appendChild(r);
+    });
+    // Right weight plates (mirrored)
+    [{ x: 19, w: 3, h: 10 }, { x: 17, w: 2, h: 7 }].forEach(p => {
+      const r = document.createElementNS(SVG_NS, 'rect');
+      r.setAttribute('x', `${p.x*s}`); r.setAttribute('y', `${(12 - p.h/2)*s}`);
+      r.setAttribute('width', `${p.w*s}`); r.setAttribute('height', `${p.h*s}`);
+      r.setAttribute('rx', `${1.2*s}`);
+      r.setAttribute('fill', fillColor); r.setAttribute('opacity', '0.25');
+      r.setAttribute('stroke', fillColor); r.setAttribute('stroke-width', sw);
+      g.appendChild(r);
+    });
   } else {
-    // Routine — checkbox/checklist icon
+    // Routine — rounded checkbox with animated check
     const box = document.createElementNS(SVG_NS, 'rect');
     box.setAttribute('x', `${4*s}`); box.setAttribute('y', `${4*s}`);
     box.setAttribute('width', `${16*s}`); box.setAttribute('height', `${16*s}`);
-    box.setAttribute('rx', `${3*s}`);
-    box.setAttribute('fill', 'none'); box.setAttribute('stroke', fillColor);
-    box.setAttribute('stroke-width', `${1.5*s}`);
+    box.setAttribute('rx', `${4*s}`);
+    box.setAttribute('fill', fillColor); box.setAttribute('fill-opacity', '0.12');
+    box.setAttribute('stroke', fillColor);
+    box.setAttribute('stroke-width', sw);
     g.appendChild(box);
     // Checkmark
     const check = document.createElementNS(SVG_NS, 'polyline');
     check.setAttribute('points', `${8*s},${12.5*s} ${11*s},${15.5*s} ${16*s},${9*s}`);
     check.setAttribute('fill', 'none'); check.setAttribute('stroke', fillColor);
-    check.setAttribute('stroke-width', `${2*s}`);
+    check.setAttribute('stroke-width', `${2.2*s}`);
     check.setAttribute('stroke-linecap', 'round');
     check.setAttribute('stroke-linejoin', 'round');
     g.appendChild(check);
   }
   return g;
+}
+
+// Inline SVG icon string for block cards (type badge)
+function blockTypeIconSvg(type, color) {
+  const icons = {
+    study: `<svg class="ds-icon ds-icon--sm ds-icon--rock" viewBox="0 0 24 24" style="color:${color}">
+      <path d="M2 3c0 0 4-1 10 1v18c-6-2-10-1-10-1z"/><path d="M22 3c0 0-4-1-10 1v18c6-2 10-1 10-1z"/>
+    </svg>`,
+    training: `<svg class="ds-icon ds-icon--sm ds-icon--bounce" viewBox="0 0 24 24" style="color:${color}">
+      <line x1="7" y1="12" x2="17" y2="12" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="2" y="7" width="4" height="10" rx="1.5"/><rect x="18" y="7" width="4" height="10" rx="1.5"/>
+    </svg>`,
+    inactive: `<svg class="ds-icon ds-icon--sm ds-icon--wobble" viewBox="0 0 24 24" style="color:${color}">
+      <rect x="4" y="4" width="16" height="16" rx="4"/><polyline points="8 12.5 11 15.5 16 9"/>
+    </svg>`,
+  };
+  return icons[type] || icons.study;
 }
 
 function arcPath(startAngle, endAngle, outerR, innerR) {
@@ -729,18 +747,23 @@ function renderBlockList() {
       }
     }
 
+    const typeKey = subj?.type || 'study';
+    const typeIcon = blockTypeIconSvg(typeKey, color);
+
     return `
       <div class="block-item-container">
         <div class="block-card ${block.done ? 'done' : ''} ${isExpanded ? 'expanded' : ''}" style="--block-color:${color}" data-id="${block.id}">
-          <div class="block-time-col">
-            <div class="block-time-start">${block.start}</div>
-            <div class="block-time-end">${block.end}</div>
-            ${dur ? `<div class="block-time-duration">${dur}</div>` : ''}
+          <div class="block-type-badge ds-icon-animate">
+            ${typeIcon}
           </div>
           <div class="block-info">
             <div class="block-subject">
               ${DS.escapeHtml(subj?.name) || I18n.t('block.no_subject')}
               <span class="block-chevron">${DS.icon(isExpanded ? 'chevronD' : 'chevronR', { size: 14 })}</span>
+            </div>
+            <div class="block-meta">
+              <span class="block-time-badge">${block.start} – ${block.end}</span>
+              ${dur ? `<span class="block-duration-pill">${dur}</span>` : ''}
             </div>
             <div class="block-topic">${DS.escapeHtml(topicName)}</div>
           </div>

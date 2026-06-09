@@ -1140,3 +1140,46 @@ html {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
+
+/* ============================================================
+   22. TYPE BADGES & BLOCK ICONS
+   ============================================================
+
+   Usage:
+   ------
+   Type badges display a small icon inside a tinted circle to
+   identify block/task types (study, training, routine).
+
+   Classes:
+     .ds-type-badge          — base: 36px circle, centered flex
+     .ds-type-badge--sm      — 28px variant
+     .ds-type-badge--lg      — 44px variant
+
+   The badge color is set via --block-color or --ds-accent.
+   Use .ds-icon-animate on the badge or parent to trigger
+   the icon animation inside.
+
+   SVG icons inside use standard .ds-icon + animation classes.
+
+   Example:
+     <div class="ds-type-badge ds-icon-animate">
+       <svg class="ds-icon ds-icon--sm ds-icon--rock" viewBox="0 0 24 24">
+         ...book paths...
+       </svg>
+     </div>
+   ============================================================ */
+
+.ds-type-badge {
+  width: 36px; height: 36px;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in srgb, var(--block-color, var(--ds-accent)) 12%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ds-type-badge--sm { width: 28px; height: 28px; }
+.ds-type-badge--lg { width: 44px; height: 44px; }
+.ds-type-badge .ds-icon { width: 18px; height: 18px; }
+.ds-type-badge--sm .ds-icon { width: 14px; height: 14px; }
+.ds-type-badge--lg .ds-icon { width: 22px; height: 22px; }
