@@ -1755,60 +1755,75 @@ function isStandalone() {
 
 // ===== PULL-TO-REFRESH =====
 function initPullToRefresh() {
-  const THRESHOLD = 80;
+  const THRESHOLD = 70;
+  const MAX_PULL = 120;
   let startY = 0;
   let pulling = false;
-  let indicator = null;
+  let dy = 0;
 
-  function createIndicator() {
-    const el = document.createElement('div');
-    el.className = 'ptr-indicator';
-    el.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ds-color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`;
-    document.body.appendChild(el);
-    return el;
-  }
+  // Persistent indicator in DOM
+  const indicator = document.createElement('div');
+  indicator.className = 'ptr-indicator';
+  indicator.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ds-color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`;
+  document.body.appendChild(indicator);
 
   document.addEventListener('touchstart', (e) => {
-    if (window.scrollY > 5) return;
-    if (e.target.closest('.ds-sheet')) return;
+    if (e.target.closest('.ds-overlay') || e.target.closest('.ds-sheet')) return;
+    // Only activate when at very top of scroll
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 2) return;
     startY = e.touches[0].clientY;
     pulling = true;
+    dy = 0;
+    indicator.style.transition = 'none';
   }, { passive: true });
 
   document.addEventListener('touchmove', (e) => {
     if (!pulling) return;
-    const dy = e.touches[0].clientY - startY;
-    if (dy < 0) { pulling = false; return; }
-    if (window.scrollY > 0) { pulling = false; return; }
 
-    if (!indicator) indicator = createIndicator();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    dy = e.touches[0].clientY - startY;
 
-    const progress = Math.min(dy / THRESHOLD, 1);
-    indicator.style.transform = `translateX(-50%) translateY(${Math.min(dy * 0.5, 60)}px)`;
-    indicator.style.opacity = progress;
-    indicator.querySelector('svg').style.transform = `rotate(${progress * 360}deg)`;
-
-    if (dy > THRESHOLD) {
-      indicator.classList.add('ptr-ready');
-    } else {
-      indicator.classList.remove('ptr-ready');
+    // If scrolling up or page scrolled, cancel
+    if (dy < 0 || scrollTop > 2) {
+      pulling = false;
+      indicator.style.opacity = '0';
+      return;
     }
-  }, { passive: true });
+
+    // Prevent page bounce while pulling
+    if (dy > 10) {
+      e.preventDefault();
+    }
+
+    const clamped = Math.min(dy, MAX_PULL);
+    const progress = Math.min(clamped / THRESHOLD, 1);
+    const translateY = clamped * 0.45 - 40;
+
+    indicator.style.opacity = String(progress);
+    indicator.style.transform = `translateX(-50%) translateY(${translateY}px) scale(${0.6 + progress * 0.4})`;
+    indicator.querySelector('svg').style.transform = `rotate(${progress * 360}deg)`;
+    indicator.classList.toggle('ptr-ready', dy >= THRESHOLD);
+  }, { passive: false });
 
   document.addEventListener('touchend', () => {
     if (!pulling) return;
     pulling = false;
 
-    if (indicator && indicator.classList.contains('ptr-ready')) {
+    if (dy >= THRESHOLD) {
+      // Trigger reload
       indicator.classList.add('ptr-loading');
-      indicator.style.transform = 'translateX(-50%) translateY(50px)';
-      setTimeout(() => location.reload(), 400);
-    } else if (indicator) {
-      indicator.style.transition = 'all 0.25s ease';
-      indicator.style.transform = 'translateX(-50%) translateY(-40px)';
+      indicator.style.transition = 'transform 0.3s ease';
+      indicator.style.transform = 'translateX(-50%) translateY(20px) scale(1)';
+      setTimeout(() => location.reload(), 500);
+    } else {
+      // Snap back
+      indicator.style.transition = 'all 0.3s ease';
+      indicator.style.transform = 'translateX(-50%) translateY(-40px) scale(0.5)';
       indicator.style.opacity = '0';
-      setTimeout(() => { indicator.remove(); indicator = null; }, 300);
+      indicator.classList.remove('ptr-ready');
     }
+    dy = 0;
   });
 }
 
