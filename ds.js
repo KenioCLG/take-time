@@ -99,8 +99,9 @@ const DS = (() => {
      CONFIRM — promise-based dialog
      ============================================================ */
 
-  function confirm(title, message, btnLabel) {
+  function confirm(title, message, btnLabel, opts) {
     if (!btnLabel) btnLabel = typeof I18n !== 'undefined' ? I18n.t('confirm.delete') : 'Delete';
+    const style = (opts && opts.style) || 'danger';
     return new Promise(resolve => {
       const overlay = document.createElement('div');
       overlay.className = 'ds-overlay ds-overlay--center';
@@ -112,7 +113,7 @@ const DS = (() => {
           </div>
           <div class="ds-confirm-actions">
             <button class="ds-confirm-btn ds-confirm-btn--cancel" data-action="cancel">${typeof I18n !== 'undefined' ? I18n.t('confirm.cancel') : 'Cancelar'}</button>
-            <button class="ds-confirm-btn ds-confirm-btn--danger" data-action="ok">${escapeHtml(btnLabel)}</button>
+            <button class="ds-confirm-btn ds-confirm-btn--${style}" data-action="ok">${escapeHtml(btnLabel)}</button>
           </div>
         </div>
       `;

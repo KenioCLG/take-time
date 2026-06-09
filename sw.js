@@ -1,4 +1,4 @@
-const CACHE = 'studyplan-v37';
+const CACHE = 'studyplan-v38';
 const ASSETS = ['/', '/index.html', '/ds.css', '/ds.js', '/i18n.js', '/styles.css', '/auth.js', '/app.js', '/svg3d.js', '/manifest.json', '/locales/pt-BR.json', '/locales/en-US.json', '/icons/favicon.svg', '/icons/icon-192.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {

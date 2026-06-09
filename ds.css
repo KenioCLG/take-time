@@ -688,6 +688,7 @@ html {
 
 .ds-confirm-btn--cancel { color: var(--ds-accent); font-weight: var(--ds-weight-semibold); }
 .ds-confirm-btn--danger { color: var(--ds-danger); }
+.ds-confirm-btn--primary { color: var(--ds-accent); font-weight: var(--ds-weight-bold); }
 
 
 /* ============================================================

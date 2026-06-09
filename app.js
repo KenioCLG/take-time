@@ -1553,7 +1553,9 @@ function initSettings() {
     btnLogout.addEventListener('click', async () => {
       const ok = await DS.confirm(
         I18n.t('auth.logout_confirm_title') || 'Sair',
-        I18n.t('auth.logout_confirm_msg') || 'Deseja realmente sair?'
+        I18n.t('auth.logout_confirm_msg') || 'Deseja realmente sair?',
+        I18n.t('auth.logout') || 'Sair',
+        { style: 'primary' }
       );
       if (ok) {
         AuthService.logout();
