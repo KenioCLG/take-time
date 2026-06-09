@@ -211,7 +211,7 @@ class SVG3DRenderer {
     this._isDragging = false;
     this._lastPointer = { x: 0, y: 0 };
     this._velocity = { x: 0, y: 0 };
-    this._baseRotation = { x: 0, y: 0 };
+    this._baseRotation = { x: opts.rotationX || 0, y: opts.rotationY || 0 };
     this._lastTime = 0;
 
     this._init();
@@ -261,6 +261,10 @@ class SVG3DRenderer {
     canvas.style.display = 'block';
     canvas.style.width = '100%';
     canvas.style.height = '100%';
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    container.style.position = 'relative';
     container.appendChild(canvas);
 
     // Environment map (critical for metallic materials)
@@ -329,7 +333,7 @@ class SVG3DRenderer {
     const size = new THREE.Vector3();
     bb.getSize(size);
     const maxDim = Math.max(size.x, size.y, size.z);
-    const scale = maxDim > 0 ? 4 / maxDim : 1;
+    const scale = maxDim > 0 ? 5 / maxDim : 1;
 
     // Material
     const preset = PRESETS[opts.material] || PRESETS.default;
