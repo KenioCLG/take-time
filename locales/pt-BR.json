@@ -2,7 +2,7 @@
   "locale": "pt-BR",
   "name": "Português (Brasil)",
 
-  "app.name": "StudyPlan",
+  "app.name": "Estudy",
   "app.description": "Planejador de estudos pessoal",
 
   "auth.login": "Login",
@@ -136,7 +136,7 @@
   "alert.conflict_internal": "Conflito interno no perfil: Horários sobrepostos.",
   "alert.conflict_subject": "Conflito de horários: O slot coincide com o perfil \"%{name}\".",
 
-  "notification.title": "StudyPlan - Próxima Atividade",
+  "notification.title": "Estudy - Próxima Atividade",
   "notification.block_starting": "O bloco de %{name} (%{start} - %{end}) começa em %{diff} minutos!",
 
   "log.empty": "Nenhum histórico recente",
@@ -163,11 +163,11 @@
   "log.test_notification": "Testou notificação",
   "log.cleared_logs": "Limpou histórico",
   "settings.test_notif": "Testar Notificação",
-  "settings.test_notif_body": "Notificação de teste do StudyPlan!",
+  "settings.test_notif_body": "Notificação de teste do Estudy!",
   "settings.clear_logs": "Limpar",
   "settings.install_app": "Instalar como App",
   "settings.app_installed": "App instalado com sucesso!",
   "settings.ios_install_hint": "Toque em Compartilhar (⎋) e depois \"Adicionar à Tela Inicial\"",
 
-  "app.version": "StudyPlan v1.0"
+  "app.version": "Estudy v1.0"
 }

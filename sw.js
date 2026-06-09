@@ -1,4 +1,4 @@
-const CACHE = 'studyplan-v29';
+const CACHE = 'studyplan-v30';
 const ASSETS = ['/', '/index.html', '/ds.css', '/ds.js', '/i18n.js', '/styles.css', '/auth.js', '/app.js', '/svg3d.js', '/manifest.json', '/locales/pt-BR.json', '/locales/en-US.json'];
 
 self.addEventListener('install', (e) => {

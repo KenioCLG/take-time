@@ -2,7 +2,7 @@
   "locale": "en-US",
   "name": "English (US)",
 
-  "app.name": "StudyPlan",
+  "app.name": "Estudy",
   "app.description": "Personal study planner",
 
   "auth.login": "Login",
@@ -136,7 +136,7 @@
   "alert.conflict_internal": "Internal profile conflict: Overlapping time slots.",
   "alert.conflict_subject": "Time conflict: Slot overlaps with profile \"%{name}\".",
 
-  "notification.title": "StudyPlan - Next Activity",
+  "notification.title": "Estudy - Next Activity",
   "notification.block_starting": "The %{name} block (%{start} - %{end}) starts in %{diff} minutes!",
 
   "log.empty": "No recent history",
@@ -163,11 +163,11 @@
   "log.test_notification": "Tested notification",
   "log.cleared_logs": "Cleared logs",
   "settings.test_notif": "Test Notification",
-  "settings.test_notif_body": "StudyPlan test notification!",
+  "settings.test_notif_body": "Estudy test notification!",
   "settings.clear_logs": "Clear",
   "settings.install_app": "Install as App",
   "settings.app_installed": "App installed successfully!",
   "settings.ios_install_hint": "Tap the Share button (⎋) then \"Add to Home Screen\"",
 
-  "app.version": "StudyPlan v1.0"
+  "app.version": "Estudy v1.0"
 }
