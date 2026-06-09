@@ -148,7 +148,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   align-items: center;
   gap: 0;
   white-space: nowrap;
-  animation: marqueeScroll 25s linear infinite;
+  animation: marqueeScroll 45s linear infinite;
   width: max-content;
 }
 
@@ -406,6 +406,23 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   width: 3px;
   background: var(--block-color, var(--ds-accent));
   border-radius: 0 2px 2px 0;
+  z-index: 0;
+}
+
+.block-card::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 50%;
+  background: linear-gradient(to right, var(--block-color, var(--ds-accent)), transparent);
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.block-card > * {
+  position: relative;
+  z-index: 1;
 }
 .block-card:active { transform: scale(0.98); }
 .block-card.done { opacity: 0.5; }
@@ -902,10 +919,95 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   to { background-position: -200% center; }
 }
 
+/* ===== INLINE STYLE REPLACEMENTS ===== */
+.log-empty {
+  color: var(--ds-text-tertiary);
+  justify-content: center;
+  font-size: 12px;
+}
+.log-item {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--ds-space-2) var(--ds-space-4);
+  gap: 2px;
+}
+.log-timestamp {
+  font-size: 10px;
+  color: var(--ds-text-tertiary);
+}
+.log-message {
+  font-size: 13px;
+  color: var(--ds-text-primary);
+  line-height: 1.2;
+}
+.block-syllabus-select {
+  width: 100%;
+  font-size: 13px;
+  padding: 6px;
+  background: var(--ds-bg-card);
+  color: var(--ds-text-primary);
+  border-radius: var(--ds-radius-xs);
+}
+.syllabus-desc {
+  font-size: 12px;
+  color: var(--ds-text-secondary);
+}
+.subject-empty {
+  text-align: center;
+  color: var(--ds-text-tertiary);
+  padding: 40px;
+}
+.content-none {
+  text-align: center;
+  color: var(--ds-text-tertiary);
+  font-size: 12px;
+  padding: 10px;
+}
+.content-item-row {
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-xs);
+  background: var(--ds-bg-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.remove-content-btn {
+  color: var(--ds-danger);
+  padding: 4px;
+}
+.content-meta {
+  font-size: 11px;
+  color: var(--ds-text-secondary);
+  margin-left: 6px;
+}
+
 /* ===== MOBILE PIZZA RESPONSIVE ===== */
 @media (max-width: 450px) {
   .pizza-center-label { font-size: 10px !important; }
   .pizza-progress { width: 60px !important; }
+}
+
+/* ===== SLICE ICONS ===== */
+.slice-icon {
+  opacity: 0.85;
+}
+.slice-icon--study {
+  animation: sliceStudy 3s ease-in-out infinite alternate;
+}
+@keyframes sliceStudy {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+.slice-icon--training {
+  animation: sliceTraining 1.5s ease-in-out infinite alternate;
+}
+@keyframes sliceTraining {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(0, -1px) scale(1.05); }
+}
+.slice-icon--inactive {
+  opacity: 0.5;
 }
 
 /* ===== iOS-OPTIMIZED ANIMATIONS ===== */
@@ -962,19 +1064,85 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   100% { transform: scale(1); }
 }
 
-/* PWA install button */
-.install-pwa-btn {
+/* PWA install card */
+.pwa-install-card {
   display: flex;
   align-items: center;
-  gap: var(--ds-space-2);
-  cursor: pointer;
-  border: none;
-  background: none;
-  width: 100%;
-  font-family: var(--ds-font);
-  color: var(--ds-accent);
-  font-size: var(--ds-text-base);
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-bg-card);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-sm);
+}
+.pwa-install-icon {
+  width: 44px; height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ds-fill-quaternary);
+  border-radius: var(--ds-radius-md);
+  flex-shrink: 0;
+}
+.pwa-install-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pwa-install-text strong {
+  font-size: 15px;
   font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+}
+.pwa-install-text span {
+  font-size: 12px;
+  color: var(--ds-text-tertiary);
+}
+.pwa-install-action {
+  border: none;
+  background: var(--ds-accent);
+  color: white;
+  font-family: var(--ds-font);
+  font-size: 14px;
+  font-weight: var(--ds-weight-semibold);
+  padding: 8px 16px;
+  border-radius: var(--ds-radius-full);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+.pwa-install-action:active {
+  transform: scale(0.92);
+}
+
+/* iOS install steps */
+.pwa-ios-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-bg-card);
+  border-radius: var(--ds-radius-md);
+}
+.pwa-ios-step {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  font-size: 14px;
+  color: var(--ds-text-secondary);
+}
+.pwa-ios-step-num {
+  width: 22px; height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ds-accent);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 /* ===== STANDALONE / PWA MODE ===== */

@@ -17,7 +17,7 @@ const Store = {
       localStorage.setItem(this._key, JSON.stringify(data));
     } catch (e) {
       console.error('Store.save failed:', e);
-      alert('Erro ao salvar dados. Verifique o espaço disponível.');
+      DS.toast('Erro ao salvar dados. Verifique o espaço disponível.', 'error');
     }
   },
   _defaults() {
@@ -48,9 +48,18 @@ const TYPES = {
   inactive: { i18nKey: 'type.inactive', icon: 'moon' },
 };
 
+// ===== I18N HELPER =====
+const __ = (key, params = null, fallback = '') =>
+  window.I18n ? (window.I18n.t(key, params) || fallback) : fallback;
+
+// ===== CONSTANTS =====
+const MINUTES_IN_DAY = 1440;
+const MAX_LOG_SIZE = 50;
+const MAX_SUBJECT_NAME_LENGTH = 40;
+
 // ===== UTILS =====
 const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => document.querySelectorAll(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
 // ===== STATE =====
@@ -69,7 +78,7 @@ if (_btnShowAuth) _btnShowAuth.addEventListener('click', () => {
   $('#authDrawerOverlay').classList.remove('hidden');
   $('#authBodyLogin').classList.remove('hidden');
   $('#authBodySignup').classList.add('hidden');
-  $('#authTitle').textContent = window.I18n ? window.I18n.t('auth.login') || 'Login' : 'Login';
+  $('#authTitle').textContent = __('auth.login', null, 'Login');
 });
 
 const _btnAuthCancel = $('#authCancel');
@@ -82,7 +91,7 @@ if (_linkSignup) _linkSignup.addEventListener('click', (e) => {
   e.preventDefault();
   $('#authBodyLogin').classList.add('hidden');
   $('#authBodySignup').classList.remove('hidden');
-  $('#authTitle').textContent = window.I18n ? window.I18n.t('auth.signup') || 'Cadastro' : 'Cadastro';
+  $('#authTitle').textContent = __('auth.signup', null, 'Cadastro');
 });
 
 const _linkLogin = $('#linkGoToLogin');
@@ -90,7 +99,7 @@ if (_linkLogin) _linkLogin.addEventListener('click', (e) => {
   e.preventDefault();
   $('#authBodySignup').classList.add('hidden');
   $('#authBodyLogin').classList.remove('hidden');
-  $('#authTitle').textContent = window.I18n ? window.I18n.t('auth.login') || 'Login' : 'Login';
+  $('#authTitle').textContent = __('auth.login', null, 'Login');
 });
 
 function seedKenioWorkout() {
@@ -118,7 +127,7 @@ function seedKenioWorkout() {
   };
   
   state.subjects.push(workout);
-  try { Store.save(state); } catch(e) {}
+  Store.save(state);
 }
 
 function loginUser() {
@@ -141,14 +150,14 @@ function setAuthLoading(loading) {
     btnLogin.disabled = loading;
     btnLogin.style.opacity = loading ? '0.6' : '1';
     btnLogin.style.pointerEvents = loading ? 'none' : 'auto';
-    btnLogin.innerHTML = loading ? '⏳ Entrando…' : (window.I18n ? window.I18n.t('auth.login_btn') || 'Acessar Dashboard' : 'Acessar Dashboard');
+    btnLogin.innerHTML = loading ? '⏳ Entrando…' : __('auth.login_btn', null, 'Acessar Dashboard');
   }
   
   if (btnSignup) {
     btnSignup.disabled = loading;
     btnSignup.style.opacity = loading ? '0.6' : '1';
     btnSignup.style.pointerEvents = loading ? 'none' : 'auto';
-    btnSignup.innerHTML = loading ? '⏳ Criando…' : (window.I18n ? window.I18n.t('auth.signup_btn') || 'Criar Conta' : 'Criar Conta');
+    btnSignup.innerHTML = loading ? '⏳ Criando…' : __('auth.signup_btn', null, 'Criar Conta');
   }
 }
 
@@ -164,8 +173,8 @@ async function handleLoginSubmit() {
     if (email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
     loginUser();
   } else {
-    const msg = result.error === 'INVALID_EMAIL' ? (window.I18n ? window.I18n.t('auth.invalid_email') || 'E-mail inválido' : 'E-mail inválido')
-             : result.error === 'EMPTY_FIELDS' ? (window.I18n ? window.I18n.t('auth.fill_fields') || 'Preencha os campos' : 'Preencha os campos')
+    const msg = result.error === 'INVALID_EMAIL' ? __('auth.invalid_email', null, 'E-mail inválido')
+             : result.error === 'EMPTY_FIELDS' ? __('auth.fill_fields', null, 'Preencha os campos')
              : 'Erro ao fazer login';
     DS.toast(msg, 'error');
   }
@@ -188,13 +197,13 @@ async function handleSignupSubmit() {
   setAuthLoading(false);
   
   if (result.success) {
-    DS.toast(window.I18n ? window.I18n.t('auth.account_created') || 'Conta criada com sucesso!' : 'Conta criada com sucesso!', 'success');
+    DS.toast(__('auth.account_created', null, 'Conta criada com sucesso!'), 'success');
     if (email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
     loginUser();
   } else {
-    const msg = result.error === 'PASSWORD_MISMATCH' ? (window.I18n ? window.I18n.t('auth.password_mismatch') || 'As senhas não coincidem' : 'As senhas não coincidem')
-             : result.error === 'INVALID_EMAIL' ? (window.I18n ? window.I18n.t('auth.invalid_email') || 'E-mail inválido' : 'E-mail inválido')
-             : result.error === 'EMPTY_FIELDS' ? (window.I18n ? window.I18n.t('auth.fill_fields') || 'Preencha todos os campos' : 'Preencha todos os campos')
+    const msg = result.error === 'PASSWORD_MISMATCH' ? __('auth.password_mismatch', null, 'As senhas não coincidem')
+             : result.error === 'INVALID_EMAIL' ? __('auth.invalid_email', null, 'E-mail inválido')
+             : result.error === 'EMPTY_FIELDS' ? __('auth.fill_fields', null, 'Preencha todos os campos')
              : 'Erro ao criar conta';
     DS.toast(msg, 'error');
   }
@@ -228,7 +237,7 @@ function formatFullDate(d) {
 function calcMinutes(start, end) {
   const s = timeToMinutes(start);
   const e = timeToMinutes(end);
-  return e > s ? e - s : (1440 - s) + e; // 1440 = 24*60
+  return e > s ? e - s : (MINUTES_IN_DAY - s) + e;
 }
 
 function durationLabel(start, end) {
@@ -259,8 +268,8 @@ function logAction(message) {
     timestamp: `${dateStr} ${timeStr}`,
     message
   });
-  if (state.logs.length > 50) state.logs.pop();
-  try { Store.save(state); } catch(e) {}
+  if (state.logs.length > MAX_LOG_SIZE) state.logs.pop();
+  Store.save(state);
   renderLogs();
 }
 
@@ -269,14 +278,14 @@ function renderLogs() {
   if (!container) return;
   
   if (!state.logs || state.logs.length === 0) {
-    container.innerHTML = `<div class="ds-list-item" style="color:var(--ds-text-tertiary); justify-content:center; font-size:12px;">${I18n.t('log.empty')}</div>`;
+    container.innerHTML = `<div class="ds-list-item log-empty">${I18n.t('log.empty')}</div>`;
     return;
   }
   
   container.innerHTML = state.logs.map(log => `
-    <div class="ds-list-item" style="flex-direction:column; align-items:flex-start; padding:var(--ds-space-2) var(--ds-space-4); gap:2px;">
-      <span style="font-size:10px; color:var(--ds-text-tertiary);">${log.timestamp}</span>
-      <span style="font-size:13px; color:var(--ds-text-primary); line-height:1.2;">${DS.escapeHtml(log.message)}</span>
+    <div class="ds-list-item log-item">
+      <span class="log-timestamp">${log.timestamp}</span>
+      <span class="log-message">${DS.escapeHtml(log.message)}</span>
     </div>
   `).join('');
 }
@@ -296,6 +305,93 @@ function minutesToAngle(minutes) {
 function polarToXY(angleDeg, radius) {
   const rad = (angleDeg * Math.PI) / 180;
   return { x: CX + radius * Math.cos(rad), y: CY + radius * Math.sin(rad) };
+}
+
+// Pick white or dark icon color based on slice background luminance
+function iconContrastColor(hex) {
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  // Relative luminance (WCAG formula)
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.55 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)';
+}
+
+// SVG icon paths for each subject type (drawn at origin, 16x16 viewbox centered on 0,0)
+function sliceIcon(type, x, y, size, fillColor) {
+  const g = document.createElementNS(SVG_NS, 'g');
+  g.setAttribute('transform', `translate(${x - size/2}, ${y - size/2})`);
+  g.setAttribute('pointer-events', 'none');
+  g.setAttribute('class', `slice-icon slice-icon--${type}`);
+
+  const s = size / 24; // scale factor from 24x24 viewbox
+
+  if (type === 'study') {
+    // Book icon
+    const p1 = document.createElementNS(SVG_NS, 'path');
+    p1.setAttribute('d', `M${2*s},${3*s} h${9*s} v${18*s} h${-9*s} z`);
+    p1.setAttribute('fill', 'none');
+    p1.setAttribute('stroke', fillColor);
+    p1.setAttribute('stroke-width', `${1.5*s}`);
+    g.appendChild(p1);
+    const p2 = document.createElementNS(SVG_NS, 'path');
+    p2.setAttribute('d', `M${11*s},${3*s} h${9*s} v${18*s} h${-9*s} z`);
+    p2.setAttribute('fill', 'none');
+    p2.setAttribute('stroke', fillColor);
+    p2.setAttribute('stroke-width', `${1.5*s}`);
+    g.appendChild(p2);
+    // Spine
+    const spine = document.createElementNS(SVG_NS, 'line');
+    spine.setAttribute('x1', `${12*s}`); spine.setAttribute('y1', `${3*s}`);
+    spine.setAttribute('x2', `${12*s}`); spine.setAttribute('y2', `${21*s}`);
+    spine.setAttribute('stroke', fillColor);
+    spine.setAttribute('stroke-width', `${1.5*s}`);
+    g.appendChild(spine);
+  } else if (type === 'training') {
+    // Dumbbell icon
+    const bar = document.createElementNS(SVG_NS, 'line');
+    bar.setAttribute('x1', `${6*s}`); bar.setAttribute('y1', `${12*s}`);
+    bar.setAttribute('x2', `${18*s}`); bar.setAttribute('y2', `${12*s}`);
+    bar.setAttribute('stroke', fillColor);
+    bar.setAttribute('stroke-width', `${2*s}`);
+    bar.setAttribute('stroke-linecap', 'round');
+    g.appendChild(bar);
+    // Left weight
+    const l = document.createElementNS(SVG_NS, 'rect');
+    l.setAttribute('x', `${3*s}`); l.setAttribute('y', `${8*s}`);
+    l.setAttribute('width', `${4*s}`); l.setAttribute('height', `${8*s}`);
+    l.setAttribute('rx', `${1*s}`);
+    l.setAttribute('fill', 'none'); l.setAttribute('stroke', fillColor);
+    l.setAttribute('stroke-width', `${1.5*s}`);
+    g.appendChild(l);
+    // Right weight
+    const r = document.createElementNS(SVG_NS, 'rect');
+    r.setAttribute('x', `${17*s}`); r.setAttribute('y', `${8*s}`);
+    r.setAttribute('width', `${4*s}`); r.setAttribute('height', `${8*s}`);
+    r.setAttribute('rx', `${1*s}`);
+    r.setAttribute('fill', 'none'); r.setAttribute('stroke', fillColor);
+    r.setAttribute('stroke-width', `${1.5*s}`);
+    g.appendChild(r);
+  } else {
+    // Routine — checkbox/checklist icon
+    const box = document.createElementNS(SVG_NS, 'rect');
+    box.setAttribute('x', `${4*s}`); box.setAttribute('y', `${4*s}`);
+    box.setAttribute('width', `${16*s}`); box.setAttribute('height', `${16*s}`);
+    box.setAttribute('rx', `${3*s}`);
+    box.setAttribute('fill', 'none'); box.setAttribute('stroke', fillColor);
+    box.setAttribute('stroke-width', `${1.5*s}`);
+    g.appendChild(box);
+    // Checkmark
+    const check = document.createElementNS(SVG_NS, 'polyline');
+    check.setAttribute('points', `${8*s},${12.5*s} ${11*s},${15.5*s} ${16*s},${9*s}`);
+    check.setAttribute('fill', 'none'); check.setAttribute('stroke', fillColor);
+    check.setAttribute('stroke-width', `${2*s}`);
+    check.setAttribute('stroke-linecap', 'round');
+    check.setAttribute('stroke-linejoin', 'round');
+    g.appendChild(check);
+  }
+  return g;
 }
 
 function arcPath(startAngle, endAngle, outerR, innerR) {
@@ -430,25 +526,17 @@ function renderPizza() {
       path.addEventListener('click', () => openBlockModal(block.id));
       svg.appendChild(path);
 
-      // Slice label (subject name, centered in arc)
+      // Slice icon (type-based, centered in arc)
       const midAngle = (startAngle + endAngle) / 2;
       const midR = (R_OUTER + R_INNER) / 2;
       const midP = polarToXY(midAngle, midR);
       const arcSpan = endAngle - startAngle;
 
-      if (arcSpan > 12) {
-        const sliceLabel = document.createElementNS(SVG_NS, 'text');
-        sliceLabel.setAttribute('x', midP.x);
-        sliceLabel.setAttribute('y', midP.y);
-        sliceLabel.setAttribute('text-anchor', 'middle');
-        sliceLabel.setAttribute('dominant-baseline', 'central');
-        sliceLabel.setAttribute('fill', isInactive ? 'var(--ds-text-tertiary)' : 'white');
-        sliceLabel.setAttribute('font-size', arcSpan > 25 ? '12' : '10');
-        sliceLabel.setAttribute('font-weight', '600');
-        sliceLabel.setAttribute('font-family', 'var(--ds-font)');
-        sliceLabel.setAttribute('pointer-events', 'none');
-        sliceLabel.textContent = subj?.name || '';
-        svg.appendChild(sliceLabel);
+      if (arcSpan > 8) {
+        const iconSize = arcSpan > 25 ? 20 : 14;
+        const iconColor = isInactive ? 'var(--ds-text-tertiary)' : iconContrastColor(color);
+        const icon = sliceIcon(subj?.type || 'study', midP.x, midP.y, iconSize, iconColor);
+        svg.appendChild(icon);
       }
     });
   }
@@ -559,14 +647,14 @@ function renderBlockList() {
           <div class="block-details">
             <div class="form-group" style="margin-bottom:0; width:100%;">
               <label class="ds-label" style="font-size:10px;">${I18n.t('syllabus.label')}</label>
-              <select class="ds-select select-block-syllabus" data-block-id="${block.id}" style="width:100%; font-size:13px; padding:6px; background:var(--ds-bg-card); color:var(--ds-text-primary); border-radius:var(--ds-radius-xs);">
+              <select class="ds-select select-block-syllabus block-syllabus-select" data-block-id="${block.id}">
                 <option value="">${I18n.t('syllabus.select_prompt')}</option>
                 ${syllabus.map(item => `<option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>[${item.status === 'completed' ? '\u2713' : '\u25CB'}] ${DS.escapeHtml(item.topic)}</option>`).join('')}
               </select>
             </div>
             ${currentTopic ? `
               <div class="block-details-item">
-                <span class="ds-truncate" style="font-size:12px; color:var(--ds-text-secondary);">${DS.escapeHtml(currentTopic.description || I18n.t('syllabus.no_description'))}</span>
+                <span class="ds-truncate syllabus-desc">${DS.escapeHtml(currentTopic.description || I18n.t('syllabus.no_description'))}</span>
                 <button class="ds-btn ${currentTopic.status === 'completed' ? 'ds-btn-tinted' : 'ds-btn-filled'} btn-toggle-syllabus-status" data-syllabus-id="${currentTopic.id}" data-block-id="${block.id}" style="font-size:11px; padding:4px 8px; flex-shrink:0;">
                   ${currentTopic.status === 'completed' ? I18n.t('syllabus.pending') : I18n.t('syllabus.complete')}
                 </button>
@@ -690,7 +778,7 @@ function renderBlockList() {
         if (navigator.vibrate) navigator.vibrate(block.done ? [15, 30, 15] : 10);
         const subj = state.subjects.find(s => s.id === block.subjectId);
         logAction(I18n.t(block.done ? 'log.block_done' : 'log.block_undone', { name: subj?.name || block.topic }));
-        try { Store.save(state); } catch(e) {};
+        Store.save(state);
         render();
       }
     });
@@ -720,7 +808,7 @@ function renderBlockList() {
         }
         const exItem = subj?.exercises?.find(x => x.id === exId);
         logAction(I18n.t(chk.checked ? 'log.exercise_done' : 'log.exercise_undone', { name: exItem?.name || exId }));
-        try { Store.save(state); } catch(err) {}
+        Store.save(state);
         render();
       }
     });
@@ -750,7 +838,7 @@ function renderBlockList() {
         }
         const routineItem = subj?.checklist?.find(x => x.id === taskId);
         logAction(I18n.t(chk.checked ? 'log.routine_done' : 'log.routine_undone', { name: routineItem?.title || taskId }));
-        try { Store.save(state); } catch(err) {}
+        Store.save(state);
         render();
       }
     });
@@ -764,7 +852,7 @@ function renderBlockList() {
       const block = state.blocks.find(b => b.id === blockId);
       if (block) {
         block.selectedSyllabusId = syllabusId;
-        try { Store.save(state); } catch(err) {}
+        Store.save(state);
         render();
       }
     });
@@ -788,7 +876,7 @@ function renderBlockList() {
           block.done = false;
         }
         logAction(I18n.t(topic.status === 'completed' ? 'log.syllabus_done' : 'log.syllabus_undone', { name: topic.title }));
-        try { Store.save(state); } catch(err) {}
+        Store.save(state);
         render();
       }
     });
@@ -848,7 +936,7 @@ function renderSubjects() {
   });
 
   if (state.subjects.length === 0) {
-    list.innerHTML = `<p style="text-align:center;color:var(--ds-text-tertiary);padding:40px">${I18n.t('subject.empty')}</p>`;
+    list.innerHTML = `<p class="subject-empty">${I18n.t('subject.empty')}</p>`;
     return;
   }
 
@@ -901,7 +989,7 @@ function renderSubjects() {
         logAction(I18n.t('log.deleted_profile', { name: deleted?.name }));
         state.subjects = state.subjects.filter(s => s.id !== id);
         state.blocks = state.blocks.filter(b => b.subjectId !== id);
-        try { Store.save(state); } catch(e) {};
+        Store.save(state);
         render();
         renderSubjects();
       }
@@ -1034,24 +1122,24 @@ function renderModalContentList(items = [], type = 'study') {
   
   const render = () => {
     if (modalContentItems.length === 0) {
-      listEl.innerHTML = `<p style="text-align:center; color:var(--ds-text-tertiary); font-size:12px; padding:10px;">${I18n.t('content.none')}</p>`;
+      listEl.innerHTML = `<p class="content-none">${I18n.t('content.none')}</p>`;
       return;
     }
     
     listEl.innerHTML = modalContentItems.map((item, index) => {
       let desc = '';
       if (type === 'study') {
-        desc = `<span>${DS.escapeHtml(item.topic)}</span> <span style="font-size:11px; color:var(--ds-text-secondary); margin-left:6px;">${item.duration ? item.duration + ' min' : ''}</span>`;
+        desc = `<span>${DS.escapeHtml(item.topic)}</span> <span class="content-meta">${item.duration ? item.duration + ' min' : ''}</span>`;
       } else if (type === 'training') {
-        desc = `<div><strong>${DS.escapeHtml(item.name)}</strong> <span style="font-size:11px; color:var(--ds-text-secondary); margin-left:6px;">${item.sets}x${item.reps} (${item.weight})</span></div>`;
+        desc = `<div><strong>${DS.escapeHtml(item.name)}</strong> <span class="content-meta">${item.sets}x${item.reps} (${item.weight})</span></div>`;
       } else {
         desc = `<span>${DS.escapeHtml(item.task)}</span>`;
       }
       
       return `
-        <div class="ds-list-item" style="padding:var(--ds-space-2) var(--ds-space-3); border-radius:var(--ds-radius-xs); background:var(--ds-bg-secondary); display:flex; justify-content:space-between; align-items:center; width:100%;">
+        <div class="ds-list-item content-item-row">
           <div style="flex:1; min-width:0; font-size:13px;">${desc}</div>
-          <button type="button" class="ds-btn ds-btn-plain btn-remove-content" data-index="${index}" style="color:var(--ds-danger); padding:4px;">
+          <button type="button" class="ds-btn ds-btn-plain btn-remove-content remove-content-btn" data-index="${index}">
             ${DS.icon('x', { size: 16 })}
           </button>
         </div>
@@ -1130,9 +1218,9 @@ function saveBlock() {
   const start = $('#inputStart').value;
   const end = $('#inputEnd').value;
 
-  if (!subjectId) return alert(I18n.t('alert.select_subject'));
-  if (!start || !end) return alert(I18n.t('alert.set_time'));
-  if (start === end) return alert(I18n.t('alert.end_after_start'));
+  if (!subjectId) { DS.toast(I18n.t('alert.select_subject'), 'warning'); return; }
+  if (!start || !end) { DS.toast(I18n.t('alert.set_time'), 'warning'); return; }
+  if (start === end) { DS.toast(I18n.t('alert.end_after_start'), 'warning'); return; }
 
   const subj = state.subjects.find(s => s.id === subjectId);
 
@@ -1149,7 +1237,7 @@ function saveBlock() {
     logAction(I18n.t('log.created_block', { name: topic || subj?.name, start, end }));
   }
 
-  try { Store.save(state); } catch(e) {};
+  Store.save(state);
   closeBlockModal();
   render();
   DS.toast(isEditing ? I18n.t('block.updated') : I18n.t('block.created'), 'success');
@@ -1173,11 +1261,11 @@ function checkScheduleOverlap(slots, subjectId) {
     const s1 = slots[i];
     const days1 = s1.daysOfWeek || (s1.dayOfWeek !== undefined ? [s1.dayOfWeek] : []);
     if (s1.start === s1.end) {
-      alert(I18n.t('alert.invalid_time', { start: s1.start, end: s1.end }));
+      DS.toast(I18n.t('alert.invalid_time', { start: s1.start, end: s1.end }), 'error');
       return true;
     }
     if (days1.length === 0) {
-      alert(I18n.t('alert.select_day', { start: s1.start, end: s1.end }));
+      DS.toast(I18n.t('alert.select_day', { start: s1.start, end: s1.end }), 'error');
       return true;
     }
 
@@ -1186,7 +1274,7 @@ function checkScheduleOverlap(slots, subjectId) {
       const days2 = s2.daysOfWeek || (s2.dayOfWeek !== undefined ? [s2.dayOfWeek] : []);
       const overlapDays = days1.filter(d => days2.includes(d));
       if (overlapDays.length > 0 && rangesOverlap(s1.start, s1.end, s2.start, s2.end)) {
-        alert(I18n.t('alert.conflict_internal'));
+        DS.toast(I18n.t('alert.conflict_internal'), 'error');
         return true;
       }
     }
@@ -1197,7 +1285,7 @@ function checkScheduleOverlap(slots, subjectId) {
         const oDays = oSlot.daysOfWeek || (oSlot.dayOfWeek !== undefined ? [oSlot.dayOfWeek] : []);
         const overlapDays = days1.filter(d => oDays.includes(d));
         if (overlapDays.length > 0 && rangesOverlap(s1.start, s1.end, oSlot.start, oSlot.end)) {
-          alert(I18n.t('alert.conflict_subject', { name: other.name }));
+          DS.toast(I18n.t('alert.conflict_subject', { name: other.name }), 'error');
           return true;
         }
       }
@@ -1209,11 +1297,11 @@ function checkScheduleOverlap(slots, subjectId) {
 function saveSubject() {
   const name = $('#inputSubjectName').value.trim();
   const color = getSelectedColor('#subjectColorPicker');
-  if (!name) return alert(I18n.t('alert.enter_name'));
-  if (name.length > 40) return alert(I18n.t('alert.name_too_long'));
+  if (!name) { DS.toast(I18n.t('alert.enter_name'), 'warning'); return; }
+  if (name.length > MAX_SUBJECT_NAME_LENGTH) { DS.toast(I18n.t('alert.name_too_long'), 'warning'); return; }
 
   const duplicate = state.subjects.find(s => s.name.toLowerCase() === name.toLowerCase() && s.id !== currentEditingSubjectId);
-  if (duplicate) return alert(I18n.t('alert.duplicate_name'));
+  if (duplicate) { DS.toast(I18n.t('alert.duplicate_name'), 'warning'); return; }
   
   if (checkScheduleOverlap(modalSlots, currentEditingSubjectId)) {
     return;
@@ -1246,7 +1334,7 @@ function saveSubject() {
     logAction(I18n.t('log.created_profile', { name }));
   }
   
-  try { Store.save(state); } catch(e) {};
+  Store.save(state);
   closeSubjectModal();
   renderSubjects();
   render();
@@ -1276,20 +1364,33 @@ function initTabs() {
     settings: { show: ['#pageSettings'], hide: ['#pizzaPage', '#weekNav', '#pageSubjects'] },
   };
 
-  $$('.ds-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      $$('.ds-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const p = pages[tab.dataset.tab];
-      p.show.forEach(s => {
-        const el = $(s);
-        if (el) { el.classList.remove('hidden'); el.classList.add('page-enter'); el.addEventListener('animationend', () => el.classList.remove('page-enter'), { once: true }); }
-      });
-      p.hide.forEach(s => { const el = $(s); if (el) el.classList.add('hidden'); });
-
-      if (tab.dataset.tab === 'subjects') renderSubjects();
+  function switchTab(tabName, animate) {
+    $$('.ds-tab').forEach(t => t.classList.remove('active'));
+    const activeTab = [...$$('.ds-tab')].find(t => t.dataset.tab === tabName);
+    if (activeTab) activeTab.classList.add('active');
+    const p = pages[tabName];
+    if (!p) return;
+    p.show.forEach(s => {
+      const el = $(s);
+      if (el) {
+        el.classList.remove('hidden');
+        if (animate) { el.classList.add('page-enter'); el.addEventListener('animationend', () => el.classList.remove('page-enter'), { once: true }); }
+      }
     });
+    p.hide.forEach(s => { const el = $(s); if (el) el.classList.add('hidden'); });
+    if (tabName === 'subjects') renderSubjects();
+    try { localStorage.setItem('studyplan_tab', tabName); } catch(e) {}
+  }
+
+  $$('.ds-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab, true));
   });
+
+  // Restore last active tab
+  const saved = localStorage.getItem('studyplan_tab');
+  if (saved && pages[saved]) {
+    switchTab(saved, false);
+  }
 }
 
 // ===== SETTINGS =====
@@ -1383,14 +1484,15 @@ function initSettings() {
   // PWA Install button
   const btnInstall = $('#btnInstallPwa');
   if (btnInstall) {
-    // Show section for iOS Safari (manual instructions) even without beforeinstallprompt
-    if (isIOSSafari() && !isStandalone()) {
+    // Show install section if not already installed as standalone
+    if (!isStandalone()) {
       const section = $('#installPwaSection');
       if (section) section.classList.remove('hidden');
     }
 
     btnInstall.addEventListener('click', async () => {
       if (deferredInstallPrompt) {
+        // Android/Chrome — native prompt
         deferredInstallPrompt.prompt();
         const result = await deferredInstallPrompt.userChoice;
         if (result.outcome === 'accepted') {
@@ -1399,8 +1501,13 @@ function initSettings() {
         deferredInstallPrompt = null;
         const section = $('#installPwaSection');
         if (section) section.classList.add('hidden');
-      } else if (isIOSSafari()) {
-        DS.toast(I18n.t('settings.ios_install_hint') || 'Toque em Compartilhar (⎋) e depois "Adicionar à Tela Inicial"', 'info');
+      } else {
+        // iOS Safari or browser without beforeinstallprompt — show step-by-step
+        const steps = $('#pwaIosSteps');
+        if (steps) {
+          steps.classList.toggle('hidden');
+          btnInstall.textContent = steps.classList.contains('hidden') ? 'Instalar' : 'Fechar';
+        }
       }
     });
   }
@@ -1494,7 +1601,7 @@ function initDailyBlocksFromProfiles(date) {
   if (newBlocks.length > 0) {
     newBlocks.sort((a, b) => a.start.localeCompare(b.start));
     state.blocks.push(...newBlocks);
-    try { Store.save(state); } catch(e) {}
+    Store.save(state);
   }
 }
 
@@ -1667,7 +1774,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const durInput = $('#inputSyllabusDuration');
     const title = titleInput.value.trim();
     const duration = parseInt(durInput.value) || 0;
-    if (!title) return alert(I18n.t('alert.enter_topic'));
+    if (!title) { DS.toast(I18n.t('alert.enter_topic'), 'warning'); return; }
     modalContentItems.push({ id: uid(), topic: title, duration, description: '', status: 'pending' });
     titleInput.value = '';
     durInput.value = '';

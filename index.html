@@ -32,10 +32,10 @@
     .app-fade-in { animation: appFadeIn 0.35s var(--ds-ease-spring) forwards; }
     @keyframes appFadeIn {
       from { opacity: 0; transform: translateY(12px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 1; transform: none; }
     }
   </style>
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/dist/model-viewer.min.js"></script>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
   <!-- Auth Screen -->
@@ -202,12 +202,29 @@
       <!-- Install PWA -->
       <div class="settings-section hidden" id="installPwaSection">
         <p class="settings-section-label">App</p>
-        <div class="ds-list">
-          <div class="ds-list-item">
-            <button class="install-pwa-btn" id="btnInstallPwa">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              <span data-i18n="settings.install_app">Instalar como App</span>
-            </button>
+        <div class="pwa-install-card" id="pwaInstallCard">
+          <div class="pwa-install-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ds-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12" y2="18.01" stroke-width="2.5"/></svg>
+          </div>
+          <div class="pwa-install-text">
+            <strong>Instalar StudyPlan</strong>
+            <span>Acesso rápido na tela inicial</span>
+          </div>
+          <button class="pwa-install-action" id="btnInstallPwa">Instalar</button>
+        </div>
+        <!-- iOS step-by-step (shown only on iOS Safari) -->
+        <div class="pwa-ios-steps hidden" id="pwaIosSteps">
+          <div class="pwa-ios-step">
+            <span class="pwa-ios-step-num">1</span>
+            <span>Toque em <strong>Compartilhar</strong> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
+          </div>
+          <div class="pwa-ios-step">
+            <span class="pwa-ios-step-num">2</span>
+            <span>Escolha <strong>"Adicionar à Tela de Início"</strong></span>
+          </div>
+          <div class="pwa-ios-step">
+            <span class="pwa-ios-step-num">3</span>
+            <span>Toque em <strong>"Adicionar"</strong></span>
           </div>
         </div>
       </div>
