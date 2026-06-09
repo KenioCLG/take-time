@@ -505,57 +505,56 @@ function renderPizza() {
       const startMin = timeToMinutes(block.start);
       const endMin = timeToMinutes(block.end);
       const isOvernight = endMin <= startMin;
+      const isInactive = subj?.type === 'inactive';
 
-      // Clamp to visible day range — overnight blocks show only the visible portion
-      let visStart, visEnd;
+      // Build list of visible segments (overnight blocks produce two segments)
+      const segments = [];
       if (isOvernight) {
-        // Evening portion: startMin → dayEndMin (or 24:00)
-        // Morning portion: dayStartMin → endMin
-        // Show whichever falls within the visible range
+        // Evening portion: startMin → 24:00
         if (startMin < dayEndMin) {
-          visStart = Math.max(startMin, dayStartMin);
-          visEnd = dayEndMin;
-        } else if (endMin > dayStartMin) {
-          visStart = dayStartMin;
-          visEnd = Math.min(endMin, dayEndMin);
-        } else {
-          return; // entirely outside visible range
+          segments.push({ s: Math.max(startMin, dayStartMin), e: dayEndMin });
+        }
+        // Morning portion: 00:00 → endMin
+        if (endMin > dayStartMin) {
+          segments.push({ s: dayStartMin, e: Math.min(endMin, dayEndMin) });
         }
       } else {
-        visStart = Math.max(startMin, dayStartMin);
-        visEnd = Math.min(endMin, dayEndMin);
+        const vs = Math.max(startMin, dayStartMin);
+        const ve = Math.min(endMin, dayEndMin);
+        if (ve > vs) segments.push({ s: vs, e: ve });
       }
 
-      if (visEnd <= visStart) return;
+      segments.forEach(seg => {
+        if (seg.e <= seg.s) return;
 
-      const startAngle = minutesToAngle(visStart);
-      const endAngle = minutesToAngle(visEnd);
+        const sa = minutesToAngle(seg.s);
+        const ea = minutesToAngle(seg.e);
 
-      const isInactive = subj?.type === 'inactive';
-      const path = document.createElementNS(SVG_NS, 'path');
-      path.setAttribute('d', arcPath(startAngle, endAngle, R_OUTER - 1, R_INNER + 1));
-      path.setAttribute('fill', color);
-      if (isInactive) path.setAttribute('opacity', '0.3');
-      const sliceClasses = ['pizza-slice'];
-      if (block.done) sliceClasses.push('done-slice');
-      if (isInactive) sliceClasses.push('inactive-slice');
-      path.setAttribute('class', sliceClasses.join(' '));
-      path.setAttribute('data-id', block.id);
-      path.addEventListener('click', () => openBlockModal(block.id));
-      svg.appendChild(path);
+        const path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('d', arcPath(sa, ea, R_OUTER - 1, R_INNER + 1));
+        path.setAttribute('fill', color);
+        if (isInactive) path.setAttribute('opacity', '0.3');
+        const sliceClasses = ['pizza-slice'];
+        if (block.done) sliceClasses.push('done-slice');
+        if (isInactive) sliceClasses.push('inactive-slice');
+        path.setAttribute('class', sliceClasses.join(' '));
+        path.setAttribute('data-id', block.id);
+        path.addEventListener('click', () => openBlockModal(block.id));
+        svg.appendChild(path);
 
-      // Slice icon (type-based, centered in arc)
-      const midAngle = (startAngle + endAngle) / 2;
-      const midR = (R_OUTER + R_INNER) / 2;
-      const midP = polarToXY(midAngle, midR);
-      const arcSpan = endAngle - startAngle;
+        // Slice icon (type-based, centered in arc)
+        const midAngle = (sa + ea) / 2;
+        const midR = (R_OUTER + R_INNER) / 2;
+        const midP = polarToXY(midAngle, midR);
+        const arcSpan = ea - sa;
 
-      if (arcSpan > 8) {
-        const iconSize = arcSpan > 25 ? 20 : 14;
-        const iconColor = isInactive ? 'var(--ds-text-tertiary)' : iconContrastColor(color);
-        const icon = sliceIcon(subj?.type || 'study', midP.x, midP.y, iconSize, iconColor);
-        svg.appendChild(icon);
-      }
+        if (arcSpan > 8) {
+          const iconSize = arcSpan > 25 ? 20 : 14;
+          const iconColor = isInactive ? 'var(--ds-text-tertiary)' : iconContrastColor(color);
+          const icon = sliceIcon(subj?.type || 'study', midP.x, midP.y, iconSize, iconColor);
+          svg.appendChild(icon);
+        }
+      });
     });
   }
 
