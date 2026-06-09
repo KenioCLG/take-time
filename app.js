@@ -947,6 +947,55 @@ function renderWeekNav() {
   }
 }
 
+// Swipe week navigation
+function initWeekSwipe() {
+  const nav = $('#weekNav');
+  let startX = 0;
+  let startY = 0;
+  let swiping = false;
+
+  nav.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    swiping = true;
+  }, { passive: true });
+
+  nav.addEventListener('touchmove', (e) => {
+    if (!swiping) return;
+    const dy = Math.abs(e.touches[0].clientY - startY);
+    const dx = Math.abs(e.touches[0].clientX - startX);
+    // Cancel if vertical scroll
+    if (dy > dx) { swiping = false; }
+  }, { passive: true });
+
+  nav.addEventListener('touchend', (e) => {
+    if (!swiping) return;
+    swiping = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) < 50) return; // minimum swipe distance
+
+    if (dx < 0) {
+      // Swipe left → next week
+      selectedDate.setDate(selectedDate.getDate() + 7);
+    } else {
+      // Swipe right → previous week
+      selectedDate.setDate(selectedDate.getDate() - 7);
+    }
+    nav.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+    nav.style.transform = `translateX(${dx < 0 ? '-30' : '30'}px)`;
+    nav.style.opacity = '0.3';
+    setTimeout(() => {
+      render();
+      nav.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+      nav.style.transform = `translateX(${dx < 0 ? '30' : '-30'}px)`;
+      requestAnimationFrame(() => {
+        nav.style.transform = 'translateX(0)';
+        nav.style.opacity = '1';
+      });
+    }, 180);
+  });
+}
+
 // ===== RENDER: SUBJECTS (grouped by type) =====
 function renderSubjects() {
   const list = $('#subjectsList');
@@ -1847,6 +1896,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initColorPickers();
   initSettings();
   DS.sheet.init();
+  initWeekSwipe();
 
   $('#btnPizzaAdd').addEventListener('click', () => openBlockModal());
   $('#modalCancel').addEventListener('click', closeBlockModal);
