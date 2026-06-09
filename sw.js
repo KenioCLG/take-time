@@ -1,5 +1,5 @@
-const CACHE = 'studyplan-v41';
-const ASSETS = ['/', '/index.html', '/ds.css', '/ds.js', '/store.js', '/i18n.js', '/styles.css', '/auth.js', '/notifications.js', '/app.js', '/svg3d.js', '/manifest.json', '/locales/pt-BR.json', '/locales/en-US.json', '/icons/favicon.svg', '/icons/icon-192.png', '/icons/apple-touch-icon.png'];
+const CACHE = 'taketime-v1';
+const ASSETS = ['/', '/index.html', '/ds.css', '/ds.js', '/store.js', '/i18n.js', '/styles.css', '/auth.js', '/notifications.js', '/app.js', '/svg3d.js', '/manifest.json', '/locales/pt-BR.json', '/locales/en-US.json', '/icons/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/favicon-32.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));

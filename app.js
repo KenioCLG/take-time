@@ -73,7 +73,7 @@ function seedKenioWorkout() {
   Store.save(state);
 }
 
-function loginUser() {
+async function loginUser() {
   DS.sheet.close($('#authDrawerOverlay'));
   $('#authScreen').style.display = 'none';
   document.documentElement.classList.add('authenticated');
@@ -81,6 +81,17 @@ function loginUser() {
   app.style.display = 'block';
   app.classList.add('app-fade-in');
   app.addEventListener('animationend', () => app.classList.remove('app-fade-in'), { once: true });
+
+  // Sync data from cloud
+  try {
+    const synced = await Store.syncOnLogin();
+    if (synced) {
+      state = synced;
+      if (!state.logs) state.logs = [];
+      state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
+    }
+  } catch (e) { console.warn('Sync on login failed:', e); }
+
   if (typeof render === 'function') render();
   if (typeof renderSubjects === 'function') renderSubjects();
 }
@@ -840,7 +851,7 @@ function renderBlockList() {
         } else {
           block.done = false;
         }
-        logAction(I18n.t(topic.status === 'completed' ? 'log.syllabus_done' : 'log.syllabus_undone', { name: topic.title }));
+        logAction(I18n.t(topic.status === 'completed' ? 'log.syllabus_done' : 'log.syllabus_undone', { name: topic.topic }));
         Store.save(state);
         render();
       }
@@ -1762,13 +1773,22 @@ function initPullToRefresh() {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
-  // Proteção de rota: se já logado, pula authScreen
-  if (AuthService.isAuthenticated()) {
-    const user = AuthService.getSessionUser();
-    if (user && user.email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
+  // Restore Supabase session from localStorage
+  const hasSession = Supabase.loadSession();
+  if (hasSession && AuthService.isAuthenticated()) {
     document.documentElement.classList.add('authenticated');
     $('#authScreen').style.display = 'none';
     $('#app').style.display = 'block';
+    // Sync data from cloud in background
+    Store.syncOnLogin().then(synced => {
+      if (synced) {
+        state = synced;
+        if (!state.logs) state.logs = [];
+        state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
+        render();
+        renderSubjects();
+      }
+    }).catch(() => {});
   }
 
   await I18n.init();
@@ -1847,8 +1867,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  const $btnExerciseAdd = $('#btnExerciseAdd');
+  if ($btnExerciseAdd) {
+    $btnExerciseAdd.addEventListener('click', () => {
+      const nameInput = $('#inputExerciseName');
+      const setsInput = $('#inputExerciseSets');
+      const repsInput = $('#inputExerciseReps');
+      const weightInput = $('#inputExerciseWeight');
+      if (!nameInput) return;
+      const name = nameInput.value.trim();
+      if (!name) { DS.toast(I18n.t('alert.enter_exercise'), 'warning'); return; }
+      const sets = parseInt(setsInput?.value) || 3;
+      const reps = repsInput?.value || '12';
+      const weight = weightInput?.value || '-';
+      modalContentItems.push({ id: uid(), name, sets, reps, weight });
+      nameInput.value = '';
+      if (setsInput) setsInput.value = '';
+      if (repsInput) repsInput.value = '';
+      if (weightInput) weightInput.value = '';
+      renderModalContentList(modalContentItems, 'training');
+    });
+  }
 
-    
+  const $btnRoutineTaskAdd = $('#btnRoutineTaskAdd');
+  if ($btnRoutineTaskAdd) {
+    $btnRoutineTaskAdd.addEventListener('click', () => {
+      const taskInput = $('#inputRoutineTask');
+      if (!taskInput) return;
+      const task = taskInput.value.trim();
+      if (!task) { DS.toast(I18n.t('alert.enter_routine'), 'warning'); return; }
+      modalContentItems.push({ id: uid(), task });
+      taskInput.value = '';
+      renderModalContentList(modalContentItems, 'inactive');
+    });
+  }
+
       render();
       checkNotifications();
       initVerseMarquee();
