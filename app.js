@@ -81,6 +81,34 @@ $('#linkGoToLogin').addEventListener('click', (e) => {
   $('#authTitle').textContent = window.I18n ? window.I18n.t('auth.login') || 'Login' : 'Login';
 });
 
+function seedKenioWorkout() {
+  const workoutName = 'Full Body Metabólico';
+  const hasWorkout = state.subjects.find(s => s.name === workoutName);
+  if (hasWorkout) return;
+  
+  const workout = {
+    id: uid(),
+    name: workoutName,
+    color: '#ff2d55',
+    type: 'training',
+    exercises: [
+      { id: uid(), name: 'Agachamento + Elevação de Gêmeos', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
+      { id: uid(), name: 'Abdominal Infra (Reverse Crunch)', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
+      { id: uid(), name: 'Stiff (Romanian Deadlift)', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
+      { id: uid(), name: 'Remada Curvada Alternada', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
+      { id: uid(), name: 'Passada Reversa + Elevação de Joelho', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
+      { id: uid(), name: 'Desenvolvimento Arnold', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
+      { id: uid(), name: 'Elevação Pélvica Unilateral', sets: 5, reps: '40s AMRAP', weight: 'Caneleiras' },
+      { id: uid(), name: 'Remada em 4 Apoios (Bird Dog Row)', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
+      { id: uid(), name: 'Thruster (Agachamento + Desenv.)', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
+      { id: uid(), name: 'Dead Bug Weighted', sets: 5, reps: '40s AMRAP', weight: 'Halteres leves' }
+    ]
+  };
+  
+  state.subjects.push(workout);
+  try { Store.save(state); } catch(e) {}
+}
+
 function loginUser() {
   $('#authDrawerOverlay').classList.add('hidden');
   $('#authScreen').style.display = 'none';
@@ -90,49 +118,68 @@ function loginUser() {
   if (typeof renderSubjects === 'function') renderSubjects();
 }
 
-function handleLoginSubmit() {
+function setAuthLoading(loading) {
+  const btnLogin = $('#btnAuthLogin');
+  const btnSignup = $('#btnAuthSignup');
+  
+  if (btnLogin) {
+    btnLogin.disabled = loading;
+    btnLogin.style.opacity = loading ? '0.6' : '1';
+    btnLogin.style.pointerEvents = loading ? 'none' : 'auto';
+    btnLogin.innerHTML = loading ? '⏳ Entrando…' : (window.I18n ? window.I18n.t('auth.login_btn') || 'Acessar Dashboard' : 'Acessar Dashboard');
+  }
+  
+  if (btnSignup) {
+    btnSignup.disabled = loading;
+    btnSignup.style.opacity = loading ? '0.6' : '1';
+    btnSignup.style.pointerEvents = loading ? 'none' : 'auto';
+    btnSignup.innerHTML = loading ? '⏳ Criando…' : (window.I18n ? window.I18n.t('auth.signup_btn') || 'Criar Conta' : 'Criar Conta');
+  }
+}
+
+async function handleLoginSubmit() {
   const email = $('#inputAuthEmail').value;
   const pass = $('#inputAuthPassword').value;
-  if (!email || !pass) {
-    if (window.showToast) window.showToast('Preencha os campos', 'error');
-    else alert('Preencha e-mail e senha.');
-    return;
+  
+  setAuthLoading(true);
+  const result = await AuthService.login(email, pass);
+  setAuthLoading(false);
+  
+  if (result.success) {
+    if (email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
+    loginUser();
+  } else {
+    const msg = result.error === 'INVALID_EMAIL' ? (window.I18n ? window.I18n.t('auth.invalid_email') || 'E-mail inválido' : 'E-mail inválido')
+             : result.error === 'EMPTY_FIELDS' ? (window.I18n ? window.I18n.t('auth.fill_fields') || 'Preencha os campos' : 'Preencha os campos')
+             : 'Erro ao fazer login';
+    DS.toast(msg, 'error');
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    if (window.showToast) window.showToast('E-mail inválido', 'error');
-    else alert('E-mail inválido.');
-    return;
-  }
-  // Simulate login
-  loginUser();
 }
 
 $('#btnAuthLogin').addEventListener('click', handleLoginSubmit);
 $('#inputAuthPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
 $('#inputAuthEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
 
-function handleSignupSubmit() {
+async function handleSignupSubmit() {
   const email = $('#inputSignupEmail').value;
   const pass = $('#inputSignupPassword').value;
   const pass2 = $('#inputSignupPasswordRepeat').value;
-  if (!email || !pass || !pass2) {
-    if (window.showToast) window.showToast('Preencha os campos', 'error');
-    else alert('Preencha todos os campos.');
-    return;
+  
+  setAuthLoading(true);
+  const result = await AuthService.signup(email, pass, pass2);
+  setAuthLoading(false);
+  
+  if (result.success) {
+    DS.toast(window.I18n ? window.I18n.t('auth.account_created') || 'Conta criada com sucesso!' : 'Conta criada com sucesso!', 'success');
+    if (email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
+    loginUser();
+  } else {
+    const msg = result.error === 'PASSWORD_MISMATCH' ? (window.I18n ? window.I18n.t('auth.password_mismatch') || 'As senhas não coincidem' : 'As senhas não coincidem')
+             : result.error === 'INVALID_EMAIL' ? (window.I18n ? window.I18n.t('auth.invalid_email') || 'E-mail inválido' : 'E-mail inválido')
+             : result.error === 'EMPTY_FIELDS' ? (window.I18n ? window.I18n.t('auth.fill_fields') || 'Preencha todos os campos' : 'Preencha todos os campos')
+             : 'Erro ao criar conta';
+    DS.toast(msg, 'error');
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    if (window.showToast) window.showToast('E-mail inválido', 'error');
-    else alert('E-mail inválido.');
-    return;
-  }
-  if (pass !== pass2) {
-    if (window.showToast) window.showToast('As senhas não coincidem', 'error');
-    else alert('As senhas não coincidem.');
-    return;
-  }
-  // Simulate signup
-  if (window.showToast) window.showToast('Conta criada com sucesso!', 'success');
-  loginUser();
 }
 
 $('#btnAuthSignup').addEventListener('click', handleSignupSubmit);
@@ -436,14 +483,17 @@ function renderPizza() {
     : I18n.t('pizza.planned');
 
   // Progress bar
+  const centerEl = $('#pizzaCenter');
   const progressEl = $('#pizzaProgress');
   const fillEl = $('#pizzaProgressFill');
   if (dayBlocks.length > 0) {
+    centerEl.style.display = '';
     progressEl.style.display = '';
     fillEl.style.width = `${pct}%`;
     if (pct === 100) fillEl.style.background = 'var(--ds-success)';
     else fillEl.style.background = 'var(--ds-accent)';
   } else {
+    centerEl.style.display = 'none';
     progressEl.style.display = 'none';
   }
 }
@@ -1319,6 +1369,24 @@ function initSettings() {
     logAction(I18n.t('log.cleared_logs'));
   });
 
+  const btnLogout = $('#btnLogout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', async () => {
+      const ok = await DS.confirm(
+        I18n.t('auth.logout_confirm_title') || 'Sair',
+        I18n.t('auth.logout_confirm_msg') || 'Deseja realmente sair?'
+      );
+      if (ok) {
+        AuthService.logout();
+        $('#app').style.display = 'none';
+        $('#authScreen').style.display = 'flex';
+        $('#inputAuthEmail').value = '';
+        $('#inputAuthPassword').value = '';
+        DS.toast(I18n.t('auth.logged_out') || 'Sessão encerrada', 'info');
+      }
+    });
+  }
+
   $('#btnClearData').addEventListener('click', async () => {
     const ok = await DS.confirm(I18n.t('settings.clear_title'), I18n.t('settings.clear_msg'));
     if (ok) {
@@ -1448,6 +1516,14 @@ function checkNotifications() {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
+  // Proteção de rota: se já logado, pula authScreen
+  if (AuthService.isAuthenticated()) {
+    const user = AuthService.getSessionUser();
+    if (user && user.email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
+    $('#authScreen').style.display = 'none';
+    $('#app').style.display = 'block';
+  }
+
   await I18n.init();
   I18n.onChange(() => { render(); renderSubjects(); });
 
