@@ -1198,3 +1198,14 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
     padding-bottom: calc(env(safe-area-inset-bottom) + var(--ds-space-6));
   }
 }
+. d s - t a b b a r   { 
+     p o i n t e r - e v e n t s :   a u t o   ! i m p o r t a n t ; 
+     z - i n d e x :   9 9 9 9   ! i m p o r t a n t ; 
+ } 
+ . d s - t a b   { 
+     p o i n t e r - e v e n t s :   a u t o   ! i m p o r t a n t ; 
+ } 
+ . d s - i c o n ,   . d s - i c o n   *   { 
+     p o i n t e r - e v e n t s :   n o n e   ! i m p o r t a n t ; 
+ }  
+ 
