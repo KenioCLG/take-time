@@ -1753,6 +1753,65 @@ function isStandalone() {
   return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 }
 
+// ===== PULL-TO-REFRESH =====
+function initPullToRefresh() {
+  const THRESHOLD = 80;
+  let startY = 0;
+  let pulling = false;
+  let indicator = null;
+
+  function createIndicator() {
+    const el = document.createElement('div');
+    el.className = 'ptr-indicator';
+    el.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ds-color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`;
+    document.body.appendChild(el);
+    return el;
+  }
+
+  document.addEventListener('touchstart', (e) => {
+    if (window.scrollY > 5) return;
+    if (e.target.closest('.ds-sheet')) return;
+    startY = e.touches[0].clientY;
+    pulling = true;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!pulling) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy < 0) { pulling = false; return; }
+    if (window.scrollY > 0) { pulling = false; return; }
+
+    if (!indicator) indicator = createIndicator();
+
+    const progress = Math.min(dy / THRESHOLD, 1);
+    indicator.style.transform = `translateX(-50%) translateY(${Math.min(dy * 0.5, 60)}px)`;
+    indicator.style.opacity = progress;
+    indicator.querySelector('svg').style.transform = `rotate(${progress * 360}deg)`;
+
+    if (dy > THRESHOLD) {
+      indicator.classList.add('ptr-ready');
+    } else {
+      indicator.classList.remove('ptr-ready');
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    if (!pulling) return;
+    pulling = false;
+
+    if (indicator && indicator.classList.contains('ptr-ready')) {
+      indicator.classList.add('ptr-loading');
+      indicator.style.transform = 'translateX(-50%) translateY(50px)';
+      setTimeout(() => location.reload(), 400);
+    } else if (indicator) {
+      indicator.style.transition = 'all 0.25s ease';
+      indicator.style.transform = 'translateX(-50%) translateY(-40px)';
+      indicator.style.opacity = '0';
+      setTimeout(() => { indicator.remove(); indicator = null; }, 300);
+    }
+  });
+}
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
   // Proteção de rota: se já logado, pula authScreen
@@ -1838,4 +1897,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }, 60000);
     
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+      // Pull-to-refresh
+      initPullToRefresh();
   });

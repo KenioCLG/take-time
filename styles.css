@@ -1235,3 +1235,38 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .ds-tab .ds-icon * {
   pointer-events: none;
 }
+
+/* ===== PULL-TO-REFRESH ===== */
+.ptr-indicator {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-40px);
+  z-index: 10000;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ds-bg-card);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ptr-indicator svg {
+  transition: transform 0.1s ease;
+}
+
+.ptr-ready svg {
+  stroke: var(--ds-color-primary);
+}
+
+.ptr-loading svg {
+  animation: ptr-spin 0.6s linear infinite;
+}
+
+@keyframes ptr-spin {
+  to { transform: rotate(360deg); }
+}
