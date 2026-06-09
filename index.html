@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="StudyPlan">
+  <meta name="theme-color" content="#f2f2f7">
+  <meta name="description" content="Planejador de estudos pessoal - PWA">
+  <title>StudyPlan</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="ds.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Auth Screen -->
+  <div id="authScreen" class="auth-screen">
+    <!-- View Inicial -->
+    <div class="auth-initial" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; z-index:1; padding: 20px; box-sizing: border-box;">
+      <h1 class="header-title text-shine" data-i18n="app.name" style="font-size:40px; font-weight:800; text-align:center; margin-bottom: 16px;">StudyPlan</h1>
+      <p style="text-align:center; color:var(--ds-text-secondary); margin-bottom:40px; max-width: 300px;">Seu planejador de estudos inteligente. Sincronize seus ciclos e alcance suas metas de aprovação.</p>
+      
+      <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnShowAuthDrawer" style="width:100%; max-width:280px; position:absolute; bottom: 60px;">Fazer Login</button>
+    </div>
+
+    <!-- Modal: Auth Drawer -->
+    <div class="ds-overlay hidden" id="authDrawerOverlay">
+      <div class="ds-sheet">
+        <div class="ds-sheet-handle"></div>
+        <div class="ds-sheet-header">
+          <button class="ds-btn ds-btn-plain" id="authCancel">Cancelar</button>
+          <h3 class="ds-headline" id="authTitle">Acesso</h3>
+          <div style="width: 70px;"></div> <!-- Spacer para centralizar -->
+        </div>
+        
+        <!-- Formulário de Login -->
+        <div class="ds-sheet-body" id="authBodyLogin">
+          <div class="form-group">
+            <label class="ds-label">E-mail</label>
+            <input type="email" id="inputAuthEmail" class="ds-input" placeholder="seu@email.com">
+          </div>
+          <div class="form-group">
+            <label class="ds-label">Senha</label>
+            <input type="password" id="inputAuthPassword" class="ds-input" placeholder="Sua senha">
+          </div>
+          <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnAuthLogin" style="margin-top: 16px;">Acessar Dashboard</button>
+          <div style="text-align: center; margin-top: 24px;">
+            <p style="color: var(--ds-text-secondary); font-size: var(--ds-text-sm);">
+              Não tem conta? <a href="#" id="linkGoToSignup" style="color: var(--ds-color-primary); text-decoration: none; font-weight: 600;">Cadastrar</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Formulário de Cadastro -->
+        <div class="ds-sheet-body hidden" id="authBodySignup">
+          <div class="form-group">
+            <label class="ds-label">E-mail</label>
+            <input type="email" id="inputSignupEmail" class="ds-input" placeholder="seu@email.com">
+          </div>
+          <div class="form-group">
+            <label class="ds-label">Senha</label>
+            <input type="password" id="inputSignupPassword" class="ds-input" placeholder="Sua senha">
+          </div>
+          <div class="form-group">
+            <label class="ds-label">Repetir Senha</label>
+            <input type="password" id="inputSignupPasswordRepeat" class="ds-input" placeholder="Repita sua senha">
+          </div>
+          <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnAuthSignup" style="margin-top: 16px;">Criar Conta</button>
+          <div style="text-align: center; margin-top: 24px;">
+            <p style="color: var(--ds-text-secondary); font-size: var(--ds-text-sm);">
+              Já tem conta? <a href="#" id="linkGoToLogin" style="color: var(--ds-color-primary); text-decoration: none; font-weight: 600;">Fazer Login</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app" style="display:none;">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left" style="display:flex; align-items:center; gap:12px;">
+        <div>
+          <h1 class="header-title text-shine" data-i18n="app.name" style="margin:0; font-size:24px; font-weight:800;">StudyPlan</h1>
+          <p class="header-subtitle" id="headerDate" style="margin:0;"></p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="header-clock" id="headerClock"></span>
+      </div>
+    </header>
+
+    <!-- Week Navigation -->
+    <nav class="week-nav" id="weekNav"></nav>
+
+    <!-- Pizza View (main schedule) -->
+    <main class="pizza-container" id="pizzaPage">
+      <div class="pizza-wrapper">
+        <svg class="pizza-svg" id="pizzaSvg" viewBox="0 0 400 400"></svg>
+        <div class="pizza-center" id="pizzaCenter">
+          <span class="pizza-center-value" id="statHours">0h</span>
+          <span class="pizza-center-label" id="pizzaCenterLabel">planejado</span>
+          <div class="pizza-progress" id="pizzaProgress">
+            <div class="pizza-progress-fill" id="pizzaProgressFill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend / Block List -->
+      <section class="block-list" id="blockList"></section>
+    </main>
+
+    <!-- Bottom Tab Bar -->
+    <nav class="ds-tabbar">
+      <button class="ds-tab active" data-tab="schedule">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span data-i18n="tab.schedule">Agenda</span>
+      </button>
+      <button class="ds-tab" data-tab="subjects">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span data-i18n="tab.subjects">Atividades</span>
+      </button>
+      <button class="ds-tab" data-tab="settings">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span data-i18n="tab.settings">Config</span>
+      </button>
+    </nav>
+
+    <!-- Subjects Page (hidden) -->
+    <main class="page hidden" id="pageSubjects">
+      <div class="section-header">
+        <h2 data-i18n="tab.subjects">Atividades</h2>
+        <button class="ds-btn ds-btn-icon" id="btnCreateSubject" data-i18n-aria="subject.add_aria" aria-label="Adicionar atividade">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      <div class="subjects-list" id="subjectsList"></div>
+    </main>
+
+    <!-- Settings Page (hidden) -->
+    <main class="page hidden" id="pageSettings">
+      <h2 class="settings-title" data-i18n="settings.title">Configurações</h2>
+      <!-- Notifications -->
+      <div class="settings-section">
+        <p class="settings-section-label" data-i18n="settings.notifications_section">Alertas</p>
+        <div class="ds-list">
+          <div class="ds-list-item">
+            <span data-i18n="settings.notifications">Notificações</span>
+            <label class="ds-toggle">
+              <input type="checkbox" id="toggleNotif">
+              <span class="ds-toggle-track"></span>
+            </label>
+          </div>
+          <div class="ds-list-item">
+            <span data-i18n="settings.reminder">Avisar com antecedência</span>
+            <select id="reminderTime" class="ds-select">
+              <option value="5">5 min</option>
+              <option value="10" selected>10 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+            </select>
+          </div>
+          <div class="ds-list-item">
+            <button class="ds-btn ds-btn-tinted ds-btn-block" id="btnTestNotif" data-i18n="settings.test_notif">Testar Notificação</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preferences -->
+      <div class="settings-section">
+        <p class="settings-section-label" data-i18n="settings.preferences_section">Preferências</p>
+        <div class="ds-list">
+          <div class="ds-list-item">
+            <span data-i18n="settings.timezone">Fuso horário</span>
+            <select id="timezoneSelect" class="ds-select">
+              <option value="America/Sao_Paulo">Brasília (SP/RJ/MG)</option>
+              <option value="America/Recife">Recife (PE/PB/AL)</option>
+              <option value="America/Fortaleza">Fortaleza (CE/PI/MA)</option>
+              <option value="America/Belem">Belém (PA/AP)</option>
+              <option value="America/Manaus">Manaus (AM/RR)</option>
+              <option value="America/Cuiaba">Cuiabá (MT/MS)</option>
+              <option value="America/Rio_Branco">Rio Branco (AC)</option>
+              <option value="America/Noronha">Fernando de Noronha</option>
+              <option value="America/Buenos_Aires">Buenos Aires</option>
+              <option value="America/New_York">Nova York (EST)</option>
+              <option value="Europe/Lisbon">Lisboa (WET)</option>
+              <option value="Europe/London">Londres (GMT)</option>
+            </select>
+          </div>
+          <div class="ds-list-item">
+            <span data-i18n="settings.theme">Tema</span>
+            <select id="themeSelect" class="ds-select">
+              <option value="auto" data-i18n="settings.theme_auto">Automático</option>
+              <option value="light" data-i18n="settings.theme_light">Claro</option>
+              <option value="dark" data-i18n="settings.theme_dark">Escuro</option>
+            </select>
+          </div>
+          <div class="ds-list-item">
+            <span data-i18n="settings.language">Idioma</span>
+            <select id="langSelect" class="ds-select">
+              <option value="pt-BR">Português (BR)</option>
+              <option value="en-US">English (US)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="settings-section">
+        <div class="ds-list">
+          <button class="ds-list-item settings-danger-btn" id="btnClearData">
+            <span data-i18n="settings.clear_data">Apagar todos os dados</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Logs -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <p class="settings-section-label">Histórico</p>
+          <button class="ds-btn ds-btn-plain" id="btnClearLogs" data-i18n="settings.clear_logs" style="font-size:var(--ds-text-xs);">Limpar</button>
+        </div>
+        <div class="ds-list" id="logsList" style="max-height: 200px; overflow-y: auto;"></div>
+      </div>
+
+      <p class="settings-footer" data-i18n="app.version">StudyPlan v1.0</p>
+    </main>
+  </div>
+
+  <!-- Modal: Add/Edit Block -->
+  <div class="ds-overlay hidden" id="modalBlock">
+    <div class="ds-sheet">
+      <div class="ds-sheet-handle"></div>
+      <div class="ds-sheet-header">
+        <button class="ds-btn ds-btn-plain" id="modalCancel" data-i18n="confirm.cancel">Cancelar</button>
+        <h3 class="ds-headline" id="modalTitle" data-i18n="block.new">Novo Bloco</h3>
+        <button class="ds-btn ds-btn-plain ds-btn-save" id="modalSave" data-i18n="confirm.save">Salvar</button>
+      </div>
+      <div class="ds-sheet-body">
+        <div class="form-group">
+          <label class="ds-label" data-i18n="block.subject">Atividade</label>
+          <select id="inputSubject" class="ds-input"></select>
+        </div>
+        <div class="form-group">
+          <label class="ds-label" data-i18n="block.topic">Tópico (opcional)</label>
+          <input type="text" id="inputTopic" class="ds-input" data-i18n-placeholder="block.topic_placeholder" placeholder="Ex: Cap. 3 - Arrays">
+        </div>
+        <div class="form-row">
+          <div class="form-group half">
+            <label class="ds-label" data-i18n="block.start">Início</label>
+            <input type="time" id="inputStart" class="ds-input" value="08:00">
+          </div>
+          <div class="form-group half">
+            <label class="ds-label" data-i18n="block.end">Fim</label>
+            <input type="time" id="inputEnd" class="ds-input" value="09:00">
+          </div>
+        </div>
+        <button class="ds-btn ds-btn-danger ds-btn-block hidden" id="btnDeleteBlock" data-i18n="block.delete">Excluir bloco</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Subject -->
+  <div class="ds-overlay hidden" id="modalSubject">
+    <div class="ds-sheet">
+      <div class="ds-sheet-handle"></div>
+      <div class="ds-sheet-header">
+        <button class="ds-btn ds-btn-plain" id="modalSubjectCancel" data-i18n="confirm.cancel">Cancelar</button>
+        <h3 class="ds-headline" id="modalSubjectTitle" data-i18n="subject.new">Nova Atividade</h3>
+        <button class="ds-btn ds-btn-plain ds-btn-save" id="modalSubjectSave" data-i18n="confirm.save">Salvar</button>
+      </div>
+      <div class="ds-sheet-body">
+        <div class="form-group" id="groupSubjectType">
+          <label class="ds-label" data-i18n="subject.type">Tipo de Perfil</label>
+          <select id="inputSubjectType" class="ds-input">
+            <option value="study" data-i18n="subject.type_study">Estudo (Edital / Syllabus)</option>
+            <option value="training" data-i18n="subject.type_training">Treino (Ficha de Academia)</option>
+            <option value="inactive" data-i18n="subject.type_inactive">Rotina (Hábitos / Tarefas)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="ds-label" data-i18n="subject.name">Nome</label>
+          <input type="text" id="inputSubjectName" class="ds-input" data-i18n-placeholder="subject.name_placeholder" placeholder="Ex: JavaScript">
+        </div>
+        <div class="form-group">
+          <label class="ds-label" data-i18n="subject.color">Cor</label>
+          <div class="color-picker" id="subjectColorPicker">
+            <button class="color-dot active" data-color="#007aff" style="background:#007aff"></button>
+            <button class="color-dot" data-color="#34c759" style="background:#34c759"></button>
+            <button class="color-dot" data-color="#ff9500" style="background:#ff9500"></button>
+            <button class="color-dot" data-color="#ff3b30" style="background:#ff3b30"></button>
+            <button class="color-dot" data-color="#af52de" style="background:#af52de"></button>
+            <button class="color-dot" data-color="#ff2d55" style="background:#ff2d55"></button>
+            <button class="color-dot" data-color="#5ac8fa" style="background:#5ac8fa"></button>
+            <button class="color-dot" data-color="#ffcc00" style="background:#ffcc00"></button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="ds-label" data-i18n="subject.slots">Horários Semanais (Slots)</label>
+          <div id="profileSlotsList" class="slots-container"></div>
+          <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnProfileAddSlot" data-i18n="subject.add_slot">+ Adicionar Horário</button>
+        </div>
+
+        <div class="form-group" id="profileContentGroup">
+          <label class="ds-label" id="profileContentLabel" data-i18n="subject.content_label">Conteúdo do Perfil</label>
+          <div id="profileContentList" class="content-list"></div>
+
+          <!-- Add Study Syllabus Item Form -->
+          <div id="formAddSyllabus" class="hidden add-content-form">
+            <input type="text" id="inputSyllabusTitle" class="ds-input" data-i18n-placeholder="content.add_syllabus_placeholder" placeholder="Novo tópico (ex: Arrays)" style="flex:1;">
+            <input type="number" id="inputSyllabusDuration" class="ds-input" data-i18n-placeholder="content.add_syllabus_duration" placeholder="Tempo (min)" style="width:90px;">
+            <button type="button" class="ds-btn ds-btn-icon-sm" id="btnSyllabusAdd" aria-label="Add">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+
+          <!-- Add Workout Exercise Form -->
+          <div id="formAddExercise" class="hidden add-content-form add-content-form--vertical">
+            <input type="text" id="inputExerciseName" class="ds-input" data-i18n-placeholder="content.add_exercise_name" placeholder="Exercício (ex: Supino)">
+            <div style="display:flex; gap:var(--ds-space-2);">
+              <input type="number" id="inputExerciseSets" class="ds-input" data-i18n-placeholder="content.add_exercise_sets" placeholder="Séries" style="flex:1;">
+              <input type="text" inputmode="numeric" id="inputExerciseReps" class="ds-input" data-i18n-placeholder="content.add_exercise_reps" placeholder="Reps" style="flex:1;">
+              <input type="text" id="inputExerciseWeight" class="ds-input" data-i18n-placeholder="content.add_exercise_weight" placeholder="Carga" style="flex:1;">
+            </div>
+            <button type="button" class="ds-btn ds-btn-icon-sm" id="btnExerciseAdd" aria-label="Add" style="align-self:flex-end;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+
+          <!-- Add Routine Task Form -->
+          <div id="formAddRoutineTask" class="hidden add-content-form">
+            <input type="text" id="inputRoutineTask" class="ds-input" data-i18n-placeholder="content.add_routine_placeholder" placeholder="Novo micro-hábito (ex: Meditar)">
+            <button type="button" class="ds-btn ds-btn-icon-sm" id="btnRoutineTaskAdd" aria-label="Add">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="ds.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

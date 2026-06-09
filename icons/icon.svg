@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#007AFF"/>
+  <g transform="translate(256,256)">
+    <rect x="-120" y="-140" width="240" height="280" rx="24" fill="white" opacity="0.95"/>
+    <rect x="-90" y="-90" width="180" height="6" rx="3" fill="#007AFF" opacity="0.3"/>
+    <rect x="-90" y="-65" width="120" height="6" rx="3" fill="#007AFF" opacity="0.2"/>
+    <rect x="-90" y="-30" width="180" height="6" rx="3" fill="#34C759" opacity="0.3"/>
+    <rect x="-90" y="-5" width="140" height="6" rx="3" fill="#34C759" opacity="0.2"/>
+    <rect x="-90" y="30" width="180" height="6" rx="3" fill="#FF9500" opacity="0.3"/>
+    <rect x="-90" y="55" width="100" height="6" rx="3" fill="#FF9500" opacity="0.2"/>
+    <circle cx="70" cy="-87" r="12" fill="none" stroke="#007AFF" stroke-width="3"/>
+    <circle cx="70" cy="-27" r="12" fill="#34C759"/>
+    <polyline points="63,-27 68,-22 77,-32" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="70" cy="33" r="12" fill="none" stroke="#FF9500" stroke-width="3"/>
+  </g>
+</svg>
