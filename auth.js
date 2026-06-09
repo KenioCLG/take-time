@@ -1,3 +1,9 @@
+const AuthError = {
+  EMPTY_FIELDS: 'EMPTY_FIELDS',
+  INVALID_EMAIL: 'INVALID_EMAIL',
+  PASSWORD_MISMATCH: 'PASSWORD_MISMATCH',
+};
+
 const AuthService = {
   _key: 'studyplan_session',
   _callbacks: [],
@@ -7,8 +13,8 @@ const AuthService = {
   },
 
   async login(email, password) {
-    if (!email || !password) return { success: false, error: 'EMPTY_FIELDS' };
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { success: false, error: 'INVALID_EMAIL' };
+    if (!email || !password) return { success: false, error: AuthError.EMPTY_FIELDS };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { success: false, error: AuthError.INVALID_EMAIL };
     
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 800));
@@ -20,9 +26,9 @@ const AuthService = {
   },
 
   async signup(email, password, passwordRepeat) {
-    if (!email || !password || !passwordRepeat) return { success: false, error: 'EMPTY_FIELDS' };
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { success: false, error: 'INVALID_EMAIL' };
-    if (password !== passwordRepeat) return { success: false, error: 'PASSWORD_MISMATCH' };
+    if (!email || !password || !passwordRepeat) return { success: false, error: AuthError.EMPTY_FIELDS };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { success: false, error: AuthError.INVALID_EMAIL };
+    if (password !== passwordRepeat) return { success: false, error: AuthError.PASSWORD_MISMATCH };
 
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 800));
@@ -63,3 +69,4 @@ const AuthService = {
 };
 
 window.AuthService = AuthService;
+window.AuthError = AuthError;

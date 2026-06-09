@@ -5,63 +5,6 @@ window.addEventListener('unhandledrejection', (e) => {
   }
 });
 
-// ===== DATA LAYER =====
-const Store = {
-  _key: 'studyplan_v1',
-  load() {
-    try { return JSON.parse(localStorage.getItem(this._key)) || this._defaults(); }
-    catch { return this._defaults(); }
-  },
-  save(data) {
-    try {
-      localStorage.setItem(this._key, JSON.stringify(data));
-    } catch (e) {
-      console.error('Store.save failed:', e);
-      DS.toast('Erro ao salvar dados. Verifique o espaço disponível.', 'error');
-    }
-  },
-  _defaults() {
-    return {
-      subjects: [
-        // study
-        { id: 's1', name: 'JavaScript', color: '#007aff', type: 'study' },
-        { id: 's2', name: 'Node.js', color: '#34c759', type: 'study' },
-        { id: 's3', name: 'English', color: '#ff9500', type: 'study' },
-        // training
-        { id: 't1', name: 'Musculação', color: '#ff2d55', type: 'training' },
-        { id: 't2', name: 'Cardio', color: '#af52de', type: 'training' },
-        // inactive
-        { id: 'i1', name: 'Sono', color: '#636366', type: 'inactive' },
-        { id: 'i2', name: 'Descanso', color: '#8e8e93', type: 'inactive' },
-      ],
-      blocks: [],
-      logs: [],
-      settings: { notifications: false, reminderMin: 10, theme: 'auto' },
-    };
-  },
-};
-
-// ===== TYPE CONFIG =====
-const TYPES = {
-  study:    { i18nKey: 'type.study',    icon: 'book-open' },
-  training: { i18nKey: 'type.training', icon: 'dumbbell' },
-  inactive: { i18nKey: 'type.inactive', icon: 'moon' },
-};
-
-// ===== I18N HELPER =====
-const __ = (key, params = null, fallback = '') =>
-  window.I18n ? (window.I18n.t(key, params) || fallback) : fallback;
-
-// ===== CONSTANTS =====
-const MINUTES_IN_DAY = 1440;
-const MAX_LOG_SIZE = 50;
-const MAX_SUBJECT_NAME_LENGTH = 40;
-
-// ===== UTILS =====
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-
 // ===== STATE =====
 let state = Store.load();
 // Fixed 24h clock: 0h-24h always
@@ -173,8 +116,8 @@ async function handleLoginSubmit() {
     if (email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
     loginUser();
   } else {
-    const msg = result.error === 'INVALID_EMAIL' ? __('auth.invalid_email', null, 'E-mail inválido')
-             : result.error === 'EMPTY_FIELDS' ? __('auth.fill_fields', null, 'Preencha os campos')
+    const msg = result.error === AuthError.INVALID_EMAIL ? __('auth.invalid_email', null, 'E-mail inválido')
+             : result.error === AuthError.EMPTY_FIELDS ? __('auth.fill_fields', null, 'Preencha os campos')
              : 'Erro ao fazer login';
     DS.toast(msg, 'error');
   }
@@ -201,9 +144,9 @@ async function handleSignupSubmit() {
     if (email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
     loginUser();
   } else {
-    const msg = result.error === 'PASSWORD_MISMATCH' ? __('auth.password_mismatch', null, 'As senhas não coincidem')
-             : result.error === 'INVALID_EMAIL' ? __('auth.invalid_email', null, 'E-mail inválido')
-             : result.error === 'EMPTY_FIELDS' ? __('auth.fill_fields', null, 'Preencha todos os campos')
+    const msg = result.error === AuthError.PASSWORD_MISMATCH ? __('auth.password_mismatch', null, 'As senhas não coincidem')
+             : result.error === AuthError.INVALID_EMAIL ? __('auth.invalid_email', null, 'E-mail inválido')
+             : result.error === AuthError.EMPTY_FIELDS ? __('auth.fill_fields', null, 'Preencha todos os campos')
              : 'Erro ao criar conta';
     DS.toast(msg, 'error');
   }
@@ -1474,7 +1417,7 @@ function initTabs() {
 function updateClock() {
   const tz = state.settings.timezone || 'America/Sao_Paulo';
   const now = new Date();
-  $('#headerClock').textContent = now.toLocaleTimeString(I18n.locale, { hour: '2-digit', minute: '2-digit', timeZone: tz });
+  $('#headerClock').textContent = now.toLocaleTimeString(I18n.locale, { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz });
 }
 
 function initSettings() {
@@ -1482,56 +1425,67 @@ function initSettings() {
   const notifToggle = $('#toggleNotif');
   const reminderSelect = $('#reminderTime');
 
-  themeSelect.value = state.settings.theme;
-  notifToggle.checked = state.settings.notifications;
-  reminderSelect.value = state.settings.reminderMin;
+  if (themeSelect) themeSelect.value = state.settings.theme;
+  if (notifToggle) notifToggle.checked = state.settings.notifications;
+  if (reminderSelect) reminderSelect.value = state.settings.reminderMin;
 
   applyTheme(state.settings.theme);
 
-  themeSelect.addEventListener('change', () => {
-    state.settings.theme = themeSelect.value;
-    applyTheme(themeSelect.value);
-    Store.save(state);
-    logAction(I18n.t('log.changed_theme', { theme: themeSelect.value }));
-  });
+  if (themeSelect) {
+    themeSelect.addEventListener('change', () => {
+      state.settings.theme = themeSelect.value;
+      applyTheme(themeSelect.value);
+      Store.save(state);
+      logAction(I18n.t('log.changed_theme', { theme: themeSelect.value }));
+    });
+  }
 
-  notifToggle.addEventListener('change', () => {
-    state.settings.notifications = notifToggle.checked;
-    if (notifToggle.checked && 'Notification' in window) {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          DS.toast(I18n.t('settings.notif_on'), 'success');
-        } else {
-          DS.toast(I18n.t('settings.notif_denied'), 'warning');
-        }
-      });
-    }
-    Store.save(state);
-    logAction(I18n.t(notifToggle.checked ? 'log.notif_on' : 'log.notif_off'));
-  });
+  if (notifToggle) {
+    notifToggle.addEventListener('change', () => {
+      state.settings.notifications = notifToggle.checked;
+      if (notifToggle.checked && 'Notification' in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            DS.toast(I18n.t('settings.notif_on'), 'success');
+          } else {
+            DS.toast(I18n.t('settings.notif_denied'), 'warning');
+          }
+        });
+      }
+      Store.save(state);
+      logAction(I18n.t(notifToggle.checked ? 'log.notif_on' : 'log.notif_off'));
+    });
+  }
 
-  reminderSelect.addEventListener('change', () => {
-    state.settings.reminderMin = parseInt(reminderSelect.value);
-    Store.save(state);
-    logAction(I18n.t('log.changed_reminder', { min: reminderSelect.value }));
-  });
+  if (reminderSelect) {
+    reminderSelect.addEventListener('change', () => {
+      state.settings.reminderMin = parseInt(reminderSelect.value);
+      Store.save(state);
+      logAction(I18n.t('log.changed_reminder', { min: reminderSelect.value }));
+    });
+  }
 
   const tzSelect = $('#timezoneSelect');
-  tzSelect.value = state.settings.timezone || 'America/Sao_Paulo';
-  tzSelect.addEventListener('change', () => {
-    state.settings.timezone = tzSelect.value;
-    Store.save(state);
-    updateClock();
-  });
+  if (tzSelect) {
+    tzSelect.value = state.settings.timezone || 'America/Sao_Paulo';
+    tzSelect.addEventListener('change', () => {
+      state.settings.timezone = tzSelect.value;
+      Store.save(state);
+      updateClock();
+    });
+  }
 
   const langSelect = $('#langSelect');
-  langSelect.value = I18n.locale;
-  langSelect.addEventListener('change', async () => {
-    await I18n.setLocale(langSelect.value);
-    logAction(I18n.t('log.changed_lang', { lang: langSelect.value }));
-  });
+  if (langSelect) {
+    langSelect.value = I18n.locale;
+    langSelect.addEventListener('change', async () => {
+      await I18n.setLocale(langSelect.value);
+      logAction(I18n.t('log.changed_lang', { lang: langSelect.value }));
+    });
+  }
 
-  $('#btnTestNotif').addEventListener('click', async () => {
+  const $btnTestNotif = $('#btnTestNotif');
+  if ($btnTestNotif) $btnTestNotif.addEventListener('click', async () => {
     try {
       if ('Notification' in window && Notification.permission !== 'granted') {
         const perm = await Notification.requestPermission();
@@ -1589,12 +1543,15 @@ function initSettings() {
     });
   }
 
-  $('#btnClearLogs').addEventListener('click', () => {
-    state.logs = [];
-    Store.save(state);
-    renderLogs();
-    logAction(I18n.t('log.cleared_logs'));
-  });
+  const $btnClearLogs = $('#btnClearLogs');
+  if ($btnClearLogs) {
+    $btnClearLogs.addEventListener('click', () => {
+      state.logs = [];
+      Store.save(state);
+      renderLogs();
+      logAction(I18n.t('log.cleared_logs'));
+    });
+  }
 
   const btnLogout = $('#btnLogout');
   if (btnLogout) {
@@ -1617,15 +1574,18 @@ function initSettings() {
     });
   }
 
-  $('#btnClearData').addEventListener('click', async () => {
-    const ok = await DS.confirm(I18n.t('settings.clear_title'), I18n.t('settings.clear_msg'));
-    if (ok) {
-      localStorage.removeItem(Store._key);
-      state = Store.load();
-      render();
-      logAction(I18n.t('log.cleared_data'));
-    }
-  });
+  const $btnClearData = $('#btnClearData');
+  if ($btnClearData) {
+    $btnClearData.addEventListener('click', async () => {
+      const ok = await DS.confirm(I18n.t('settings.clear_title'), I18n.t('settings.clear_msg'));
+      if (ok) {
+        localStorage.removeItem(Store._key);
+        state = Store.load();
+        render();
+        logAction(I18n.t('log.cleared_data'));
+      }
+    });
+  }
 }
 
 function applyTheme(theme) {
@@ -1692,83 +1652,6 @@ function render() {
   renderPizza();
   renderBlockList();
 }
-
-// ===== NOTIFICATION SCHEDULER =====
-const notifiedBlocks = new Set();
-function checkNotifications() {
-  if (!state.settings.notifications) return;
-
-  const now = new Date();
-  const todayKey = dateKey(now);
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-
-  if (checkNotifications.lastDate && checkNotifications.lastDate !== todayKey) {
-    notifiedBlocks.clear();
-  }
-  checkNotifications.lastDate = todayKey;
-
-  const todayBlocks = state.blocks.filter(b => b.date === todayKey);
-  const reminderMin = state.settings.reminderMin || 10;
-
-  todayBlocks.forEach(block => {
-    if (notifiedBlocks.has(block.id)) return;
-
-    const startMin = timeToMinutes(block.start);
-    const diff = startMin - nowMin;
-
-    if (diff > 0 && diff <= reminderMin) {
-      const subj = state.subjects.find(s => s.id === block.subjectId);
-      const subjName = subj ? subj.name : I18n.t('block.subject');
-      const msg = I18n.t('notification.block_starting', { name: subjName, start: block.start, end: block.end, diff });
-
-      // In-App Toast
-      DS.toast(msg, 'info');
-
-      // Native Notification via Service Worker (works in background on mobile)
-      if ('Notification' in window && Notification.permission === 'granted') {
-        const notifOptions = {
-          body: msg,
-          icon: 'icons/icon-192.png',
-          badge: 'icons/icon-192.png',
-          tag: block.id,
-          renotify: true,
-          vibrate: [200, 100, 200, 100, 200],
-          requireInteraction: true,
-          data: { url: '/', blockId: block.id }
-        };
-
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.ready.then(reg => {
-            reg.showNotification(I18n.t('notification.title'), notifOptions);
-          }).catch(() => {
-            try { new Notification(I18n.t('notification.title'), notifOptions); } catch(e) {}
-          });
-        } else {
-          try { new Notification(I18n.t('notification.title'), notifOptions); } catch(e) {}
-        }
-      }
-
-      notifiedBlocks.add(block.id);
-    }
-  });
-}
-
-// ===== PWA INSTALL PROMPT =====
-let deferredInstallPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  const section = document.getElementById('installPwaSection');
-  if (section) section.classList.remove('hidden');
-});
-
-window.addEventListener('appinstalled', () => {
-  deferredInstallPrompt = null;
-  const section = document.getElementById('installPwaSection');
-  if (section) section.classList.add('hidden');
-  DS.toast(I18n.t('settings.app_installed') || 'App instalado!', 'success');
-});
 
 // iOS Safari detection — show manual install hint
 function initVerseMarquee() {
@@ -1897,44 +1780,72 @@ document.addEventListener('DOMContentLoaded', async () => {
   DS.sheet.init();
   initWeekSwipe();
 
-  $('#btnPizzaAdd').addEventListener('click', () => openBlockModal());
-  $('#modalCancel').addEventListener('click', closeBlockModal);
-  $('#modalSave').addEventListener('click', saveBlock);
-  $('#btnDeleteBlock').addEventListener('click', deleteBlock);
-  $('#modalSubjectCancel').addEventListener('click', closeSubjectModal);
-  $('#modalSubjectSave').addEventListener('click', saveSubject);
+  // Guarded DOM element bindings — if element is missing, skip silently
+  const $btnPizzaAdd = $('#btnPizzaAdd');
+  if ($btnPizzaAdd) $btnPizzaAdd.addEventListener('click', () => openBlockModal());
+
+  const $modalCancel = $('#modalCancel');
+  if ($modalCancel) $modalCancel.addEventListener('click', closeBlockModal);
+
+  const $modalSave = $('#modalSave');
+  if ($modalSave) $modalSave.addEventListener('click', saveBlock);
+
+  const $btnDeleteBlock = $('#btnDeleteBlock');
+  if ($btnDeleteBlock) $btnDeleteBlock.addEventListener('click', deleteBlock);
+
+  const $modalSubjectCancel = $('#modalSubjectCancel');
+  if ($modalSubjectCancel) $modalSubjectCancel.addEventListener('click', closeSubjectModal);
+
+  const $modalSubjectSave = $('#modalSubjectSave');
+  if ($modalSubjectSave) $modalSubjectSave.addEventListener('click', saveSubject);
 
   // Profile Slots and Content button bindings
-  $('#btnProfileAddSlot').addEventListener('click', () => {
-    modalSlots.push({ daysOfWeek: [1, 3, 5], start: '08:00', end: '10:00' });
-    renderModalSlots(modalSlots);
-  });
+  const $btnProfileAddSlot = $('#btnProfileAddSlot');
+  if ($btnProfileAddSlot) {
+    $btnProfileAddSlot.addEventListener('click', () => {
+      modalSlots.push({ daysOfWeek: [1, 3, 5], start: '08:00', end: '10:00' });
+      renderModalSlots(modalSlots);
+    });
+  }
 
-  $('#btnCreateSubject').addEventListener('click', () => {
-    openSubjectModal('study');
-  });
+  const $btnCreateSubject = $('#btnCreateSubject');
+  if ($btnCreateSubject) {
+    $btnCreateSubject.addEventListener('click', () => {
+      openSubjectModal('study');
+    });
+  }
 
-  $('#inputSubjectType').addEventListener('change', (e) => {
-    const newType = e.target.value;
-    subjectModalType = newType;
-    $('#formAddSyllabus').classList.toggle('hidden', newType !== 'study');
-    $('#formAddExercise').classList.toggle('hidden', newType !== 'training');
-    $('#formAddRoutineTask').classList.toggle('hidden', newType !== 'inactive');
-    modalContentItems = [];
-    renderModalContentList(modalContentItems, newType);
-  });
+  const $inputSubjectType = $('#inputSubjectType');
+  if ($inputSubjectType) {
+    $inputSubjectType.addEventListener('change', (e) => {
+      const newType = e.target.value;
+      subjectModalType = newType;
+      const $formAddSyllabus = $('#formAddSyllabus');
+      if ($formAddSyllabus) $formAddSyllabus.classList.toggle('hidden', newType !== 'study');
+      const $formAddExercise = $('#formAddExercise');
+      if ($formAddExercise) $formAddExercise.classList.toggle('hidden', newType !== 'training');
+      const $formAddRoutineTask = $('#formAddRoutineTask');
+      if ($formAddRoutineTask) $formAddRoutineTask.classList.toggle('hidden', newType !== 'inactive');
+      modalContentItems = [];
+      renderModalContentList(modalContentItems, newType);
+    });
+  }
 
-  $('#btnSyllabusAdd').addEventListener('click', () => {
-    const titleInput = $('#inputSyllabusTitle');
-    const durInput = $('#inputSyllabusDuration');
-    const title = titleInput.value.trim();
-    const duration = parseInt(durInput.value) || 0;
-    if (!title) { DS.toast(I18n.t('alert.enter_topic'), 'warning'); return; }
-    modalContentItems.push({ id: uid(), topic: title, duration, description: '', status: 'pending' });
-    titleInput.value = '';
-    durInput.value = '';
-    renderModalContentList(modalContentItems, 'study');
-  });
+  const $btnSyllabusAdd = $('#btnSyllabusAdd');
+  if ($btnSyllabusAdd) {
+    $btnSyllabusAdd.addEventListener('click', () => {
+      const titleInput = $('#inputSyllabusTitle');
+      const durInput = $('#inputSyllabusDuration');
+      if (!titleInput || !durInput) return;
+      const title = titleInput.value.trim();
+      const duration = parseInt(durInput.value) || 0;
+      if (!title) { DS.toast(I18n.t('alert.enter_topic'), 'warning'); return; }
+      modalContentItems.push({ id: uid(), topic: title, duration, description: '', status: 'pending' });
+      titleInput.value = '';
+      durInput.value = '';
+      renderModalContentList(modalContentItems, 'study');
+    });
+  }
 
 
     

@@ -1291,3 +1291,53 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 @keyframes ptr-spin {
   to { transform: rotate(360deg) !important; }
 }
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .app-fade-in,
+  .verse-marquee .verse-track,
+  .pizza-svg .slice-float,
+  .pizza-svg .slice-pulse,
+  .pizza-svg .slice-fade,
+  .pizza-add-btn,
+  .pizza-slice,
+  .block-card,
+  .subject-card,
+  .color-dot,
+  .pizza-progress-fill,
+  .btn-press-scale,
+  .ptr-indicator .ptr-spinner {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  /* Tab bar icons */
+  .ds-icon--spin,
+  .ds-icon--spin-slow,
+  .ds-icon--rock,
+  .ds-icon-ray {
+    animation: none !important;
+  }
+
+  /* Pull-to-refresh spinner */
+  .ptr-spinner {
+    animation: none !important;
+  }
+
+  /* Shine text effect */
+  .text-shine {
+    animation: none !important;
+  }
+
+  /* Check bounce */
+  .check-bounce {
+    animation: none !important;
+  }
+
+  /* Marquee still needs to show content — just show first frame */
+  .verse-track {
+    animation: none !important;
+  }
+}
