@@ -1,6 +1,6 @@
 // ===== SUPABASE CLIENT =====
 const SUPABASE_URL = 'https://gwujukwvufmfecqgzvrs.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3dWp1a3d2dWZtZmVjcWd6dnJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1MTE1ODAsImV4cCI6MjA2NTA4NzU4MH0.sb_publishable_Ewz6w7rlPFbfJy9DQMiuRA_58FSrWJZ';
+const SUPABASE_KEY = 'sb_publishable_Ewz6w7rlPFbfJy9DQMiuRA_58FSrWJZ';
 
 // Minimal Supabase client (no SDK needed)
 const Supabase = {
