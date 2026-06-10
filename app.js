@@ -1442,7 +1442,7 @@ function initPriorities() {
       delay: 80,
       delayOnTouchOnly: true,
       touchStartThreshold: 3,
-      forceFallback: false,
+      forceFallback: true,
       fallbackTolerance: 2,
       fallbackOnBody: true,
       swapThreshold: 0.65,

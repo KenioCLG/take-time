@@ -1578,10 +1578,12 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 .priority-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   min-height: 40px;
   flex-grow: 1;
+  width: 100%;
 }
 
 /* SortableJS drag & ghost states */
