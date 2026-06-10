@@ -180,10 +180,12 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   justify-content: space-between;
   padding: var(--ds-space-2) var(--ds-space-1) var(--ds-space-3);
   background: var(--ds-bg-primary);
-  border-bottom: 1px solid var(--ds-separator);
   position: sticky;
   top: 0;
   z-index: 10;
+  border: none;
+  box-shadow: none;
+  outline: none;
 }
 
 .week-days-scroll {
