@@ -183,9 +183,14 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   position: sticky;
   top: 0;
   z-index: 10;
-  border: none;
-  box-shadow: none;
-  outline: none;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.pizza-container {
+  border-top: none !important;
+  box-shadow: none !important;
 }
 
 .week-days-scroll {
