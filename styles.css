@@ -180,9 +180,6 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   justify-content: space-between;
   padding: var(--ds-space-2) var(--ds-space-1) 0;
   background: var(--ds-bg-primary);
-  position: sticky;
-  top: 0;
-  z-index: 10;
   margin-bottom: 0;
 }
 
