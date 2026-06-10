@@ -403,11 +403,15 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .block-card::before {
   content: '';
   position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
+  left: 0; bottom: 0;
+  width: 100%;
+  height: 3px;
   background: var(--block-color, var(--ds-accent));
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 0 var(--ds-radius-md) var(--ds-radius-md);
   z-index: 0;
+  transform-origin: left;
+  transform: scaleX(var(--block-progress, 0));
+  transition: transform 1s linear;
 }
 .block-card::after {
   content: '';

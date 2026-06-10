@@ -1429,6 +1429,40 @@ function updateClock() {
   const tz = state.settings.timezone || 'America/Sao_Paulo';
   const now = new Date();
   $('#headerClock').textContent = now.toLocaleTimeString(I18n.locale, { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz });
+  updateBlockProgress();
+}
+
+function updateBlockProgress() {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const todayKey = dateKey(new Date());
+
+  document.querySelectorAll('.block-card').forEach(card => {
+    const id = card.dataset.id;
+    const block = state.blocks.find(b => b.id === id);
+    if (!block || block.date !== todayKey) {
+      card.style.setProperty('--block-progress', '0');
+      return;
+    }
+    if (block.done) {
+      card.style.setProperty('--block-progress', '1');
+      return;
+    }
+    const startMin = timeToMinutes(block.start);
+    const endMin = timeToMinutes(block.end);
+    const duration = endMin > startMin ? endMin - startMin : (1440 - startMin + endMin);
+    const elapsed = endMin > startMin
+      ? nowMin - startMin
+      : (nowMin >= startMin ? nowMin - startMin : 1440 - startMin + nowMin);
+
+    if (elapsed <= 0) {
+      card.style.setProperty('--block-progress', '0');
+    } else if (elapsed >= duration) {
+      card.style.setProperty('--block-progress', '1');
+    } else {
+      card.style.setProperty('--block-progress', (elapsed / duration).toFixed(4));
+    }
+  });
 }
 
 function initSettings() {
