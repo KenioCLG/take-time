@@ -1361,22 +1361,17 @@ function closeSubjectModal() { DS.sheet.close($('#modalSubject')); currentEditin
 
 
 // ===== PRIORITIES CIRCLE =====
-function renderPriorities() {
+function getZoneListEl(zoneId) {
+  return document.getElementById(zoneId === 'unallocated' ? 'listUnallocated' : 'list' + zoneId.charAt(0).toUpperCase() + zoneId.slice(1));
+}
+function getZoneKey(dataZone) {
+  return dataZone === 'unallocated' ? 'unallocated' : `zone${dataZone}`;
+}
+
+function updatePriorityCounts() {
   const p = state.priorities;
   if (!p) return;
-  
-  const zones = ['zone1', 'zone2', 'zone3', 'unallocated'];
-  zones.forEach(zoneId => {
-    const listEl = document.getElementById(zoneId === 'unallocated' ? 'listUnallocated' : 'list' + zoneId.charAt(0).toUpperCase() + zoneId.slice(1));
-    if (!listEl) return;
-    
-    listEl.innerHTML = p[zoneId].map(item => `
-      <div class="priority-item" data-id="${item.id}" data-pillar="${item.pillar}">
-        <div class="priority-item-dot" style="background:${item.color}"></div>
-        ${DS.escapeHtml(item.name)}
-      </div>
-    `).join('');
-    
+  ['zone1','zone2','zone3','unallocated'].forEach(zoneId => {
     const countEl = document.getElementById(zoneId === 'unallocated' ? 'countUnallocated' : 'count' + zoneId.charAt(0).toUpperCase() + zoneId.slice(1));
     if (countEl) {
       countEl.textContent = zoneId === 'zone1' ? `${p[zoneId].length}/3` : p[zoneId].length;
@@ -1384,12 +1379,48 @@ function renderPriorities() {
   });
 }
 
+function renderPriorities() {
+  const p = state.priorities;
+  if (!p) return;
+
+  ['zone1','zone2','zone3','unallocated'].forEach(zoneId => {
+    const listEl = getZoneListEl(zoneId);
+    if (!listEl) return;
+
+    listEl.innerHTML = p[zoneId].map(item => `
+      <div class="priority-item" data-id="${item.id}" data-pillar="${item.pillar}">
+        <div class="priority-item-dot" style="background:${item.color}"></div>
+        ${DS.escapeHtml(item.name)}
+      </div>
+    `).join('');
+  });
+  updatePriorityCounts();
+}
+
+function syncPrioritiesFromDOM() {
+  const allItems = {};
+  ['zone1','zone2','zone3','unallocated'].forEach(zk => {
+    (state.priorities[zk] || []).forEach(item => { allItems[item.id] = item; });
+  });
+
+  ['zone1','zone2','zone3','unallocated'].forEach(zoneId => {
+    const listEl = getZoneListEl(zoneId);
+    if (!listEl) return;
+    state.priorities[zoneId] = [];
+    listEl.querySelectorAll('.priority-item').forEach(el => {
+      const item = allItems[el.dataset.id];
+      if (item) state.priorities[zoneId].push(item);
+    });
+  });
+}
+
 function initPriorities() {
   if (!window.Sortable) return;
 
-  const zones = ['zone1', 'zone2', 'zone3', 'unallocated'];
-  zones.forEach(zoneId => {
-    const listEl = document.getElementById(zoneId === 'unallocated' ? 'listUnallocated' : 'list' + zoneId.charAt(0).toUpperCase() + zoneId.slice(1));
+  renderPriorities();
+
+  ['zone1','zone2','zone3','unallocated'].forEach(zoneId => {
+    const listEl = getZoneListEl(zoneId);
     if (!listEl) return;
     if (listEl._sortable) listEl._sortable.destroy();
 
@@ -1399,43 +1430,41 @@ function initPriorities() {
       ghostClass: 'sortable-ghost',
       chosenClass: 'sortable-chosen',
       dragClass: 'sortable-drag',
-      delay: 120,
+      delay: 100,
       delayOnTouchOnly: true,
-      touchStartThreshold: 5,
+      touchStartThreshold: 4,
       forceFallback: true,
       fallbackTolerance: 3,
       onEnd: (evt) => {
-        const itemId = evt.item.dataset.id;
         const fromZone = evt.from.dataset.zone;
         const toZone = evt.to.dataset.zone;
 
         if (fromZone === toZone && evt.oldIndex === evt.newIndex) return;
 
-        const fromKey = fromZone === 'unallocated' ? 'unallocated' : `zone${fromZone}`;
-        const toKey = toZone === 'unallocated' ? 'unallocated' : `zone${toZone}`;
+        const toKey = getZoneKey(toZone);
 
-        const itemIndex = state.priorities[fromKey].findIndex(i => i.id === itemId);
-        if (itemIndex === -1) return;
-        const item = state.priorities[fromKey][itemIndex];
-
-        if (toKey === 'zone1' && fromKey !== 'zone1') {
-          if (state.priorities.zone1.length >= 3) {
-            DS.toast('O Centro já possui 3 áreas. Remova uma primeiro.', 'warning');
-            renderPriorities();
+        // Regra: zona1 max 3
+        if (toKey === 'zone1') {
+          const currentCount = evt.to.querySelectorAll('.priority-item').length;
+          if (currentCount > 3) {
+            // Sortable already moved it in DOM — move it back
+            if (evt.oldIndex < evt.from.children.length) {
+              evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
+            } else {
+              evt.from.appendChild(evt.item);
+            }
+            DS.toast('O Centro aceita no máximo 3 áreas.', 'warning');
             return;
           }
         }
 
-        state.priorities[fromKey].splice(itemIndex, 1);
-        state.priorities[toKey].splice(evt.newIndex, 0, item);
-
+        // Sync state from DOM order
+        syncPrioritiesFromDOM();
+        updatePriorityCounts();
         Store.save(state);
-        renderPriorities();
       }
     });
   });
-
-  renderPriorities();
 }
 
 // Color picker
@@ -2035,10 +2064,10 @@ function renderHeatmap() {
 
   const today = new Date();
   const todayKey = dateKey(today);
+  const year = today.getFullYear();
   const months = [];
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    months.push({ year: d.getFullYear(), month: d.getMonth() });
+  for (let m = 0; m < 12; m++) {
+    months.push({ year, month: m });
   }
 
   const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -2076,9 +2105,13 @@ function renderHeatmap() {
       </div>`;
   }).join('');
 
-  // Scroll to current month (last one)
+  // Scroll to current month
   requestAnimationFrame(() => {
-    track.scrollLeft = track.scrollWidth;
+    const currentIdx = today.getMonth();
+    const slides = track.querySelectorAll('.heatmap-slide');
+    if (slides[currentIdx]) {
+      slides[currentIdx].scrollIntoView({ inline: 'center', block: 'nearest' });
+    }
   });
 }
 
