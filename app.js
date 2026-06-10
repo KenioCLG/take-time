@@ -1455,7 +1455,11 @@ function initPriorities() {
         }
         return true;
       },
-      onEnd: () => {
+      onEnd: (evt) => {
+        const fromZone = evt.from.dataset.zone;
+        const toZone = evt.to.dataset.zone;
+        if (fromZone === toZone && evt.oldIndex === evt.newIndex) return;
+
         syncPrioritiesFromDOM();
         updatePriorityCounts();
         Store.save(state);
@@ -1916,7 +1920,6 @@ function initSettings() {
   }
 
   // Toggle motivational marquee listener
-  marqueeToggle = $('#toggleShowMarquee');
   if (marqueeToggle) {
     marqueeToggle.addEventListener('change', () => {
       state.settings.showMarquee = marqueeToggle.checked;
