@@ -1459,19 +1459,16 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 }
 .heatmap-month-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, 14px);
   gap: 2px;
   padding: 2px 0;
-  max-width: 210px;
-  margin: 0 auto;
+  justify-content: center;
 }
 .heatmap-weekday-labels {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, 14px);
   gap: 2px;
-  padding: 0;
-  max-width: 210px;
-  margin: 0 auto;
+  justify-content: center;
 }
 .heatmap-weekday-label {
   font-size: 8px;
@@ -1481,8 +1478,9 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   text-transform: uppercase;
 }
 .heatmap-cell {
-  aspect-ratio: 1;
-  border-radius: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
   background-color: var(--ds-fill-quaternary);
   transition: transform 0.15s var(--ds-ease-spring), box-shadow 0.15s;
   position: relative;
@@ -1555,9 +1553,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   color: var(--ds-text-tertiary);
 }
 .heatmap-legend .heatmap-cell {
-  width: 12px;
-  height: 12px;
-  aspect-ratio: auto;
+  width: 10px;
+  height: 10px;
 }
 
 /* ===== PRIORITIES CIRCLE ===== */
