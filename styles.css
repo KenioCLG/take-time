@@ -178,19 +178,12 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--ds-space-2) var(--ds-space-1) var(--ds-space-3);
+  padding: var(--ds-space-2) var(--ds-space-1) 0;
   background: var(--ds-bg-primary);
   position: sticky;
   top: 0;
   z-index: 10;
-  border: none !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-.pizza-container {
-  border-top: none !important;
-  box-shadow: none !important;
+  margin-bottom: 0;
 }
 
 .week-days-scroll {
