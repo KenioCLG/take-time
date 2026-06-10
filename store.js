@@ -78,7 +78,7 @@ const Store = {
       subjects: [],
       blocks: [],
       logs: [],
-      settings: { notifications: false, reminderMin: 10, theme: 'auto' },
+      settings: { notifications: false, reminderMin: 10, theme: 'auto', showMarquee: true },
       priorities: {
         zone1: [],
         zone2: [],

@@ -108,6 +108,7 @@
   "settings.theme_light": "Light",
   "settings.theme_dark": "Dark",
   "settings.language": "Language",
+  "settings.show_marquee": "Show Motivational Marquee",
   "settings.clear_data": "Delete all data",
   "settings.clear_title": "Delete all data",
   "settings.clear_msg": "All activities, blocks, and settings will be permanently removed.",

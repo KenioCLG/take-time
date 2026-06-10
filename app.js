@@ -103,6 +103,7 @@ async function loginUser() {
   if (typeof render === 'function') render();
   if (typeof renderSubjects === 'function') renderSubjects();
   if (typeof initPriorities === 'function') initPriorities();
+  if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
 }
 
 function setAuthLoading(loading) {
@@ -1708,12 +1709,15 @@ function initSettings() {
   const themeSelect = $('#themeSelect');
   const notifToggle = $('#toggleNotif');
   const reminderSelect = $('#reminderTime');
+  const marqueeToggle = $('#toggleShowMarquee');
 
   if (themeSelect) themeSelect.value = state.settings.theme;
   if (notifToggle) notifToggle.checked = state.settings.notifications;
   if (reminderSelect) reminderSelect.value = state.settings.reminderMin;
+  if (marqueeToggle) marqueeToggle.checked = state.settings.showMarquee !== false;
 
   applyTheme(state.settings.theme);
+  updateMarqueeVisibility();
 
   if (themeSelect) {
     themeSelect.addEventListener('change', () => {
@@ -1912,6 +1916,24 @@ function initSettings() {
       initVerseMarquee();
       DS.toast('Frases restauradas ao padrão', 'info');
     });
+  }
+
+  // Toggle motivational marquee listener
+  const marqueeToggle = $('#toggleShowMarquee');
+  if (marqueeToggle) {
+    marqueeToggle.addEventListener('change', () => {
+      state.settings.showMarquee = marqueeToggle.checked;
+      updateMarqueeVisibility();
+      Store.save(state);
+    });
+  }
+}
+
+function updateMarqueeVisibility() {
+  const marquee = $('#verseMarquee');
+  if (marquee) {
+    const show = state.settings.showMarquee !== false;
+    marquee.classList.toggle('hidden', !show);
   }
 }
 
@@ -2260,6 +2282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         render();
         renderSubjects();
         if (typeof initPriorities === 'function') initPriorities();
+        if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
       }
     }).catch(() => {});
   }

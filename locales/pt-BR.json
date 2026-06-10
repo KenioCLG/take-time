@@ -108,6 +108,7 @@
   "settings.theme_light": "Claro",
   "settings.theme_dark": "Escuro",
   "settings.language": "Idioma",
+  "settings.show_marquee": "Mostrar Letreiro Motivacional",
   "settings.clear_data": "Apagar todos os dados",
   "settings.clear_title": "Apagar todos os dados",
   "settings.clear_msg": "Matérias, blocos e configurações serão removidos permanentemente.",
