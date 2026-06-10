@@ -1581,6 +1581,17 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   flex-wrap: wrap;
   gap: 8px;
   min-height: 40px;
+  flex-grow: 1;
+}
+
+/* SortableJS drag & ghost states */
+.sortable-drag {
+  pointer-events: none !important;
+}
+.sortable-ghost {
+  opacity: 0.3 !important;
+  background: var(--ds-fill-secondary) !important;
+  border-style: dashed !important;
 }
 
 .priority-item {

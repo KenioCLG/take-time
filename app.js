@@ -89,14 +89,20 @@ async function loginUser() {
     if (synced) {
       state = synced;
       if (!state.logs) state.logs = [];
-      if (!state.priorities) state.priorities = Store._defaults().priorities;
+      if (!state.priorities) {
+        state.priorities = Store._defaults().priorities;
+      } else {
+        ['zone1', 'zone2', 'zone3', 'unallocated'].forEach(k => {
+          if (!state.priorities[k]) state.priorities[k] = [];
+        });
+      }
       state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
     }
   } catch (e) { console.warn('Sync on login failed:', e); }
 
   if (typeof render === 'function') render();
   if (typeof renderSubjects === 'function') renderSubjects();
-  if (typeof renderPriorities === 'function') renderPriorities();
+  if (typeof initPriorities === 'function') initPriorities();
 }
 
 function setAuthLoading(loading) {
@@ -1419,46 +1425,39 @@ function initPriorities() {
 
   renderPriorities();
 
-  ['zone1','zone2','zone3','unallocated'].forEach(zoneId => {
+  const lists = ['zone1','zone2','zone3','unallocated'].map(zoneId => {
     const listEl = getZoneListEl(zoneId);
-    if (!listEl) return;
-    if (listEl._sortable) listEl._sortable.destroy();
+    if (!listEl) return null;
+    if (listEl._sortable) { listEl._sortable.destroy(); listEl._sortable = null; }
+    return listEl;
+  }).filter(Boolean);
 
+  lists.forEach(listEl => {
     listEl._sortable = new Sortable(listEl, {
       group: 'priorities',
-      animation: 200,
+      animation: 150,
       ghostClass: 'sortable-ghost',
       chosenClass: 'sortable-chosen',
       dragClass: 'sortable-drag',
-      delay: 100,
+      delay: 80,
       delayOnTouchOnly: true,
-      touchStartThreshold: 4,
-      forceFallback: true,
-      fallbackTolerance: 3,
-      onEnd: (evt) => {
-        const fromZone = evt.from.dataset.zone;
+      touchStartThreshold: 3,
+      forceFallback: false,
+      fallbackTolerance: 2,
+      fallbackOnBody: true,
+      swapThreshold: 0.65,
+      onMove: (evt) => {
+        // Block drops into zone1 if already at max 3 (excluding ghost/dragged item)
         const toZone = evt.to.dataset.zone;
-
-        if (fromZone === toZone && evt.oldIndex === evt.newIndex) return;
-
-        const toKey = getZoneKey(toZone);
-
-        // Regra: zona1 max 3
-        if (toKey === 'zone1') {
-          const currentCount = evt.to.querySelectorAll('.priority-item').length;
-          if (currentCount > 3) {
-            // Sortable already moved it in DOM — move it back
-            if (evt.oldIndex < evt.from.children.length) {
-              evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
-            } else {
-              evt.from.appendChild(evt.item);
-            }
-            DS.toast('O Centro aceita no máximo 3 áreas.', 'warning');
-            return;
+        if (toZone === '1') {
+          const count = evt.to.querySelectorAll('.priority-item:not(.sortable-ghost):not(.sortable-drag)').length;
+          if (count >= 3 && evt.from !== evt.to) {
+            return false; // cancel the move
           }
         }
-
-        // Sync state from DOM order
+        return true;
+      },
+      onEnd: () => {
         syncPrioritiesFromDOM();
         updatePriorityCounts();
         Store.save(state);
@@ -2250,9 +2249,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (synced) {
         state = synced;
         if (!state.logs) state.logs = [];
+        if (!state.priorities) {
+          state.priorities = Store._defaults().priorities;
+        } else {
+          ['zone1', 'zone2', 'zone3', 'unallocated'].forEach(k => {
+            if (!state.priorities[k]) state.priorities[k] = [];
+          });
+        }
         state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
         render();
         renderSubjects();
+        if (typeof initPriorities === 'function') initPriorities();
       }
     }).catch(() => {});
   }
