@@ -1578,8 +1578,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 .priority-list {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 8px;
   min-height: 40px;
   flex-grow: 1;
