@@ -1250,7 +1250,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 /* Tab bar pointer events */
 .ds-tabbar {
   pointer-events: auto !important;
-  z-index: 9999 !important;
+  z-index: 400 !important;
 }
 .ds-tab {
   pointer-events: auto !important;

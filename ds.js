@@ -268,16 +268,11 @@ const DS = (() => {
           sheetEl.style.transition = '';
           unlockBody();
           activeSheet = null;
-          // Restore tabbar
-          const tabbar = document.querySelector('.ds-tabbar');
-          if (tabbar) tabbar.style.display = '';
         });
       } else {
         overlay.classList.add('hidden');
         unlockBody();
         activeSheet = null;
-        const tabbar = document.querySelector('.ds-tabbar');
-        if (tabbar) tabbar.style.display = '';
       }
     }
 
@@ -288,9 +283,6 @@ const DS = (() => {
       overlay.classList.remove('hidden');
       lockBody();
       activeSheet = sheetEl;
-      // Hide tabbar behind sheet
-      const tabbar = document.querySelector('.ds-tabbar');
-      if (tabbar) tabbar.style.display = 'none';
       lastTouchY = 0;
       overlay.addEventListener('touchmove', onOverlayTouchMove, { passive: false });
 
