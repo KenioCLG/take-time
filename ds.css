@@ -374,18 +374,30 @@ html {
   font-weight: var(--ds-weight-semibold);
   border: none;
   cursor: pointer;
-  transition: transform var(--ds-duration-fast) var(--ds-ease-default),
-              opacity var(--ds-duration-fast);
+  transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 0.15s ease,
+              box-shadow 0.2s ease;
   -webkit-tap-highlight-color: transparent;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
-.ds-btn:active { transform: scale(0.96); opacity: 0.8; }
+.ds-btn:active {
+  transform: scale3d(0.95, 0.95, 1);
+  opacity: 0.85;
+  transition: transform 0.08s cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 0.08s ease;
+}
 
 .ds-btn-filled {
   background: var(--ds-accent);
   color: var(--ds-text-inverse);
   padding: var(--ds-space-3) var(--ds-space-5);
   border-radius: var(--ds-radius-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.ds-btn-filled:active {
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
 .ds-btn-tinted {
@@ -393,6 +405,9 @@ html {
   color: var(--ds-accent);
   padding: var(--ds-space-3) var(--ds-space-5);
   border-radius: var(--ds-radius-sm);
+}
+.ds-btn-tinted:active {
+  background: color-mix(in srgb, var(--ds-accent-bg) 80%, var(--ds-accent) 20%);
 }
 
 .ds-btn-plain {
@@ -563,7 +578,7 @@ html {
   transition: background var(--ds-duration-fast), color var(--ds-duration-fast);
 }
 .ds-chip.active { background: var(--ds-accent); color: var(--ds-text-inverse); }
-.ds-chip:active { transform: scale(0.96); }
+.ds-chip:active { transform: scale3d(0.94, 0.94, 1); transition: transform 0.08s cubic-bezier(0.32, 0.72, 0, 1); }
 
 
 /* ============================================================
@@ -728,9 +743,18 @@ html {
   font-size: var(--ds-text-2xs);
   font-family: var(--ds-font);
   cursor: pointer;
-  transition: color var(--ds-duration-fast);
+  transition: color 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+              transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 .ds-tab.active { color: var(--ds-accent); }
+.ds-tab svg {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ds-tab.active svg {
+  transform: scale(1.1);
+}
 
 
 /* ============================================================

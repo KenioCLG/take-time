@@ -52,6 +52,11 @@ const Store = {
       return local;
     }
 
+    // Preserva propriedades exclusivas locais que ainda não estão no remote (ex: nova feature)
+    if (!remote.priorities && local.priorities) {
+      remote.priorities = local.priorities;
+    }
+
     // Merge strategy: remote wins if it has more recent data
     // Simple heuristic: use whichever has more blocks/subjects
     const localItems = (local.subjects?.length || 0) + (local.blocks?.length || 0);
@@ -74,6 +79,25 @@ const Store = {
       blocks: [],
       logs: [],
       settings: { notifications: false, reminderMin: 10, theme: 'auto' },
+      priorities: {
+        zone1: [],
+        zone2: [],
+        zone3: [],
+        unallocated: [
+          { id: 'p1', name: 'Saúde e disposição', pillar: 'pessoal', color: '#34c759' },
+          { id: 'p2', name: 'Desenvolvimento pessoal', pillar: 'pessoal', color: '#34c759' },
+          { id: 'p3', name: 'Equilíbrio emocional', pillar: 'pessoal', color: '#34c759' },
+          { id: 'pr1', name: 'Finanças', pillar: 'profissional', color: '#ff9500' },
+          { id: 'pr2', name: 'Carreira e propósito', pillar: 'profissional', color: '#ff9500' },
+          { id: 'pr3', name: 'Impacto social', pillar: 'profissional', color: '#ff9500' },
+          { id: 'r1', name: 'Família', pillar: 'relacionamentos', color: '#ff2d55' },
+          { id: 'r2', name: 'Relacionamentos amorosos', pillar: 'relacionamentos', color: '#ff2d55' },
+          { id: 'r3', name: 'Amizades e social', pillar: 'relacionamentos', color: '#ff2d55' },
+          { id: 'q1', name: 'Hobbies / Lazer', pillar: 'qualidade', color: '#5ac8fa' },
+          { id: 'q2', name: 'Espiritualidade', pillar: 'qualidade', color: '#5ac8fa' },
+          { id: 'q3', name: 'Plenitude / Felicidade', pillar: 'qualidade', color: '#5ac8fa' }
+        ]
+      }
     };
   },
 };

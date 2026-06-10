@@ -12,6 +12,7 @@ const DAY_START = 0;
 const DAY_END = 24;
 // Migrate: add logs and type to subjects that don't have one
 if (!state.logs) state.logs = [];
+if (!state.priorities) state.priorities = Store._defaults().priorities;
 state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
 
 // ====== AUTHENTICATION FLOW ======
@@ -88,12 +89,14 @@ async function loginUser() {
     if (synced) {
       state = synced;
       if (!state.logs) state.logs = [];
+      if (!state.priorities) state.priorities = Store._defaults().priorities;
       state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
     }
   } catch (e) { console.warn('Sync on login failed:', e); }
 
   if (typeof render === 'function') render();
   if (typeof renderSubjects === 'function') renderSubjects();
+  if (typeof renderPriorities === 'function') renderPriorities();
 }
 
 function setAuthLoading(loading) {
@@ -519,6 +522,23 @@ function renderPizza() {
 
     if (nowMin >= dayStartMin && nowMin <= dayEndMin) {
       const nowAngle = minutesToAngle(nowMin);
+
+      // Smart contrast: detect if 'now' is inside a block
+      let indicatorColor = 'var(--ds-danger)';
+      for (const b of dayBlocks) {
+        const [sh, sm] = b.start.split(':').map(Number);
+        const [eh, em] = b.end.split(':').map(Number);
+        const startM = sh * 60 + sm;
+        const endM = eh * 60 + em;
+        if (nowMin >= startM && nowMin < endM) {
+          const s = state.subjects.find(sub => sub.id === b.subjectId);
+          if (s) {
+            indicatorColor = s.type === 'inactive' ? 'var(--ds-text-tertiary)' : iconContrastColor(s.color);
+          }
+          break;
+        }
+      }
+
       const p1 = polarToXY(nowAngle, R_INNER + 4);
       const p2 = polarToXY(nowAngle, R_OUTER - 2);
 
@@ -528,6 +548,7 @@ function renderPizza() {
       line.setAttribute('x2', p2.x);
       line.setAttribute('y2', p2.y);
       line.setAttribute('class', 'pizza-now-line');
+      line.style.stroke = indicatorColor;
       svg.appendChild(line);
 
       const dot = document.createElementNS(SVG_NS, 'circle');
@@ -535,6 +556,9 @@ function renderPizza() {
       dot.setAttribute('cy', p2.y);
       dot.setAttribute('r', '5');
       dot.setAttribute('class', 'pizza-now-dot');
+      dot.style.fill = indicatorColor;
+      dot.style.stroke = 'var(--ds-bg-primary)';
+      dot.style.strokeWidth = '1.5px';
       svg.appendChild(dot);
     }
   }
@@ -629,9 +653,12 @@ function renderBlockList() {
                 </button>
               </div>
             ` : ''}
-            <div class="block-details-footer">
-              <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="font-size:11px; padding:4px 8px;">
-                ${DS.icon('edit', { size: 14 })} ${I18n.t('common.edit')}
+            <div class="block-details-footer" style="display:flex; gap:8px;">
+              <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="flex:1; font-size:11px; padding:4px 8px;">
+                ${DS.icon('clock', { size: 14 })} Horário
+              </button>
+              <button class="ds-btn ds-btn-plain btn-edit-subject-content" data-subject-type="study" data-subject-id="${subj?.id}" style="flex:1; font-size:11px; padding:4px 8px;">
+                ${DS.icon('edit', { size: 14 })} Editar Edital
               </button>
             </div>
           </div>
@@ -659,9 +686,12 @@ function renderBlockList() {
                 }).join('')}
               </div>`
             }
-            <div class="block-details-footer">
-              <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="font-size:11px; padding:4px 8px;">
-                ${DS.icon('edit', { size: 14 })} ${I18n.t('common.edit')}
+            <div class="block-details-footer" style="display:flex; gap:8px;">
+              <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="flex:1; font-size:11px; padding:4px 8px;">
+                ${DS.icon('clock', { size: 14 })} Horário
+              </button>
+              <button class="ds-btn ds-btn-plain btn-edit-subject-content" data-subject-type="training" data-subject-id="${subj?.id}" style="flex:1; font-size:11px; padding:4px 8px;">
+                ${DS.icon('edit', { size: 14 })} Editar Ficha
               </button>
             </div>
           </div>
@@ -688,9 +718,12 @@ function renderBlockList() {
                 }).join('')}
               </div>`
             }
-            <div class="block-details-footer">
-              <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="font-size:11px; padding:4px 8px;">
-                ${DS.icon('edit', { size: 14 })} ${I18n.t('common.edit')}
+            <div class="block-details-footer" style="display:flex; gap:8px;">
+              <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="flex:1; font-size:11px; padding:4px 8px;">
+                ${DS.icon('clock', { size: 14 })} Horário
+              </button>
+              <button class="ds-btn ds-btn-plain btn-edit-subject-content" data-subject-type="inactive" data-subject-id="${subj?.id}" style="flex:1; font-size:11px; padding:4px 8px;">
+                ${DS.icon('edit', { size: 14 })} Editar Rotina
               </button>
             </div>
           </div>
@@ -863,6 +896,16 @@ function renderBlockList() {
       openBlockModal(btn.dataset.blockId);
     });
   });
+
+  // Inner block content edit click binder
+  container.querySelectorAll('.btn-edit-subject-content').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (btn.dataset.subjectId && btn.dataset.subjectId !== 'undefined') {
+        openSubjectModal(btn.dataset.subjectType, btn.dataset.subjectId);
+      }
+    });
+  });
 }
 
 // ===== RENDER: WEEK NAV =====
@@ -872,6 +915,20 @@ function renderWeekNav() {
   const today = new Date();
   const startOfWeek = new Date(selectedDate);
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+  // Btn Prev Week
+  const btnPrev = document.createElement('button');
+  btnPrev.className = 'week-nav-arrow';
+  btnPrev.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+  btnPrev.addEventListener('click', () => {
+    selectedDate.setDate(selectedDate.getDate() - 7);
+    render();
+  });
+  nav.appendChild(btnPrev);
+
+  // Scroll Container
+  const daysScroll = document.createElement('div');
+  daysScroll.className = 'week-days-scroll';
 
   for (let i = 0; i < 7; i++) {
     const day = new Date(startOfWeek);
@@ -894,8 +951,20 @@ function renderWeekNav() {
       <span class="day-dots">${dotsHTML}</span>
     `;
     btn.addEventListener('click', () => { selectedDate = new Date(day); render(); });
-    nav.appendChild(btn);
+    daysScroll.appendChild(btn);
   }
+
+  nav.appendChild(daysScroll);
+
+  // Btn Next Week
+  const btnNext = document.createElement('button');
+  btnNext.className = 'week-nav-arrow';
+  btnNext.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+  btnNext.addEventListener('click', () => {
+    selectedDate.setDate(selectedDate.getDate() + 7);
+    render();
+  });
+  nav.appendChild(btnNext);
 }
 
 // Swipe week navigation
@@ -979,19 +1048,21 @@ function renderSubjects() {
           ${DS.icon('plus', { size: 16, strokeWidth: 2.5 })}
         </button>
       </div>
-      ${items.length === 0 ? `<p class="subject-empty">${I18n.t('subject.none')}</p>` : items.map(s => {
-        const count = state.blocks.filter(b => b.subjectId === s.id).length;
-        return `
-          <div class="subject-card" data-subject-id="${s.id}" data-type="${s.type}" style="cursor:pointer;">
-            <span class="subject-dot" style="background:${s.color}"></span>
-            <span class="subject-name">${DS.escapeHtml(s.name)}</span>
-            <span class="subject-count">${I18n.t('block.count', { count })}</span>
-            <button class="subject-delete" data-subject-id="${s.id}">
-              ${DS.icon('x', { size: 18 })}
-            </button>
-          </div>
-        `;
-      }).join('')}
+      <div class="subject-sortable-list" data-type="${type}">
+        ${items.length === 0 ? `<p class="subject-empty">${I18n.t('subject.none')}</p>` : items.map(s => {
+          const count = state.blocks.filter(b => b.subjectId === s.id).length;
+          return `
+            <div class="subject-card" data-subject-id="${s.id}" data-type="${s.type}" style="cursor:pointer; touch-action:none;">
+              <span class="subject-dot" style="background:${s.color}"></span>
+              <span class="subject-name">${DS.escapeHtml(s.name)}</span>
+              <span class="subject-count">${I18n.t('block.count', { count })}</span>
+              <button class="subject-delete" data-subject-id="${s.id}">
+                ${DS.icon('x', { size: 18 })}
+              </button>
+            </div>
+          `;
+        }).join('')}
+      </div>
     </div>
   `).join('');
 
@@ -1024,6 +1095,34 @@ function renderSubjects() {
       }
     });
   });
+
+  if (window.Sortable) {
+    list.querySelectorAll('.subject-sortable-list').forEach(el => {
+      new Sortable(el, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        delay: 250, // Clicar e segurar
+        delayOnTouchOnly: true,
+        onEnd: function (evt) {
+          const type = el.dataset.type;
+          const newOrderIds = Array.from(el.children).map(c => c.dataset.subjectId).filter(Boolean);
+          
+          const typeSubjects = state.subjects.filter(s => s.type === type);
+          const otherSubjects = state.subjects.filter(s => s.type !== type);
+          
+          typeSubjects.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
+          
+          state.subjects = [];
+          ['study', 'training', 'inactive'].forEach(t => {
+            if (t === type) state.subjects.push(...typeSubjects);
+            else state.subjects.push(...otherSubjects.filter(s => s.type === t));
+          });
+          
+          Store.save(state);
+        }
+      });
+    });
+  }
 }
 
 // ===== MODALS =====
@@ -1135,9 +1234,12 @@ function renderModalSlots(slots = []) {
     });
     
     listEl.querySelectorAll('.btn-remove-slot').forEach(btn => {
-      btn.addEventListener('click', () => {
-        modalSlots.splice(parseInt(btn.dataset.index), 1);
-        render();
+      btn.addEventListener('click', async () => {
+        const ok = await DS.confirm('Remover', 'Deseja remover este horário?', 'Remover');
+        if (ok) {
+          modalSlots.splice(parseInt(btn.dataset.index), 1);
+          render();
+        }
       });
     });
   };
@@ -1158,7 +1260,9 @@ function renderModalContentList(items = [], type = 'study') {
     listEl.innerHTML = modalContentItems.map((item, index) => {
       let desc = '';
       if (type === 'study') {
-        desc = `<span>${DS.escapeHtml(item.topic)}</span> <span class="content-meta">${item.duration ? item.duration + ' min' : ''}</span>`;
+        const isRep = item.unit === 'rep';
+        const amt = item.duration ? item.duration + (isRep ? ' reps' : ' min') : '';
+        desc = `<span>${DS.escapeHtml(item.topic)}</span> <span class="content-meta">${amt}</span>`;
       } else if (type === 'training') {
         desc = `<div><strong>${DS.escapeHtml(item.name)}</strong> <span class="content-meta">${item.sets}x${item.reps} (${item.weight})</span></div>`;
       } else {
@@ -1166,7 +1270,10 @@ function renderModalContentList(items = [], type = 'study') {
       }
       
       return `
-        <div class="ds-list-item content-item-row">
+        <div class="ds-list-item content-item-row" data-id="${item.id}">
+          <div class="drag-handle" style="cursor: grab; margin-right: 8px; color: var(--ds-text-tertiary); display:flex; align-items:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </div>
           <div style="flex:1; min-width:0; font-size:13px;">${desc}</div>
           <button type="button" class="ds-btn ds-btn-plain btn-remove-content remove-content-btn" data-index="${index}">
             ${DS.icon('x', { size: 16 })}
@@ -1176,11 +1283,30 @@ function renderModalContentList(items = [], type = 'study') {
     }).join('');
     
     listEl.querySelectorAll('.btn-remove-content').forEach(btn => {
-      btn.addEventListener('click', () => {
-        modalContentItems.splice(parseInt(btn.dataset.index), 1);
-        render();
+      btn.addEventListener('click', async () => {
+        const ok = await DS.confirm('Remover', 'Deseja remover este item?', 'Remover');
+        if (ok) {
+          modalContentItems.splice(parseInt(btn.dataset.index), 1);
+          render();
+        }
       });
     });
+
+    if (window.Sortable) {
+      new Sortable(listEl, {
+        handle: '.drag-handle',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: function (evt) {
+          const movedItem = modalContentItems.splice(evt.oldIndex, 1)[0];
+          modalContentItems.splice(evt.newIndex, 0, movedItem);
+          // Update data-index on buttons without full re-render to keep smooth feel
+          listEl.querySelectorAll('.btn-remove-content').forEach((btn, idx) => {
+            btn.dataset.index = idx;
+          });
+        }
+      });
+    }
   };
   
   render();
@@ -1194,6 +1320,14 @@ function openSubjectModal(type = 'study', subjectId = null) {
   const typeSelect = $('#inputSubjectType');
   typeSelect.value = type;
   typeSelect.disabled = !!subjectId;
+  typeSelect.dispatchEvent(new Event('change'));
+  
+  // Disable segment buttons if editing
+  document.querySelectorAll('#subjectTypeSegments .ds-segment-btn').forEach(btn => {
+    btn.disabled = !!subjectId;
+    btn.style.opacity = !!subjectId ? '0.5' : '1';
+    btn.style.cursor = !!subjectId ? 'not-allowed' : 'pointer';
+  });
   
   $('#formAddSyllabus').classList.toggle('hidden', type !== 'study');
   $('#formAddExercise').classList.toggle('hidden', type !== 'training');
@@ -1224,6 +1358,79 @@ function openSubjectModal(type = 'study', subjectId = null) {
 }
 
 function closeSubjectModal() { DS.sheet.close($('#modalSubject')); currentEditingSubjectId = null; }
+
+
+// ===== PRIORITIES CIRCLE =====
+function renderPriorities() {
+  const p = state.priorities;
+  if (!p) return;
+  
+  const zones = ['zone1', 'zone2', 'zone3', 'unallocated'];
+  zones.forEach(zoneId => {
+    const listEl = document.getElementById(zoneId === 'unallocated' ? 'listUnallocated' : 'list' + zoneId.charAt(0).toUpperCase() + zoneId.slice(1));
+    if (!listEl) return;
+    
+    listEl.innerHTML = p[zoneId].map(item => `
+      <div class="priority-item" data-id="${item.id}" data-pillar="${item.pillar}">
+        <div class="priority-item-dot" style="background:${item.color}"></div>
+        ${DS.escapeHtml(item.name)}
+      </div>
+    `).join('');
+    
+    const countEl = document.getElementById(zoneId === 'unallocated' ? 'countUnallocated' : 'count' + zoneId.charAt(0).toUpperCase() + zoneId.slice(1));
+    if (countEl) {
+      countEl.textContent = zoneId === 'zone1' ? `${p[zoneId].length}/3` : p[zoneId].length;
+    }
+  });
+}
+
+function initPriorities() {
+  if (!window.Sortable) return;
+  
+  const zones = ['zone1', 'zone2', 'zone3', 'unallocated'];
+  zones.forEach(zoneId => {
+    const listEl = document.getElementById(zoneId === 'unallocated' ? 'listUnallocated' : 'list' + zoneId.charAt(0).toUpperCase() + zoneId.slice(1));
+    if (!listEl) return;
+    
+    new Sortable(listEl, {
+      group: 'priorities',
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      onEnd: (evt) => {
+        const itemEl = evt.item;
+        const itemId = itemEl.dataset.id;
+        const fromZone = evt.from.dataset.zone;
+        const toZone = evt.to.dataset.zone;
+        
+        if (fromZone === toZone && evt.oldIndex === evt.newIndex) return;
+        
+        const fromKey = fromZone === 'unallocated' ? 'unallocated' : `zone${fromZone}`;
+        const toKey = toZone === 'unallocated' ? 'unallocated' : `zone${toZone}`;
+        
+        const itemIndex = state.priorities[fromKey].findIndex(i => i.id === itemId);
+        if (itemIndex === -1) return;
+        const item = state.priorities[fromKey][itemIndex];
+        
+        // Regra da Escassez
+        if (toKey === 'zone1' && fromKey !== 'zone1') {
+          if (state.priorities.zone1.length >= 3) {
+            DS.toast('O Centro já possui 3 áreas. Remova uma primeiro.', 'warning');
+            renderPriorities();
+            return;
+          }
+        }
+        
+        state.priorities[fromKey].splice(itemIndex, 1);
+        state.priorities[toKey].splice(evt.newIndex, 0, item);
+        
+        Store.save(state);
+        renderPriorities();
+      }
+    });
+  });
+  
+  renderPriorities();
+}
 
 // Color picker
 function setColorPicker(containerSel, color) {
@@ -1539,14 +1746,21 @@ function initSettings() {
       }
       if ('serviceWorker' in navigator) {
         const reg = await navigator.serviceWorker.ready;
-        await reg.showNotification(I18n.t('notification.title'), {
+        
+        // Generate test icon
+        const encColor = encodeURIComponent('#007aff');
+        const testIcon = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="${encColor}" opacity="0.15"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="${encColor}" stroke-width="2" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="${encColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
+        
+        const title = `📚 ${I18n.t('notification.title')}`;
+        await reg.showNotification(title, {
           body: I18n.t('settings.test_notif_body'),
-          icon: 'icons/icon-192.png',
+          icon: testIcon,
+          badge: testIcon,
           vibrate: [200, 100, 200, 100, 200],
           tag: 'test-notif',
         });
       } else if ('Notification' in window) {
-        new Notification(I18n.t('notification.title'), { body: I18n.t('settings.test_notif_body') });
+        new Notification(`📚 ${I18n.t('notification.title')}`, { body: I18n.t('settings.test_notif_body') });
       }
       logAction(I18n.t('log.test_notification'));
       DS.toast(I18n.t('settings.test_notif'), 'success');
@@ -1686,11 +1900,13 @@ function initDailyBlocksFromProfiles(date) {
   const dKey = dateKey(date);
   const dayOfWeek = date.getDay(); // 0 is Sunday, 1 is Monday...
 
-  const existing = state.blocks.some(b => b.date === dKey);
-  if (existing) return;
-
   const newBlocks = [];
   state.subjects.forEach(profile => {
+    // Apenas pula se ESSA matéria específica já tem bloco hoje,
+    // garantindo que novas matérias criadas hoje entrem na pizza!
+    const profileExistsToday = state.blocks.some(b => b.date === dKey && b.subjectId === profile.id);
+    if (profileExistsToday) return;
+
     const slots = profile.slots || [];
     slots.forEach(slot => {
       const slotDays = slot.daysOfWeek || (slot.dayOfWeek !== undefined ? [slot.dayOfWeek] : []);
@@ -1719,9 +1935,198 @@ function initDailyBlocksFromProfiles(date) {
   if (newBlocks.length > 0) {
     newBlocks.sort((a, b) => a.start.localeCompare(b.start));
     state.blocks.push(...newBlocks);
-    Store.save(state);
   }
 }
+
+// ===== INFOS & HEATMAP =====
+window.showStudyTipsInfo = function() {
+  const title = document.getElementById('modalInfoTitle');
+  const body = document.getElementById('modalInfoBody');
+  const modal = document.getElementById('modalInfo');
+  
+  if (!title || !body || !modal) return;
+  
+  title.textContent = 'Horário Inteligente';
+  body.innerHTML = `
+    <p style="margin-bottom: 12px; text-align: left; font-weight: 600;">Como montar um Edital de Elite:</p>
+    <ul style="text-align: left; margin-left: 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
+      <li><strong>Ciclos Curtos:</strong> Seu cérebro foca melhor em blocos de até 50 minutos.</li>
+      <li><strong>Evite Exaustão:</strong> Se o slot de horário que você criou tem 60 min, não crie tópicos de 90 min!</li>
+      <li><strong>Quebre a matéria:</strong> Se o tópico é "Revolução Francesa" e é denso, crie: "Rev. Francesa Parte 1" (30 min) e "Parte 2" (30 min).</li>
+      <li><strong>Minutos ou Reps:</strong> Você pode usar o campo para tempo ou para "Páginas lidas" e "Exercícios feitos" selecionando "reps".</li>
+    </ul>
+  `;
+  
+  DS.sheet.open(modal, 0.65);
+}
+
+window.showHeatmapInfo = function() {
+  const title = document.getElementById('modalInfoTitle');
+  const body = document.getElementById('modalInfoBody');
+  const modal = document.getElementById('modalInfo');
+  
+  if (!title || !body || !modal) return;
+  
+  title.textContent = 'Como funciona';
+  body.innerHTML = `
+    <p style="margin-bottom: 12px; text-align: left;">O mapa acende conforme você conclui tarefas no dia a dia. Ele conta inteligentemente:</p>
+    <ul style="text-align: left; margin-left: 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
+      <li>Blocos de estudo concluídos</li>
+      <li>Exercícios físicos realizados</li>
+      <li>Micro-hábitos da rotina marcados</li>
+    </ul>
+    <p style="text-align: left; font-weight: 600; color: var(--ds-text-primary);">Quanto mais produtivo for o dia, mais intensa fica a cor!</p>
+  `;
+  
+  DS.sheet.open(modal, 0.5);
+}
+
+// ===== HEATMAP (Monthly Carousel) =====
+let heatmapCurrentSlide = -1; // will be set to last slide (current month)
+
+function renderHeatmap() {
+  const track = $('#heatmapTrack');
+  const dotsContainer = $('#heatmapDots');
+  const statsLabel = $('#heatmapStats');
+  if (!track || !statsLabel) return;
+
+  // Build daily counts map
+  const dailyCounts = {};
+  let totalCompleted = 0;
+  state.blocks.forEach(b => {
+    let count = 0;
+    if (b.done) count++;
+    if (b.completedItems && Array.isArray(b.completedItems)) count += b.completedItems.length;
+    if (count > 0 && b.date) {
+      if (!dailyCounts[b.date]) dailyCounts[b.date] = 0;
+      dailyCounts[b.date] += count;
+      totalCompleted += count;
+    }
+  });
+  statsLabel.textContent = `${totalCompleted} tarefas`;
+
+  function getLevel(count) {
+    if (count === 0) return 0;
+    if (count <= 2) return 1;
+    if (count <= 5) return 2;
+    if (count <= 8) return 3;
+    return 4;
+  }
+
+  // Generate last 6 months (including current)
+  const today = new Date();
+  const todayKey = dateKey(today);
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    months.push({ year: d.getFullYear(), month: d.getMonth() });
+  }
+
+  const monthNamesFull = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const weekDays = ['D','S','T','Q','Q','S','S'];
+
+  track.innerHTML = months.map((m, idx) => {
+    const firstDay = new Date(m.year, m.month, 1);
+    const daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
+    const startDow = firstDay.getDay();
+    let monthTasks = 0;
+
+    // Weekday labels
+    const weekLabels = weekDays.map(d => `<span class="heatmap-weekday-label">${d}</span>`).join('');
+
+    // Grid cells
+    let cells = '';
+    // Empty cells before month starts
+    for (let e = 0; e < startDow; e++) {
+      cells += '<div class="heatmap-cell heatmap-cell--empty"></div>';
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const count = dailyCounts[dStr] || 0;
+      monthTasks += count;
+      const level = getLevel(count);
+      const isToday = dStr === todayKey;
+      const displayDate = new Date(m.year, m.month, day).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+      const tasksText = count === 1 ? '1 tarefa' : `${count} tarefas`;
+      cells += `<div class="heatmap-cell${isToday ? ' heatmap-cell--today' : ''}" data-level="${level}" data-tooltip="${tasksText} em ${displayDate}"></div>`;
+    }
+
+    const label = `${monthNamesFull[m.month]} ${m.year}`;
+    const statsText = monthTasks === 1 ? '1 tarefa concluída' : `${monthTasks} tarefas concluídas`;
+
+    return `
+      <div class="heatmap-slide" data-index="${idx}">
+        <div class="heatmap-month-label">${label}</div>
+        <div class="heatmap-month-stats">${statsText}</div>
+        <div class="heatmap-weekday-labels">${weekLabels}</div>
+        <div class="heatmap-month-grid">${cells}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Dots
+  if (dotsContainer) {
+    dotsContainer.innerHTML = months.map((_, i) => `<div class="heatmap-dot${i === months.length - 1 ? ' active' : ''}" data-slide="${i}"></div>`).join('');
+    dotsContainer.querySelectorAll('.heatmap-dot').forEach(dot => {
+      dot.addEventListener('click', () => heatmapGoTo(parseInt(dot.dataset.slide)));
+    });
+  }
+
+  // Go to current month (last slide)
+  if (heatmapCurrentSlide < 0) heatmapCurrentSlide = months.length - 1;
+  heatmapGoTo(heatmapCurrentSlide, false);
+  initHeatmapSwipe();
+}
+
+function heatmapGoTo(index, animate = true) {
+  const track = $('#heatmapTrack');
+  const dots = $$('.heatmap-dot');
+  if (!track) return;
+  const totalSlides = track.children.length;
+  if (index < 0) index = 0;
+  if (index >= totalSlides) index = totalSlides - 1;
+  heatmapCurrentSlide = index;
+  track.style.transition = animate ? 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)' : 'none';
+  track.style.transform = `translateX(-${index * 100}%)`;
+  dots.forEach((d, i) => d.classList.toggle('active', i === index));
+}
+
+function initHeatmapSwipe() {
+  const carousel = $('#heatmapCarousel');
+  if (!carousel || carousel._swipeInit) return;
+  carousel._swipeInit = true;
+  let startX = 0, startY = 0, dx = 0, swiping = false;
+  const track = $('#heatmapTrack');
+
+  carousel.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dx = 0;
+    swiping = true;
+    track.style.transition = 'none';
+  }, { passive: true });
+
+  carousel.addEventListener('touchmove', (e) => {
+    if (!swiping) return;
+    const moveX = e.touches[0].clientX;
+    const moveY = e.touches[0].clientY;
+    if (Math.abs(moveY - startY) > Math.abs(moveX - startX)) { swiping = false; return; }
+    dx = moveX - startX;
+    const base = -heatmapCurrentSlide * 100;
+    const pxToPercent = (dx / carousel.offsetWidth) * 100;
+    track.style.transform = `translateX(${base + pxToPercent}%)`;
+  }, { passive: true });
+
+  carousel.addEventListener('touchend', () => {
+    if (!swiping) return;
+    swiping = false;
+    const threshold = carousel.offsetWidth * 0.2;
+    if (dx < -threshold) heatmapGoTo(heatmapCurrentSlide + 1);
+    else if (dx > threshold) heatmapGoTo(heatmapCurrentSlide - 1);
+    else heatmapGoTo(heatmapCurrentSlide);
+  });
+}
+
 
 // ===== MAIN RENDER =====
 function render() {
@@ -1730,6 +2135,7 @@ function render() {
   renderWeekNav();
   renderPizza();
   renderBlockList();
+  renderHeatmap();
 }
 
 // iOS Safari detection — show manual install hint
@@ -1909,7 +2315,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const $inputSubjectType = $('#inputSubjectType');
   if ($inputSubjectType) {
+    // Sync segmented control
+    const segmentBtns = document.querySelectorAll('#subjectTypeSegments .ds-segment-btn');
+    segmentBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        segmentBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        $inputSubjectType.value = btn.dataset.val;
+        $inputSubjectType.dispatchEvent(new Event('change'));
+      });
+    });
+
+    // Also update active button if openSubjectModal changes the select programmatically
+    const updateSegmentActive = () => {
+      segmentBtns.forEach(btn => {
+        if (btn.dataset.val === $inputSubjectType.value) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    };
+
     $inputSubjectType.addEventListener('change', (e) => {
+      updateSegmentActive();
       const newType = e.target.value;
       subjectModalType = newType;
       const $formAddSyllabus = $('#formAddSyllabus');
@@ -1930,9 +2356,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       const durInput = $('#inputSyllabusDuration');
       if (!titleInput || !durInput) return;
       const title = titleInput.value.trim();
-      const duration = parseInt(durInput.value) || 0;
+      const durationVal = parseInt(durInput.value) || 0;
+      const unit = 'min';
+
       if (!title) { DS.toast(I18n.t('alert.enter_topic'), 'warning'); return; }
-      modalContentItems.push({ id: uid(), topic: title, duration, description: '', status: 'pending' });
+
+      // Validate against max slot length
+      if (modalSlots && modalSlots.length > 0) {
+        let maxSlotMin = 0;
+        let totalSlotMin = 0;
+        modalSlots.forEach(s => {
+          const [h1, m1] = s.start.split(':').map(Number);
+          const [h2, m2] = s.end.split(':').map(Number);
+          let dur = (h2 * 60 + m2) - (h1 * 60 + m1);
+          if (dur < 0) dur += 24 * 60; // handle overnight
+          if (dur > maxSlotMin) maxSlotMin = dur;
+          totalSlotMin += (dur * s.daysOfWeek.length); // Total week capacity
+        });
+
+        if (maxSlotMin > 0 && durationVal > maxSlotMin) {
+          DS.toast(`Atenção: O tempo do tópico (${durationVal}min) excede seu maior horário de foco contínuo configurado (${maxSlotMin}min). Divida o conteúdo!`, 'warning');
+          return;
+        }
+      }
+
+      modalContentItems.push({ id: uid(), topic: title, duration: durationVal, unit: unit, description: '', status: 'pending' });
       titleInput.value = '';
       durInput.value = '';
       renderModalContentList(modalContentItems, 'study');
@@ -1974,6 +2422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+      initPriorities();
       render();
       checkNotifications();
       initVerseMarquee();
