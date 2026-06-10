@@ -1631,6 +1631,42 @@ function initSettings() {
       }
     });
   }
+
+  // Marquee custom texts
+  const $marqueeTA = $('#marqueeTextarea');
+  const $btnSaveMarquee = $('#btnSaveMarquee');
+  const $btnResetMarquee = $('#btnResetMarquee');
+
+  if ($marqueeTA) {
+    const texts = (state.settings.marqueeTexts && state.settings.marqueeTexts.length > 0)
+      ? state.settings.marqueeTexts
+      : DEFAULT_VERSES;
+    $marqueeTA.value = texts.join('\n');
+  }
+
+  if ($btnSaveMarquee) {
+    $btnSaveMarquee.addEventListener('click', () => {
+      const lines = $marqueeTA.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length === 0) {
+        DS.toast('Adicione pelo menos uma frase', 'warning');
+        return;
+      }
+      state.settings.marqueeTexts = lines;
+      Store.save(state);
+      initVerseMarquee();
+      DS.toast('Frases salvas!', 'success');
+    });
+  }
+
+  if ($btnResetMarquee) {
+    $btnResetMarquee.addEventListener('click', () => {
+      delete state.settings.marqueeTexts;
+      Store.save(state);
+      $marqueeTA.value = DEFAULT_VERSES.join('\n');
+      initVerseMarquee();
+      DS.toast('Frases restauradas ao padrão', 'info');
+    });
+  }
 }
 
 function applyTheme(theme) {
@@ -1699,24 +1735,28 @@ function render() {
 }
 
 // iOS Safari detection — show manual install hint
+const DEFAULT_VERSES = [
+  'Lucas 1:37 \u2014 Pois nada \u00e9 imposs\u00edvel para Deus',
+  'Ef\u00e9sios 3:20 \u2014 Infinitamente mais do que pedimos ou pensamos',
+  'Filipenses 4:13 \u2014 Tudo posso naquele que me fortalece',
+  'Josu\u00e9 1:9 \u2014 Seja forte e corajoso, o Senhor est\u00e1 contigo',
+  'Jeremias 29:11 \u2014 Eu sei os planos que tenho para voc\u00ea',
+  'Prov\u00e9rbios 16:3 \u2014 Confie ao Senhor tudo o que voc\u00ea faz',
+  'Isa\u00edas 40:31 \u2014 Os que esperam no Senhor renovam suas for\u00e7as',
+  'Salmos 37:5 \u2014 Entregue o seu caminho ao Senhor',
+];
+
 function initVerseMarquee() {
   const track = $('#verseTrack');
   if (!track) return;
-  const verses = [
-    'Lucas 1:37 \u2014 Pois nada \u00e9 imposs\u00edvel para Deus',
-    'Ef\u00e9sios 3:20 \u2014 Infinitamente mais do que pedimos ou pensamos',
-    'Filipenses 4:13 \u2014 Tudo posso naquele que me fortalece',
-    'Josu\u00e9 1:9 \u2014 Seja forte e corajoso, o Senhor est\u00e1 contigo',
-    'Jeremias 29:11 \u2014 Eu sei os planos que tenho para voc\u00ea',
-    'Prov\u00e9rbios 16:3 \u2014 Confie ao Senhor tudo o que voc\u00ea faz',
-    'Isa\u00edas 40:31 \u2014 Os que esperam no Senhor renovam suas for\u00e7as',
-    'Salmos 37:5 \u2014 Entregue o seu caminho ao Senhor',
-  ];
+  const verses = (state.settings.marqueeTexts && state.settings.marqueeTexts.length > 0)
+    ? state.settings.marqueeTexts
+    : DEFAULT_VERSES;
   // Build items: verse + dot, repeated 2x for seamless loop
   let html = '';
   for (let i = 0; i < 2; i++) {
     verses.forEach(v => {
-      html += `<span>${v}</span><i class="verse-dot" aria-hidden="true"></i>`;
+      html += `<span>${DS.escapeHtml(v)}</span><i class="verse-dot" aria-hidden="true"></i>`;
     });
   }
   track.innerHTML = html;
