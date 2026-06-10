@@ -1386,32 +1386,38 @@ function renderPriorities() {
 
 function initPriorities() {
   if (!window.Sortable) return;
-  
+
   const zones = ['zone1', 'zone2', 'zone3', 'unallocated'];
   zones.forEach(zoneId => {
     const listEl = document.getElementById(zoneId === 'unallocated' ? 'listUnallocated' : 'list' + zoneId.charAt(0).toUpperCase() + zoneId.slice(1));
     if (!listEl) return;
-    
-    new Sortable(listEl, {
+    if (listEl._sortable) listEl._sortable.destroy();
+
+    listEl._sortable = new Sortable(listEl, {
       group: 'priorities',
-      animation: 150,
+      animation: 200,
       ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      dragClass: 'sortable-drag',
+      delay: 120,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 5,
+      forceFallback: true,
+      fallbackTolerance: 3,
       onEnd: (evt) => {
-        const itemEl = evt.item;
-        const itemId = itemEl.dataset.id;
+        const itemId = evt.item.dataset.id;
         const fromZone = evt.from.dataset.zone;
         const toZone = evt.to.dataset.zone;
-        
+
         if (fromZone === toZone && evt.oldIndex === evt.newIndex) return;
-        
+
         const fromKey = fromZone === 'unallocated' ? 'unallocated' : `zone${fromZone}`;
         const toKey = toZone === 'unallocated' ? 'unallocated' : `zone${toZone}`;
-        
+
         const itemIndex = state.priorities[fromKey].findIndex(i => i.id === itemId);
         if (itemIndex === -1) return;
         const item = state.priorities[fromKey][itemIndex];
-        
-        // Regra da Escassez
+
         if (toKey === 'zone1' && fromKey !== 'zone1') {
           if (state.priorities.zone1.length >= 3) {
             DS.toast('O Centro já possui 3 áreas. Remova uma primeiro.', 'warning');
@@ -1419,16 +1425,16 @@ function initPriorities() {
             return;
           }
         }
-        
+
         state.priorities[fromKey].splice(itemIndex, 1);
         state.priorities[toKey].splice(evt.newIndex, 0, item);
-        
+
         Store.save(state);
         renderPriorities();
       }
     });
   });
-  
+
   renderPriorities();
 }
 
@@ -2030,7 +2036,7 @@ function renderHeatmap() {
   const today = new Date();
   const todayKey = dateKey(today);
   const months = [];
-  for (let i = 5; i >= 0; i--) {
+  for (let i = 11; i >= 0; i--) {
     const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
     months.push({ year: d.getFullYear(), month: d.getMonth() });
   }

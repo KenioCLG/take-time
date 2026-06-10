@@ -623,12 +623,19 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 /* Correção de lag na animação de Drag and Drop (SortableJS) */
 .sortable-drag {
   transition: none !important;
-  opacity: 0.9 !important;
+  opacity: 0.95 !important;
   cursor: grabbing !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18) !important;
+  transform: scale(1.04);
+  z-index: 999 !important;
+}
+.sortable-chosen {
+  opacity: 0.85;
 }
 .sortable-ghost {
-  opacity: 0.3;
-  background: var(--ds-bg-secondary);
+  opacity: 0.25;
+  background: var(--ds-accent-bg);
+  border-radius: var(--ds-radius-full);
 }
 .subject-delete:active { background: rgba(255, 59, 48, 0.1); color: var(--ds-danger); }
 
