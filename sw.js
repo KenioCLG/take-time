@@ -1,4 +1,4 @@
-const CACHE = 'taketime-v4';
+const CACHE = 'taketime-v5';
 const ASSETS = ['/', '/index.html', '/ds.css', '/ds.js', '/store.js', '/i18n.js', '/styles.css', '/auth.js', '/notifications.js', '/app.js', '/svg3d.js', '/manifest.json', '/locales/pt-BR.json', '/locales/en-US.json', '/icons/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/favicon-32.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
@@ -34,21 +34,16 @@ self.addEventListener('notificationclick', (e) => {
   );
 });
 
-// Stale-while-revalidate: serve do cache imediatamente,
-// mas busca a versão nova em background para a próxima visita.
+// Network-first: try network, fall back to cache (ensures fresh code).
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.open(CACHE).then(cache =>
-      cache.match(e.request).then(cached => {
-        const fetchPromise = fetch(e.request).then(response => {
-          if (response.ok && e.request.url.startsWith('http')) {
-            cache.put(e.request, response.clone());
-          }
-          return response;
-        }).catch(() => cached);
-
-        return cached || fetchPromise;
-      })
+      fetch(e.request).then(response => {
+        if (response.ok && e.request.url.startsWith('http')) {
+          cache.put(e.request, response.clone());
+        }
+        return response;
+      }).catch(() => cache.match(e.request))
     )
   );
 });
