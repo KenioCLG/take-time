@@ -617,6 +617,9 @@ html {
   flex: 1;
   min-height: 0;
   touch-action: pan-y;
+  /* Scroll fade hint at bottom */
+  mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
 }
 
 .ds-sheet-handle {

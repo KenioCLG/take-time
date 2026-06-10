@@ -276,7 +276,7 @@ const DS = (() => {
       }
     }
 
-    function openSheet(overlay) {
+    function openSheet(overlay, snapPoint) {
       const sheetEl = overlay.querySelector('.ds-sheet');
       if (!sheetEl) return;
 
@@ -286,10 +286,11 @@ const DS = (() => {
       lastTouchY = 0;
       overlay.addEventListener('touchmove', onOverlayTouchMove, { passive: false });
 
-      // Start from 0 and animate to peek
+      const target = snapPoint || SNAP_PEEK;
+      // Start from 0 and animate to target
       sheetEl.style.height = '0';
       requestAnimationFrame(() => {
-        snapTo(sheetEl, SNAP_PEEK);
+        snapTo(sheetEl, target);
       });
     }
 

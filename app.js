@@ -18,7 +18,7 @@ state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
 // Guard all top-level listeners to prevent crash if element is missing
 const _btnShowAuth = $('#btnShowAuthDrawer');
 if (_btnShowAuth) _btnShowAuth.addEventListener('click', () => {
-  DS.sheet.open($('#authDrawerOverlay'));
+  DS.sheet.open($('#authDrawerOverlay'), 0.92);
   $('#authBodyLogin').classList.remove('hidden');
   $('#authBodySignup').classList.add('hidden');
   $('#authTitle').textContent = __('auth.login', null, 'Login');
@@ -1064,7 +1064,7 @@ function openBlockModal(blockId = null) {
     if (state.subjects.length > 0) $('#inputSubject').value = state.subjects[0].id;
   }
 
-  DS.sheet.open($('#modalBlock'));
+  DS.sheet.open($('#modalBlock'), 0.92);
 }
 
 function closeBlockModal() { DS.sheet.close($('#modalBlock')); editingBlockId = null; }
@@ -1222,7 +1222,7 @@ function openSubjectModal(type = 'study', subjectId = null) {
   
   renderModalSlots(slots);
   renderModalContentList(databaseItems, type);
-  DS.sheet.open($('#modalSubject'));
+  DS.sheet.open($('#modalSubject'), 0.92);
 }
 
 function closeSubjectModal() { DS.sheet.close($('#modalSubject')); currentEditingSubjectId = null; }
