@@ -1414,7 +1414,7 @@ function syncPrioritiesFromDOM() {
     const listEl = getZoneListEl(zoneId);
     if (!listEl) return;
     state.priorities[zoneId] = [];
-    listEl.querySelectorAll('.priority-item').forEach(el => {
+    listEl.querySelectorAll('.priority-item:not(.sortable-ghost):not(.sortable-drag)').forEach(el => {
       const item = allItems[el.dataset.id];
       if (item) state.priorities[zoneId].push(item);
     });
@@ -1443,9 +1443,6 @@ function initPriorities() {
       delay: 80,
       delayOnTouchOnly: true,
       touchStartThreshold: 3,
-      forceFallback: true,
-      fallbackTolerance: 2,
-      fallbackOnBody: true,
       swapThreshold: 0.65,
       onMove: (evt) => {
         // Block drops into zone1 if already at max 3 (excluding ghost/dragged item)
@@ -1919,7 +1916,7 @@ function initSettings() {
   }
 
   // Toggle motivational marquee listener
-  const marqueeToggle = $('#toggleShowMarquee');
+  marqueeToggle = $('#toggleShowMarquee');
   if (marqueeToggle) {
     marqueeToggle.addEventListener('change', () => {
       state.settings.showMarquee = marqueeToggle.checked;

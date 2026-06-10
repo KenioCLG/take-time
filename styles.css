@@ -1584,6 +1584,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   min-height: 40px;
   flex-grow: 1;
   width: 100%;
+  overflow: hidden;
+  overflow-anchor: none;
 }
 
 /* SortableJS drag & ghost states */
