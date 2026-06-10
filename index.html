@@ -16,11 +16,11 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="ds.css?v=3">
-  <link rel="stylesheet" href="styles.css?v=18">
+  <link rel="stylesheet" href="styles.css?v=19">
   <script>
     // One-time SW + cache nuke (v12)
     (function(){
-      var key = 'tt_cache_v12';
+      var key = 'tt_cache_v13';
       if (!localStorage.getItem(key)) {
         localStorage.setItem(key, '1');
         if ('serviceWorker' in navigator) {
@@ -220,20 +220,15 @@
           </p>
           <span id="heatmapStats" class="heatmap-stats-label">0 tarefas</span>
         </div>
-        <div class="heatmap-carousel" id="heatmapCarousel">
-          <div class="heatmap-track" id="heatmapTrack"></div>
-        </div>
-        <div class="heatmap-nav">
-          <div class="heatmap-dots" id="heatmapDots"></div>
-          <div class="heatmap-legend">
-            <span>Menos</span>
-            <div class="heatmap-cell" data-level="0"></div>
-            <div class="heatmap-cell" data-level="1"></div>
-            <div class="heatmap-cell" data-level="2"></div>
-            <div class="heatmap-cell" data-level="3"></div>
-            <div class="heatmap-cell" data-level="4"></div>
-            <span>Mais</span>
-          </div>
+        <div class="heatmap-scroll" id="heatmapTrack"></div>
+        <div class="heatmap-legend">
+          <span>Menos</span>
+          <div class="heatmap-cell" data-level="0"></div>
+          <div class="heatmap-cell" data-level="1"></div>
+          <div class="heatmap-cell" data-level="2"></div>
+          <div class="heatmap-cell" data-level="3"></div>
+          <div class="heatmap-cell" data-level="4"></div>
+          <span>Mais</span>
         </div>
       </div>
       <!-- ═══ GRUPO: Features Take Time ═══ -->
@@ -242,8 +237,8 @@
         <p class="settings-section-label" style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
           Círculo de Prioridades
+          <svg onclick="showPrioritiesInfo()" style="cursor:pointer; color:var(--ds-text-tertiary);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
         </p>
-        <p style="font-size:12px; color:var(--ds-text-secondary); margin: 0 0 16px 4px; line-height: 1.4;">Distribua suas áreas da vida. O Centro (Foco Principal) aceita no máximo 3 itens.</p>
 
         <div class="priorities-container">
           <div class="priority-zone priority-zone--1">
@@ -578,7 +573,7 @@
   <script src="i18n.js?v=2"></script>
   <script src="auth.js?v=2"></script>
   <script src="notifications.js?v=3"></script>
-  <script src="app.js?v=22"></script>
+  <script src="app.js?v=23"></script>
   <script type="module">
     // Init 3D logo on auth screen
     import SVG3D from './svg3d.js';

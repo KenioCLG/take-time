@@ -1981,16 +1981,30 @@ window.showHeatmapInfo = function() {
   DS.sheet.open(modal, 0.5);
 }
 
-// ===== HEATMAP (Monthly Carousel) =====
-let heatmapCurrentSlide = -1; // will be set to last slide (current month)
+window.showPrioritiesInfo = function() {
+  const title = document.getElementById('modalInfoTitle');
+  const body = document.getElementById('modalInfoBody');
+  const modal = document.getElementById('modalInfo');
+  if (!title || !body || !modal) return;
+  title.textContent = 'Círculo de Prioridades';
+  body.innerHTML = `
+    <p style="margin-bottom: 12px; text-align: left;">Organize suas áreas da vida em 3 níveis de prioridade para distribuir seu tempo de forma inteligente:</p>
+    <ul style="text-align: left; margin-left: 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
+      <li><strong style="color:var(--ds-danger);">Foco Principal</strong> — máximo 3 áreas que merecem a maior parte do seu tempo e energia</li>
+      <li><strong style="color:var(--ds-warning);">Importante</strong> — áreas relevantes que você mantém ativas, com dedicação moderada</li>
+      <li><strong style="color:var(--ds-success);">Flexível</strong> — áreas complementares que encaixam quando sobra tempo</li>
+    </ul>
+    <p style="text-align: left; font-weight: 600; color: var(--ds-text-primary);">Arraste as áreas entre os níveis para refletir suas prioridades atuais.</p>
+  `;
+  DS.sheet.open(modal, 0.55);
+}
 
+// ===== HEATMAP =====
 function renderHeatmap() {
   const track = $('#heatmapTrack');
-  const dotsContainer = $('#heatmapDots');
   const statsLabel = $('#heatmapStats');
   if (!track || !statsLabel) return;
 
-  // Build daily counts map
   const dailyCounts = {};
   let totalCompleted = 0;
   state.blocks.forEach(b => {
@@ -2013,7 +2027,6 @@ function renderHeatmap() {
     return 4;
   }
 
-  // Generate last 6 months (including current)
   const today = new Date();
   const todayKey = dateKey(today);
   const months = [];
@@ -2022,7 +2035,7 @@ function renderHeatmap() {
     months.push({ year: d.getFullYear(), month: d.getMonth() });
   }
 
-  const monthNamesFull = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const weekDays = ['D','S','T','Q','Q','S','S'];
 
   track.innerHTML = months.map((m, idx) => {
@@ -2031,12 +2044,9 @@ function renderHeatmap() {
     const startDow = firstDay.getDay();
     let monthTasks = 0;
 
-    // Weekday labels
     const weekLabels = weekDays.map(d => `<span class="heatmap-weekday-label">${d}</span>`).join('');
 
-    // Grid cells
     let cells = '';
-    // Empty cells before month starts
     for (let e = 0; e < startDow; e++) {
       cells += '<div class="heatmap-cell heatmap-cell--empty"></div>';
     }
@@ -2046,84 +2056,23 @@ function renderHeatmap() {
       monthTasks += count;
       const level = getLevel(count);
       const isToday = dStr === todayKey;
-      const displayDate = new Date(m.year, m.month, day).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-      const tasksText = count === 1 ? '1 tarefa' : `${count} tarefas`;
-      cells += `<div class="heatmap-cell${isToday ? ' heatmap-cell--today' : ''}" data-level="${level}" data-tooltip="${tasksText} em ${displayDate}"></div>`;
+      cells += `<div class="heatmap-cell${isToday ? ' heatmap-cell--today' : ''}" data-level="${level}"></div>`;
     }
 
-    const label = `${monthNamesFull[m.month]} ${m.year}`;
-    const statsText = monthTasks === 1 ? '1 tarefa concluída' : `${monthTasks} tarefas concluídas`;
+    const label = `${monthNames[m.month]}`;
+    const statsText = `${monthTasks}`;
 
-    return `
-      <div class="heatmap-slide" data-index="${idx}">
+    return `<div class="heatmap-slide">
         <div class="heatmap-month-label">${label}</div>
-        <div class="heatmap-month-stats">${statsText}</div>
+        <div class="heatmap-month-stats">${statsText} tarefas</div>
         <div class="heatmap-weekday-labels">${weekLabels}</div>
         <div class="heatmap-month-grid">${cells}</div>
-      </div>
-    `;
+      </div>`;
   }).join('');
 
-  // Dots
-  if (dotsContainer) {
-    dotsContainer.innerHTML = months.map((_, i) => `<div class="heatmap-dot${i === months.length - 1 ? ' active' : ''}" data-slide="${i}"></div>`).join('');
-    dotsContainer.querySelectorAll('.heatmap-dot').forEach(dot => {
-      dot.addEventListener('click', () => heatmapGoTo(parseInt(dot.dataset.slide)));
-    });
-  }
-
-  // Go to current month (last slide)
-  if (heatmapCurrentSlide < 0) heatmapCurrentSlide = months.length - 1;
-  heatmapGoTo(heatmapCurrentSlide, false);
-  initHeatmapSwipe();
-}
-
-function heatmapGoTo(index, animate = true) {
-  const track = $('#heatmapTrack');
-  const dots = $$('.heatmap-dot');
-  if (!track) return;
-  const totalSlides = track.children.length;
-  if (index < 0) index = 0;
-  if (index >= totalSlides) index = totalSlides - 1;
-  heatmapCurrentSlide = index;
-  track.style.transition = animate ? 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)' : 'none';
-  track.style.transform = `translateX(-${index * 100}%)`;
-  dots.forEach((d, i) => d.classList.toggle('active', i === index));
-}
-
-function initHeatmapSwipe() {
-  const carousel = $('#heatmapCarousel');
-  if (!carousel || carousel._swipeInit) return;
-  carousel._swipeInit = true;
-  let startX = 0, startY = 0, dx = 0, swiping = false;
-  const track = $('#heatmapTrack');
-
-  carousel.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    dx = 0;
-    swiping = true;
-    track.style.transition = 'none';
-  }, { passive: true });
-
-  carousel.addEventListener('touchmove', (e) => {
-    if (!swiping) return;
-    const moveX = e.touches[0].clientX;
-    const moveY = e.touches[0].clientY;
-    if (Math.abs(moveY - startY) > Math.abs(moveX - startX)) { swiping = false; return; }
-    dx = moveX - startX;
-    const base = -heatmapCurrentSlide * 100;
-    const pxToPercent = (dx / carousel.offsetWidth) * 100;
-    track.style.transform = `translateX(${base + pxToPercent}%)`;
-  }, { passive: true });
-
-  carousel.addEventListener('touchend', () => {
-    if (!swiping) return;
-    swiping = false;
-    const threshold = carousel.offsetWidth * 0.2;
-    if (dx < -threshold) heatmapGoTo(heatmapCurrentSlide + 1);
-    else if (dx > threshold) heatmapGoTo(heatmapCurrentSlide - 1);
-    else heatmapGoTo(heatmapCurrentSlide);
+  // Scroll to current month (last one)
+  requestAnimationFrame(() => {
+    track.scrollLeft = track.scrollWidth;
   });
 }
 
