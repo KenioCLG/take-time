@@ -367,6 +367,7 @@ function blockTypeIconSvg(type, color) {
 }
 
 function arcPath(startAngle, endAngle, outerR, innerR) {
+  if (endAngle < startAngle) endAngle += 360;
   if (endAngle - startAngle >= 359.99) endAngle = startAngle + 359.99;
   const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
 
@@ -461,28 +462,25 @@ function renderPizza() {
       const isOvernight = endMin <= startMin;
       const isInactive = subj?.type === 'inactive';
 
-      // Build list of visible segments (overnight blocks produce two segments)
+      // Build list of visible segments (overnight block produces one continuous segment)
       const segments = [];
+      const vs = Math.max(startMin, dayStartMin);
+      const ve = Math.min(endMin, dayEndMin);
+      
       if (isOvernight) {
-        // Evening portion: startMin → 24:00
-        if (startMin < dayEndMin) {
-          segments.push({ s: Math.max(startMin, dayStartMin), e: dayEndMin });
-        }
-        // Morning portion: 00:00 → endMin
-        if (endMin > dayStartMin) {
-          segments.push({ s: dayStartMin, e: Math.min(endMin, dayEndMin) });
-        }
+        segments.push({ s: startMin, e: endMin });
       } else {
-        const vs = Math.max(startMin, dayStartMin);
-        const ve = Math.min(endMin, dayEndMin);
         if (ve > vs) segments.push({ s: vs, e: ve });
       }
 
       segments.forEach(seg => {
-        if (seg.e <= seg.s) return;
+        if (!isOvernight && seg.e <= seg.s) return;
 
-        const sa = minutesToAngle(seg.s);
-        const ea = minutesToAngle(seg.e);
+        let sa = minutesToAngle(seg.s);
+        let ea = minutesToAngle(seg.e);
+        if (isOvernight && ea <= sa) {
+          ea += 360;
+        }
 
         const path = document.createElementNS(SVG_NS, 'path');
         path.setAttribute('d', arcPath(sa, ea, R_OUTER - 1, R_INNER + 1));
