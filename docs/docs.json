@@ -1,0 +1,152 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Take Time",
+  "colors": {
+    "primary": "#007AFF",
+    "light": "#5AC8FA",
+    "dark": "#0056CC",
+    "background": {
+      "light": "#f2f2f7",
+      "dark": "#1c1c1e"
+    }
+  },
+  "font": {
+    "headings": {
+      "family": "SF Pro Display, -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+      "weight": 700
+    },
+    "body": {
+      "family": "SF Pro Text, -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+      "weight": 400
+    }
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "rounded": "default",
+  "navigation": {
+    "anchors": [
+      {
+        "anchor": "Documentation",
+        "icon": "book-open",
+        "tabs": [
+          {
+            "tab": "Documentation",
+            "groups": [
+              {
+                "group": "Get Started",
+                "pages": [
+                  "introduction",
+                  "quickstart",
+                  "authentication"
+                ]
+              },
+              {
+                "group": "Core Concepts",
+                "pages": [
+                  "concepts/blocks",
+                  "concepts/subjects",
+                  "concepts/schedule",
+                  "concepts/stats"
+                ]
+              },
+              {
+                "group": "Guides",
+                "pages": [
+                  "guides/webhooks",
+                  "guides/dev-mode",
+                  "guides/production"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API Reference",
+            "groups": [
+              {
+                "group": "API Reference",
+                "pages": [
+                  "api-reference/introduction"
+                ]
+              },
+              {
+                "group": "Blocks",
+                "pages": [
+                  "api-reference/blocks/list",
+                  "api-reference/blocks/create",
+                  "api-reference/blocks/update",
+                  "api-reference/blocks/delete"
+                ]
+              },
+              {
+                "group": "Subjects",
+                "pages": [
+                  "api-reference/subjects/list",
+                  "api-reference/subjects/create",
+                  "api-reference/subjects/update",
+                  "api-reference/subjects/delete"
+                ]
+              },
+              {
+                "group": "Stats & Schedule",
+                "pages": [
+                  "api-reference/stats/get",
+                  "api-reference/schedule/get",
+                  "api-reference/schedule/suggest"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "MCP Server",
+            "groups": [
+              {
+                "group": "MCP Server",
+                "pages": [
+                  "mcp/overview",
+                  "mcp/installation",
+                  "mcp/tools",
+                  "mcp/examples"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "anchor": "GitHub",
+        "href": "https://github.com/KenioCLG/take-time",
+        "icon": "github"
+      }
+    ]
+  },
+  "api": {
+    "mdx": {
+      "server": "https://api.taketime.app/v1",
+      "auth": {
+        "method": "bearer"
+      }
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "App",
+        "href": "https://study-planner-five-sand.vercel.app"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://study-planner-five-sand.vercel.app"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/KenioCLG/take-time"
+    }
+  }
+}
