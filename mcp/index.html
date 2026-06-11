@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Take Time MCP Server — AI-Powered Study Planning</title>
+  <meta name="description" content="Connect your AI assistant to Take Time. Manage study blocks, activities, and schedules through the Model Context Protocol.">
+  <link rel="icon" href="../icons/favicon.svg">
+  <style>
+    :root {
+      --c-bg: #0a0a0f;
+      --c-surface: #12121a;
+      --c-border: #1e1e2e;
+      --c-text: #e4e4e7;
+      --c-text-dim: #71717a;
+      --c-accent: #6366f1;
+      --c-accent-soft: rgba(99,102,241,.12);
+      --c-success: #22c55e;
+      --c-warning: #f59e0b;
+      --c-code-bg: #16161e;
+      --radius: 12px;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --c-bg: #fafafa;
+        --c-surface: #ffffff;
+        --c-border: #e4e4e7;
+        --c-text: #18181b;
+        --c-text-dim: #71717a;
+        --c-accent: #4f46e5;
+        --c-accent-soft: rgba(79,70,229,.08);
+        --c-code-bg: #f4f4f5;
+      }
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(10,10,15,.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--c-border);
+      padding: 16px 0;
+    }
+    @media (prefers-color-scheme: light) {
+      nav { background: rgba(250,250,250,.85); }
+    }
+    nav .container { display: flex; align-items: center; justify-content: space-between; }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--c-text); font-weight: 700; font-size: 18px; }
+    .nav-brand img { width: 28px; height: 28px; border-radius: 6px; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a { color: var(--c-text-dim); text-decoration: none; font-size: 14px; padding: 6px 12px; border-radius: 8px; transition: all .2s; }
+    .nav-links a:hover { color: var(--c-text); background: var(--c-accent-soft); }
+    .lang-toggle { background: var(--c-accent-soft); border: 1px solid var(--c-border); color: var(--c-accent); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+
+    /* HERO */
+    .hero { padding: 80px 0 60px; text-align: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--c-accent-soft); color: var(--c-accent); font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 20px; margin-bottom: 20px; }
+    .hero h1 { font-size: clamp(32px, 5vw, 48px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 16px; }
+    .hero h1 span { color: var(--c-accent); }
+    .hero p { font-size: 18px; color: var(--c-text-dim); max-width: 560px; margin: 0 auto 32px; }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all .2s; border: none; cursor: pointer; }
+    .btn-primary { background: var(--c-accent); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--c-text); border: 1px solid var(--c-border); }
+    .btn-outline:hover { border-color: var(--c-accent); color: var(--c-accent); }
+
+    /* FEATURES */
+    .features { padding: 60px 0; }
+    .features h2 { font-size: 28px; font-weight: 700; margin-bottom: 32px; text-align: center; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .feature-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: border-color .2s;
+    }
+    .feature-card:hover { border-color: var(--c-accent); }
+    .feature-icon { font-size: 28px; margin-bottom: 12px; }
+    .feature-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .feature-card p { font-size: 14px; color: var(--c-text-dim); }
+
+    /* TOOLS TABLE */
+    .tools { padding: 60px 0; }
+    .tools h2 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+    .tools > .container > p { color: var(--c-text-dim); margin-bottom: 24px; }
+    .tool-list { display: flex; flex-direction: column; gap: 8px; }
+    .tool-item {
+      display: flex; align-items: flex-start; gap: 16px;
+      background: var(--c-surface); border: 1px solid var(--c-border);
+      border-radius: var(--radius); padding: 16px 20px;
+    }
+    .tool-name { font-weight: 600; font-size: 14px; color: var(--c-accent); white-space: nowrap; min-width: 180px; font-family: 'SF Mono', 'Fira Code', monospace; }
+    .tool-desc { font-size: 14px; color: var(--c-text-dim); }
+
+    /* SETUP */
+    .setup { padding: 60px 0; }
+    .setup h2 { font-size: 28px; font-weight: 700; margin-bottom: 24px; text-align: center; }
+    .code-block {
+      background: var(--c-code-bg);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .code-block .label { position: absolute; top: 8px; right: 12px; font-size: 11px; color: var(--c-text-dim); text-transform: uppercase; letter-spacing: .05em; }
+    .code-block .comment { color: var(--c-text-dim); }
+    .code-block .string { color: var(--c-success); }
+    .code-block .key { color: var(--c-accent); }
+    .step-list { list-style: none; counter-reset: steps; }
+    .step-list li { counter-increment: steps; display: flex; gap: 16px; align-items: flex-start; margin-bottom: 20px; }
+    .step-list li::before {
+      content: counter(steps);
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; min-width: 32px;
+      background: var(--c-accent-soft); color: var(--c-accent);
+      font-weight: 700; font-size: 14px; border-radius: 50%;
+    }
+    .step-list li div h3 { font-size: 16px; margin-bottom: 4px; }
+    .step-list li div p { font-size: 14px; color: var(--c-text-dim); }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--c-border); padding: 32px 0; text-align: center; }
+    footer p { font-size: 13px; color: var(--c-text-dim); }
+    footer a { color: var(--c-accent); text-decoration: none; }
+
+    /* i18n hidden */
+    [data-lang] { display: none; }
+    [data-lang].active { display: block; }
+    span[data-lang].active, a[data-lang].active { display: inline; }
+    .feature-card[data-lang].active, .tool-item[data-lang].active { display: flex; }
+    .hero-actions [data-lang].active { display: inline-flex; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a href="../" class="nav-brand">
+        <img src="../icons/favicon.svg" alt="Take Time">
+        <span>Take Time</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features" data-lang="en" class="active">Features</a>
+        <a href="#features" data-lang="pt">Recursos</a>
+        <a href="#tools" data-lang="en" class="active">Tools</a>
+        <a href="#tools" data-lang="pt">Ferramentas</a>
+        <a href="#setup" data-lang="en" class="active">Setup</a>
+        <a href="#setup" data-lang="pt">Instalação</a>
+        <button class="lang-toggle" onclick="toggleLang()">PT</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span data-lang="en" class="active">Model Context Protocol</span>
+        <span data-lang="pt">Model Context Protocol</span>
+      </div>
+
+      <h1 data-lang="en" class="active">Connect your <span>AI assistant</span> to Take Time</h1>
+      <h1 data-lang="pt">Conecte seu <span>assistente IA</span> ao Take Time</h1>
+
+      <p data-lang="en" class="active">Manage study blocks, activities, schedules, and track progress — all through natural language with your favorite AI tool.</p>
+      <p data-lang="pt" class="active">Gerencie blocos de estudo, atividades, horários e acompanhe seu progresso — tudo por linguagem natural com sua ferramenta de IA favorita.</p>
+
+      <div class="hero-actions">
+        <a href="#setup" class="btn btn-primary" data-lang="en" class="active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Get Started
+        </a>
+        <a href="#setup" class="btn btn-primary" data-lang="pt">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Começar
+        </a>
+        <a href="https://modelcontextprotocol.io" target="_blank" class="btn btn-outline" data-lang="en" class="active">
+          <span>Learn about MCP</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <a href="https://modelcontextprotocol.io" target="_blank" class="btn btn-outline" data-lang="pt">
+          <span>Sobre o MCP</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2 data-lang="en" class="active">What you can do</h2>
+      <h2 data-lang="pt">O que você pode fazer</h2>
+
+      <div class="feature-grid">
+        <div class="feature-card" data-lang="en" class="active">
+          <div class="feature-icon">📅</div>
+          <h3>Manage Blocks</h3>
+          <p>Create, edit, and delete study blocks. Mark them as done. Your AI handles the scheduling.</p>
+        </div>
+        <div class="feature-card" data-lang="pt">
+          <div class="feature-icon">📅</div>
+          <h3>Gerenciar Blocos</h3>
+          <p>Crie, edite e exclua blocos de estudo. Marque como feitos. Sua IA cuida da agenda.</p>
+        </div>
+
+        <div class="feature-card" data-lang="en" class="active">
+          <div class="feature-icon">📚</div>
+          <h3>Activities & Profiles</h3>
+          <p>Create study subjects, training routines, and habit profiles with full syllabus support.</p>
+        </div>
+        <div class="feature-card" data-lang="pt">
+          <div class="feature-icon">📚</div>
+          <h3>Atividades & Perfis</h3>
+          <p>Crie matérias de estudo, rotinas de treino e perfis de hábitos com suporte completo a edital.</p>
+        </div>
+
+        <div class="feature-card" data-lang="en" class="active">
+          <div class="feature-icon">📊</div>
+          <h3>Track Progress</h3>
+          <p>Get stats, completion rates, heatmap data. Ask your AI "how was my week?" and get answers.</p>
+        </div>
+        <div class="feature-card" data-lang="pt">
+          <div class="feature-icon">📊</div>
+          <h3>Acompanhar Progresso</h3>
+          <p>Obtenha estatísticas, taxas de conclusão, dados do heatmap. Pergunte "como foi minha semana?" e receba respostas.</p>
+        </div>
+
+        <div class="feature-card" data-lang="en" class="active">
+          <div class="feature-icon">⚡</div>
+          <h3>Smart Suggestions</h3>
+          <p>AI can analyze your patterns and suggest optimal study schedules based on your data.</p>
+        </div>
+        <div class="feature-card" data-lang="pt">
+          <div class="feature-icon">⚡</div>
+          <h3>Sugestões Inteligentes</h3>
+          <p>A IA pode analisar seus padrões e sugerir horários de estudo otimizados com base nos seus dados.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOLS -->
+  <section class="tools" id="tools">
+    <div class="container">
+      <h2 data-lang="en" class="active">Available Tools</h2>
+      <h2 data-lang="pt">Ferramentas Disponíveis</h2>
+      <p data-lang="en" class="active">These are the MCP tools your AI assistant will have access to:</p>
+      <p data-lang="pt">Estas são as ferramentas MCP que seu assistente de IA terá acesso:</p>
+
+      <div class="tool-list">
+        <div class="tool-item">
+          <span class="tool-name">list_blocks</span>
+          <span class="tool-desc" data-lang="en" class="active">List study blocks with optional date range and status filters</span>
+          <span class="tool-desc" data-lang="pt">Listar blocos de estudo com filtros opcionais de data e status</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">create_block</span>
+          <span class="tool-desc" data-lang="en" class="active">Create a new study block with subject, time, and topic</span>
+          <span class="tool-desc" data-lang="pt">Criar novo bloco de estudo com atividade, horário e tópico</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">update_block</span>
+          <span class="tool-desc" data-lang="en" class="active">Update an existing block (time, subject, done status)</span>
+          <span class="tool-desc" data-lang="pt">Atualizar um bloco existente (horário, atividade, status)</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">delete_block</span>
+          <span class="tool-desc" data-lang="en" class="active">Delete a study block by ID</span>
+          <span class="tool-desc" data-lang="pt">Excluir um bloco de estudo por ID</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">list_subjects</span>
+          <span class="tool-desc" data-lang="en" class="active">List all activities/subjects with their profiles and slots</span>
+          <span class="tool-desc" data-lang="pt">Listar todas as atividades/matérias com perfis e horários</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">create_subject</span>
+          <span class="tool-desc" data-lang="en" class="active">Create a new activity (study, training, or routine type)</span>
+          <span class="tool-desc" data-lang="pt">Criar nova atividade (tipo estudo, treino ou rotina)</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">get_stats</span>
+          <span class="tool-desc" data-lang="en" class="active">Get completion stats, streaks, heatmap data, and weekly summary</span>
+          <span class="tool-desc" data-lang="pt">Obter estatísticas de conclusão, sequências, heatmap e resumo semanal</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">get_schedule</span>
+          <span class="tool-desc" data-lang="en" class="active">Get the full weekly schedule with all time slots</span>
+          <span class="tool-desc" data-lang="pt">Obter a agenda semanal completa com todos os horários</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">suggest_schedule</span>
+          <span class="tool-desc" data-lang="en" class="active">AI-powered schedule suggestions based on user patterns and goals</span>
+          <span class="tool-desc" data-lang="pt">Sugestões de horário baseadas em IA usando padrões e metas do usuário</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETUP -->
+  <section class="setup" id="setup">
+    <div class="container">
+      <h2 data-lang="en" class="active">Quick Setup</h2>
+      <h2 data-lang="pt">Instalação Rápida</h2>
+
+      <ol class="step-list">
+        <li data-lang="en" class="active">
+          <div>
+            <h3>Install the server</h3>
+            <p>Install the Take Time MCP server globally via npm:</p>
+          </div>
+        </li>
+        <li data-lang="pt">
+          <div>
+            <h3>Instale o servidor</h3>
+            <p>Instale o servidor MCP do Take Time globalmente via npm:</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="code-block">
+        <span class="label">terminal</span>
+        <span class="comment"># Install globally</span><br>
+        npm install -g @taketime/mcp-server
+      </div>
+
+      <ol class="step-list" start="2">
+        <li data-lang="en" class="active">
+          <div>
+            <h3>Configure your AI client</h3>
+            <p>Add the server to your Claude Desktop, Cursor, or any MCP-compatible client:</p>
+          </div>
+        </li>
+        <li data-lang="pt">
+          <div>
+            <h3>Configure seu cliente de IA</h3>
+            <p>Adicione o servidor no Claude Desktop, Cursor ou qualquer cliente compatível com MCP:</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="code-block">
+        <span class="label">claude_desktop_config.json</span>
+{<br>
+&nbsp;&nbsp;<span class="key">"mcpServers"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"taketime"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"command"</span>: <span class="string">"npx"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"args"</span>: [<span class="string">"@taketime/mcp-server"</span>],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"env"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"TAKETIME_API_KEY"</span>: <span class="string">"your-api-key"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+}
+      </div>
+
+      <ol class="step-list" start="3">
+        <li data-lang="en" class="active">
+          <div>
+            <h3>Get your API key</h3>
+            <p>Log in to Take Time, go to Settings, and generate your API key. Paste it in the config above.</p>
+          </div>
+        </li>
+        <li data-lang="pt">
+          <div>
+            <h3>Obtenha sua chave de API</h3>
+            <p>Faça login no Take Time, vá em Configurações e gere sua chave de API. Cole no config acima.</p>
+          </div>
+        </li>
+      </ol>
+
+      <ol class="step-list" start="4">
+        <li data-lang="en" class="active">
+          <div>
+            <h3>Start using!</h3>
+            <p>Ask your AI things like "Create a study block for JavaScript from 9am to 10am" or "How many blocks did I complete this week?"</p>
+          </div>
+        </li>
+        <li data-lang="pt">
+          <div>
+            <h3>Comece a usar!</h3>
+            <p>Peça coisas como "Crie um bloco de estudo de JavaScript das 9h às 10h" ou "Quantos blocos concluí esta semana?"</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p data-lang="en" class="active">Take Time MCP Server — Built with the <a href="https://modelcontextprotocol.io">Model Context Protocol</a></p>
+      <p data-lang="pt">Take Time MCP Server — Construído com o <a href="https://modelcontextprotocol.io">Model Context Protocol</a></p>
+    </div>
+  </footer>
+
+  <script>
+    let currentLang = (navigator.language || '').startsWith('pt') ? 'pt' : 'en';
+
+    function setLang(lang) {
+      currentLang = lang;
+      document.querySelectorAll('[data-lang]').forEach(el => {
+        el.classList.toggle('active', el.dataset.lang === lang);
+      });
+      document.querySelector('.lang-toggle').textContent = lang === 'en' ? 'PT' : 'EN';
+      document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+    }
+
+    function toggleLang() {
+      setLang(currentLang === 'en' ? 'pt' : 'en');
+    }
+
+    setLang(currentLang);
+  </script>
+</body>
+</html>

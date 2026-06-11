@@ -1,0 +1,115 @@
+---
+title: MCP Tools
+description: "Complete reference of all tools available through the Take Time MCP Server."
+---
+
+## Available Tools
+
+The Take Time MCP Server exposes the following tools to your AI assistant:
+
+### Read Operations
+
+<ResponseField name="list_blocks" type="tool">
+  List study blocks with optional date range and status filters.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `date` | string | No | Filter by date (`YYYY-MM-DD`) |
+  | `date_from` | string | No | Start of date range |
+  | `date_to` | string | No | End of date range |
+  | `subject_id` | string | No | Filter by subject |
+  | `done` | boolean | No | Filter by completion |
+</ResponseField>
+
+<ResponseField name="list_subjects" type="tool">
+  List all activities/subjects with profiles, slots, and content.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `type` | string | No | `study`, `training`, or `inactive` |
+</ResponseField>
+
+<ResponseField name="get_stats" type="tool">
+  Get completion stats, streaks, heatmap, and weekly summary.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `period` | string | No | `today`, `week`, `month`, or `all` |
+</ResponseField>
+
+<ResponseField name="get_schedule" type="tool">
+  Get the full weekly schedule with all time slots.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `week_offset` | number | No | `0` = current, `-1` = last, `1` = next |
+</ResponseField>
+
+---
+
+### Write Operations
+
+<ResponseField name="create_block" type="tool">
+  Create a new study block on the schedule.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `subject_id` | string | Yes | Activity ID |
+  | `date` | string | Yes | Date (`YYYY-MM-DD`) |
+  | `start` | string | Yes | Start time (`HH:MM`) |
+  | `end` | string | Yes | End time (`HH:MM`) |
+  | `topic` | string | No | Topic or syllabus item |
+</ResponseField>
+
+<ResponseField name="update_block" type="tool">
+  Update an existing block. Only send fields to change.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `block_id` | string | Yes | Block ID |
+  | `subject_id` | string | No | New activity |
+  | `start` | string | No | New start time |
+  | `end` | string | No | New end time |
+  | `done` | boolean | No | Completion status |
+</ResponseField>
+
+<ResponseField name="create_subject" type="tool">
+  Create a new activity profile.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `name` | string | Yes | Activity name |
+  | `type` | string | Yes | `study`, `training`, `inactive` |
+  | `color` | string | No | Hex color |
+  | `slots` | array | No | Weekly time slots |
+</ResponseField>
+
+<ResponseField name="suggest_schedule" type="tool">
+  Get AI-powered schedule suggestions based on patterns and goals.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `goal` | string | No | Natural language goal |
+  | `available_hours` | number | No | Max daily hours |
+</ResponseField>
+
+---
+
+### Delete Operations
+
+<ResponseField name="delete_block" type="tool">
+  Permanently delete a study block.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `block_id` | string | Yes | Block ID to delete |
+</ResponseField>

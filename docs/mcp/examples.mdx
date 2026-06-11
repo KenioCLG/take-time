@@ -1,0 +1,92 @@
+---
+title: Usage Examples
+description: "Real-world examples of using Take Time through your AI assistant."
+---
+
+## Daily Planning
+
+> **You:** "What do I have scheduled for today?"
+
+The AI calls `list_blocks` with today's date and presents your schedule.
+
+> **You:** "I want to add a Math study session from 2pm to 3:30pm about Linear Algebra"
+
+The AI calls `create_block` with the subject, time, and topic.
+
+---
+
+## Weekly Review
+
+> **You:** "How was my study week? Give me a summary."
+
+The AI calls `get_stats` with `period: "week"` and formats a summary:
+
+```
+Weekly Summary:
+- 35/42 blocks completed (83%)
+- 35 hours studied
+- 7-day streak!
+- Top subject: JavaScript (12 blocks)
+- Needs attention: Mathematics (only 3/8 completed)
+```
+
+---
+
+## Schedule Optimization
+
+> **You:** "I want to focus more on Math next week. I have 4 hours per day, mornings are best."
+
+The AI calls `suggest_schedule` and presents recommendations:
+
+```
+Suggested changes:
+1. Mathematics: Mon-Fri 08:00-09:30 (up from 2 days)
+2. JavaScript: Mon/Wed/Fri 10:00-10:45 (reduced)
+3. Morning Routine: Keep daily 07:00-07:30
+
+Would you like me to apply these changes?
+```
+
+---
+
+## Quick Actions
+
+<CardGroup cols={2}>
+  <Card title="Mark done">
+    "Mark my 9am JavaScript block as done"
+
+    → `update_block({ block_id, done: true })`
+  </Card>
+  <Card title="Reschedule">
+    "Move my math block to 3pm"
+
+    → `update_block({ block_id, start: "15:00", end: "16:00" })`
+  </Card>
+  <Card title="Cancel block">
+    "Delete my evening study block"
+
+    → `delete_block({ block_id })`
+  </Card>
+  <Card title="New activity">
+    "Create a Physics study profile with MWF at 11am"
+
+    → `create_subject({ name, type, slots })`
+  </Card>
+</CardGroup>
+
+---
+
+## Advanced: Building Automations
+
+You can combine MCP tools with your AI assistant's capabilities:
+
+> **You:** "Every Monday, check my previous week's completion rate. If it's below 80%, suggest adjustments for the new week."
+
+The AI can chain:
+1. `get_stats({ period: "week" })` — check last week
+2. If `completion_rate < 0.8` → `suggest_schedule()` — get suggestions
+3. Present recommendations for your approval
+
+<Info>
+  The MCP Server doesn't auto-apply changes. Your AI always asks for confirmation before modifying your schedule.
+</Info>

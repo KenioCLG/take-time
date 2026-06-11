@@ -1,0 +1,140 @@
+---
+title: Quickstart
+description: "Get up and running with the Take Time API in under 5 minutes."
+---
+
+## 1. Get your API key
+
+After creating your account at [Take Time](https://study-planner-five-sand.vercel.app), go to **Settings** and generate an API key.
+
+<Info>
+  Your API key starts with `tt_live_` for production or `tt_test_` for development mode. Keep it secret — treat it like a password.
+</Info>
+
+## 2. Make your first request
+
+Let's list your study blocks for today:
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET "https://api.taketime.app/v1/blocks?date=2026-06-11" \
+  -H "Authorization: Bearer tt_live_your_key_here"
+```
+
+```javascript Node.js
+const response = await fetch('https://api.taketime.app/v1/blocks?date=2026-06-11', {
+  headers: {
+    'Authorization': 'Bearer tt_live_your_key_here'
+  }
+});
+const { data } = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://api.taketime.app/v1/blocks',
+    params={'date': '2026-06-11'},
+    headers={'Authorization': 'Bearer tt_live_your_key_here'}
+)
+data = response.json()['data']
+print(data)
+```
+
+</CodeGroup>
+
+## 3. Create a study block
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.taketime.app/v1/blocks" \
+  -H "Authorization: Bearer tt_live_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "subject_id": "sub_xyz",
+    "date": "2026-06-11",
+    "start": "09:00",
+    "end": "10:00",
+    "topic": "Arrays & Loops"
+  }'
+```
+
+```javascript Node.js
+const response = await fetch('https://api.taketime.app/v1/blocks', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer tt_live_your_key_here',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    subject_id: 'sub_xyz',
+    date: '2026-06-11',
+    start: '09:00',
+    end: '10:00',
+    topic: 'Arrays & Loops'
+  })
+});
+const { data } = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.taketime.app/v1/blocks',
+    headers={'Authorization': 'Bearer tt_live_your_key_here'},
+    json={
+        'subject_id': 'sub_xyz',
+        'date': '2026-06-11',
+        'start': '09:00',
+        'end': '10:00',
+        'topic': 'Arrays & Loops'
+    }
+)
+```
+
+</CodeGroup>
+
+## 4. Response format
+
+Every API response follows this structure:
+
+```json
+{
+  "data": { ... },
+  "error": null,
+  "meta": {
+    "request_id": "req_abc123",
+    "timestamp": "2026-06-11T09:00:00Z"
+  }
+}
+```
+
+<Warning>
+  When an error occurs, `data` will be `null` and `error` will contain a message and code:
+  ```json
+  {
+    "data": null,
+    "error": {
+      "code": "VALIDATION_ERROR",
+      "message": "Start time must be before end time"
+    },
+    "meta": { ... }
+  }
+  ```
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="lock" href="/authentication">
+    Deep dive into API keys and permissions
+  </Card>
+  <Card title="MCP Server" icon="bolt" href="/mcp/overview">
+    Connect your AI assistant for natural language control
+  </Card>
+</CardGroup>

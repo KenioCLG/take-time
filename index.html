@@ -78,9 +78,9 @@
     <div class="auth-initial" style="position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; z-index:1; padding: 20px; box-sizing: border-box;">
       <div id="logo3d" style="width: 200px; height: 200px; margin-bottom: 12px; position:relative;"></div>
       <h1 class="header-title text-shine" data-i18n="app.name" style="font-size:40px; font-weight:800; text-align:center; margin-bottom: 16px; text-transform: none;">Take Time</h1>
-      <p style="text-align:center; color:var(--ds-text-secondary); margin-bottom:40px; max-width: 300px;">Seu planejador de estudos inteligente. Sincronize seus ciclos e alcance suas metas de aprovação.</p>
+      <p style="text-align:center; color:var(--ds-text-secondary); margin-bottom:40px; max-width: 300px;" data-i18n="app.tagline">Seu planejador de estudos inteligente. Sincronize seus ciclos e alcance suas metas de aprovação.</p>
       
-      <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnShowAuthDrawer" style="width:100%; max-width:280px; position:absolute; bottom: 60px;">Fazer Login</button>
+      <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnShowAuthDrawer" style="width:100%; max-width:280px; position:absolute; bottom: 60px;" data-i18n="auth.show_login">Fazer Login</button>
     </div>
 
     <!-- Modal: Auth Drawer -->
@@ -88,25 +88,25 @@
       <div class="ds-sheet">
         <div class="ds-sheet-handle-area"><div class="ds-sheet-handle"></div></div>
         <div class="ds-sheet-header">
-          <button class="ds-btn ds-btn-plain" id="authCancel">Cancelar</button>
-          <h3 class="ds-headline" id="authTitle">Acesso</h3>
+          <button class="ds-btn ds-btn-plain" id="authCancel" data-i18n="auth.cancel">Cancelar</button>
+          <h3 class="ds-headline" id="authTitle" data-i18n="auth.title">Acesso</h3>
           <div style="width: 70px;"></div> <!-- Spacer para centralizar -->
         </div>
         
         <!-- Formulário de Login -->
         <div class="ds-sheet-body" id="authBodyLogin">
           <div class="form-group">
-            <label class="ds-label">E-mail</label>
-            <input type="email" id="inputAuthEmail" class="ds-input" placeholder="seu@email.com">
+            <label class="ds-label" data-i18n="auth.email">E-mail</label>
+            <input type="email" id="inputAuthEmail" class="ds-input" data-i18n-placeholder="auth.email_placeholder" placeholder="seu@email.com">
           </div>
           <div class="form-group">
-            <label class="ds-label">Senha</label>
-            <input type="password" id="inputAuthPassword" class="ds-input" placeholder="Sua senha">
+            <label class="ds-label" data-i18n="auth.password">Senha</label>
+            <input type="password" id="inputAuthPassword" class="ds-input" data-i18n-placeholder="auth.password_placeholder" placeholder="Sua senha">
           </div>
-          <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnAuthLogin" style="margin-top: 16px;">Acessar Dashboard</button>
+          <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnAuthLogin" style="margin-top: 16px;" data-i18n="auth.login_btn">Acessar Dashboard</button>
           <div style="text-align: center; margin-top: 24px;">
             <p style="color: var(--ds-text-secondary); font-size: var(--ds-text-sm);">
-              Não tem conta? <a href="#" id="linkGoToSignup" style="color: var(--ds-color-primary); text-decoration: none; font-weight: 600;">Cadastrar</a>
+              <span data-i18n="auth.no_account">Não tem conta?</span> <a href="#" id="linkGoToSignup" style="color: var(--ds-color-primary); text-decoration: none; font-weight: 600;" data-i18n="auth.go_signup">Cadastrar</a>
             </p>
           </div>
         </div>
@@ -114,21 +114,21 @@
         <!-- Formulário de Cadastro -->
         <div class="ds-sheet-body hidden" id="authBodySignup">
           <div class="form-group">
-            <label class="ds-label">E-mail</label>
-            <input type="email" id="inputSignupEmail" class="ds-input" placeholder="seu@email.com">
+            <label class="ds-label" data-i18n="auth.email">E-mail</label>
+            <input type="email" id="inputSignupEmail" class="ds-input" data-i18n-placeholder="auth.email_placeholder" placeholder="seu@email.com">
           </div>
           <div class="form-group">
-            <label class="ds-label">Senha</label>
-            <input type="password" id="inputSignupPassword" class="ds-input" placeholder="Sua senha">
+            <label class="ds-label" data-i18n="auth.password">Senha</label>
+            <input type="password" id="inputSignupPassword" class="ds-input" data-i18n-placeholder="auth.password_placeholder" placeholder="Sua senha">
           </div>
           <div class="form-group">
-            <label class="ds-label">Repetir Senha</label>
-            <input type="password" id="inputSignupPasswordRepeat" class="ds-input" placeholder="Repita sua senha">
+            <label class="ds-label" data-i18n="auth.password_repeat">Repetir Senha</label>
+            <input type="password" id="inputSignupPasswordRepeat" class="ds-input" data-i18n-placeholder="auth.password_repeat_placeholder" placeholder="Repita sua senha">
           </div>
-          <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnAuthSignup" style="margin-top: 16px;">Criar Conta</button>
+          <button type="button" class="ds-btn ds-btn-tinted ds-btn-block" id="btnAuthSignup" style="margin-top: 16px;" data-i18n="auth.signup_btn">Criar Conta</button>
           <div style="text-align: center; margin-top: 24px;">
             <p style="color: var(--ds-text-secondary); font-size: var(--ds-text-sm);">
-              Já tem conta? <a href="#" id="linkGoToLogin" style="color: var(--ds-color-primary); text-decoration: none; font-weight: 600;">Fazer Login</a>
+              <span data-i18n="auth.has_account">Já tem conta?</span> <a href="#" id="linkGoToLogin" style="color: var(--ds-color-primary); text-decoration: none; font-weight: 600;" data-i18n="auth.go_login">Fazer Login</a>
             </p>
           </div>
         </div>
@@ -345,23 +345,23 @@
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ds-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12" y2="18.01" stroke-width="2.5"/></svg>
           </div>
           <div class="pwa-install-text">
-            <strong>Instalar Take Time</strong>
-            <span>Acesso rápido na tela inicial</span>
+            <strong data-i18n="pwa.install_title">Instalar Take Time</strong>
+            <span data-i18n="pwa.install_subtitle">Acesso rápido na tela inicial</span>
           </div>
-          <button class="pwa-install-action" id="btnInstallPwa">Instalar</button>
+          <button class="pwa-install-action" id="btnInstallPwa" data-i18n="pwa.install_btn">Instalar</button>
         </div>
         <div class="pwa-ios-steps hidden" id="pwaIosSteps">
           <div class="pwa-ios-step">
             <span class="pwa-ios-step-num">1</span>
-            <span>Toque em <strong>Compartilhar</strong> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
+            <span data-i18n-html="pwa.ios_step1">Toque em <strong>Compartilhar</strong></span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </div>
           <div class="pwa-ios-step">
             <span class="pwa-ios-step-num">2</span>
-            <span>Escolha <strong>"Adicionar à Tela de Início"</strong></span>
+            <span data-i18n-html="pwa.ios_step2">Escolha <strong>"Adicionar à Tela de Início"</strong></span>
           </div>
           <div class="pwa-ios-step">
             <span class="pwa-ios-step-num">3</span>
-            <span>Toque em <strong>"Adicionar"</strong></span>
+            <span data-i18n-html="pwa.ios_step3">Toque em <strong>"Adicionar"</strong></span>
           </div>
         </div>
       </div>
@@ -370,19 +370,19 @@
       <div class="settings-section">
         <p class="settings-section-label" style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          Letreiro Motivacional
+          <span data-i18n="marquee.title">Letreiro Motivacional</span>
         </p>
-        <p style="font-size:12px; color:var(--ds-text-secondary); margin: 0 0 12px 4px; line-height: 1.4;">Adicione frases inspiradoras para o painel superior (uma por linha).</p>
+        <p style="font-size:12px; color:var(--ds-text-secondary); margin: 0 0 12px 4px; line-height: 1.4;" data-i18n="marquee.description">Adicione frases inspiradoras para o painel superior (uma por linha).</p>
         <div style="display:flex; flex-direction:column; align-items:stretch; gap:12px; background:var(--ds-bg-card); padding:16px; border-radius:var(--ds-radius-md); box-shadow:var(--ds-shadow-sm);">
-          <textarea id="marqueeTextarea" class="ds-input" rows="4" placeholder="Ex: A disciplina é a ponte entre metas e realizações..." style="width:100%; resize:vertical; font-size:14px; line-height:1.5; background:var(--ds-bg-secondary); border:1px solid transparent; transition:border 0.2s;"></textarea>
+          <textarea id="marqueeTextarea" class="ds-input" rows="4" data-i18n-placeholder="marquee.placeholder" placeholder="Ex: A disciplina é a ponte entre metas e realizações..." style="width:100%; resize:vertical; font-size:14px; line-height:1.5; background:var(--ds-bg-secondary); border:1px solid transparent; transition:border 0.2s;"></textarea>
           <div style="display:flex; gap:12px;">
             <button class="ds-btn ds-btn-plain" id="btnResetMarquee" style="flex:1;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-              Restaurar
+              <span data-i18n="marquee.reset">Restaurar</span>
             </button>
             <button class="ds-btn ds-btn-tinted" id="btnSaveMarquee" style="flex:2;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-              Salvar Frases
+              <span data-i18n="marquee.save">Salvar Frases</span>
             </button>
           </div>
         </div>
@@ -565,8 +565,8 @@
     <div class="ds-sheet">
       <div class="ds-sheet-handle-area"><div class="ds-sheet-handle"></div></div>
       <div class="ds-sheet-header">
-        <button class="ds-btn ds-btn-plain" onclick="DS.sheet.close(document.getElementById('modalInfo'))">Fechar</button>
-        <h3 class="ds-headline" id="modalInfoTitle">Informação</h3>
+        <button class="ds-btn ds-btn-plain" onclick="DS.sheet.close(document.getElementById('modalInfo'))" data-i18n="common.close">Fechar</button>
+        <h3 class="ds-headline" id="modalInfoTitle" data-i18n="common.info">Informação</h3>
         <div style="width: 60px;"></div>
       </div>
       <div class="ds-sheet-body" id="modalInfoBody" style="font-size: 14px; line-height: 1.5; color: var(--ds-text-secondary); padding-bottom: 24px;">

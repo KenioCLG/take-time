@@ -1,0 +1,92 @@
+---
+title: Activities & Subjects
+description: "Profiles that define what you study, train, or practice."
+---
+
+## What is an Activity?
+
+An **activity** (also called a **subject** or **profile**) represents something you dedicate time to. Each activity has a type that determines its content structure.
+
+## Activity Types
+
+<Tabs>
+  <Tab title="Study">
+    **Study activities** are linked to a **syllabus** — a list of topics with time estimates.
+
+    Perfect for: exam prep, course content, reading lists.
+
+    ```json
+    {
+      "name": "JavaScript",
+      "type": "study",
+      "color": "#6366f1",
+      "syllabus": [
+        { "title": "Arrays", "duration": 30, "done": false },
+        { "title": "Closures", "duration": 45, "done": true }
+      ]
+    }
+    ```
+  </Tab>
+  <Tab title="Training">
+    **Training activities** are linked to an **exercise sheet** — a workout plan with sets, reps, and weights.
+
+    Perfect for: gym routines, physical training.
+
+    ```json
+    {
+      "name": "Upper Body",
+      "type": "training",
+      "color": "#22c55e",
+      "exercises": [
+        { "name": "Bench Press", "sets": 4, "reps": 10, "weight": "60kg" },
+        { "name": "Pull-ups", "sets": 3, "reps": 8, "weight": "BW" }
+      ]
+    }
+    ```
+  </Tab>
+  <Tab title="Routine">
+    **Routine activities** are linked to **micro-habits** — a daily checklist of small tasks.
+
+    Perfect for: morning routines, evening wind-down, wellness habits.
+
+    ```json
+    {
+      "name": "Morning Routine",
+      "type": "inactive",
+      "color": "#f59e0b",
+      "habits": [
+        { "name": "Meditate 10min" },
+        { "name": "Read 5 pages" },
+        { "name": "Stretch" }
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Weekly Slots
+
+Each activity can have **weekly slots** — recurring time blocks assigned to specific days of the week.
+
+```json
+{
+  "slots": [
+    { "days": [1, 3, 5], "start": "09:00", "end": "10:00" },
+    { "days": [2, 4], "start": "14:00", "end": "15:30" }
+  ]
+}
+```
+
+<Note>
+  Days use ISO format: 0 = Sunday, 1 = Monday, ..., 6 = Saturday.
+</Note>
+
+## Priority Circle
+
+Activities are organized in a **Priority Circle** with 3 levels:
+
+| Level | Max Items | Description |
+|-------|-----------|-------------|
+| **Main Focus** | 3 | Highest priority — most of your time |
+| **Important** | ∞ | Active areas with moderate dedication |
+| **Flexible** | ∞ | Complementary, when time allows |

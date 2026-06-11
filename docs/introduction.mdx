@@ -1,0 +1,109 @@
+---
+title: Welcome to Take Time
+description: "Your smart study planner — now with an API and MCP Server for AI assistants."
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.png"
+  alt="Take Time Hero"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.png"
+  alt="Take Time Hero"
+/>
+
+## What is Take Time?
+
+Take Time is a **personal study planner** designed to help students organize their time using cycles, intelligent scheduling, and visual progress tracking.
+
+With the Take Time **API** and **MCP Server**, you can now connect your AI assistant (Claude, Cursor, etc.) to manage your study schedule using natural language.
+
+<CardGroup cols={2}>
+  <Card
+    title="Quickstart"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Get up and running in under 5 minutes
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/introduction"
+  >
+    Full REST API documentation
+  </Card>
+  <Card
+    title="MCP Server"
+    icon="bolt"
+    href="/mcp/overview"
+  >
+    Connect your AI assistant to Take Time
+  </Card>
+  <Card
+    title="Authentication"
+    icon="lock"
+    href="/authentication"
+  >
+    Learn how to authenticate your requests
+  </Card>
+</CardGroup>
+
+## What you can do
+
+<CardGroup cols={3}>
+  <Card title="Study Blocks" icon="calendar">
+    Create, edit, and complete study blocks with subjects and topics
+  </Card>
+  <Card title="Activities" icon="book-open">
+    Manage study subjects, training routines, and daily habits
+  </Card>
+  <Card title="Smart Schedule" icon="clock">
+    Weekly schedule with automatic slot management
+  </Card>
+  <Card title="Progress Tracking" icon="chart-line">
+    Heatmaps, streaks, completion rates
+  </Card>
+  <Card title="Syllabus" icon="list-check">
+    Track topics, exercises, and micro-habits per activity
+  </Card>
+  <Card title="AI Integration" icon="robot">
+    Manage everything through natural language via MCP
+  </Card>
+</CardGroup>
+
+## Design Principles
+
+<AccordionGroup>
+  <Accordion title="Intention-based API">
+    Our API is designed around **what you want to do**, not how the database works.
+    `create_block` takes a subject name and time — the API handles the rest.
+  </Accordion>
+  <Accordion title="Consistent Responses">
+    Every endpoint returns the same shape: `{ data, error, meta }`.
+    No surprises, no guessing.
+  </Accordion>
+  <Accordion title="Offline-first App">
+    The Take Time app works offline with local storage and syncs to Supabase when online.
+    The API always reflects the latest synced state.
+  </Accordion>
+</AccordionGroup>
+
+## Getting Started
+
+<Steps>
+  <Step title="Create an account">
+    Sign up at [Take Time](https://study-planner-five-sand.vercel.app) and set up your first activities.
+  </Step>
+  <Step title="Generate an API key">
+    Go to **Settings** in the app and generate your API key.
+  </Step>
+  <Step title="Choose your integration">
+    Use the **REST API** directly or install the **MCP Server** for AI-powered management.
+  </Step>
+  <Step title="Start building">
+    Follow the [Quickstart](/quickstart) guide to make your first API call.
+  </Step>
+</Steps>

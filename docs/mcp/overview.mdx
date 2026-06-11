@@ -1,0 +1,69 @@
+---
+title: MCP Server Overview
+description: "Connect your AI assistant to Take Time using the Model Context Protocol."
+---
+
+## What is MCP?
+
+The **Model Context Protocol (MCP)** is an open standard that allows AI assistants like Claude, Cursor, and others to interact with external tools and data sources.
+
+The Take Time MCP Server gives your AI assistant direct access to your study data — so you can manage your schedule using natural language.
+
+## What can your AI do?
+
+<CardGroup cols={2}>
+  <Card title="Schedule Management" icon="calendar-plus">
+    "Create a JavaScript study block tomorrow at 9am"
+  </Card>
+  <Card title="Progress Review" icon="chart-bar">
+    "How was my study week? Show my completion rate"
+  </Card>
+  <Card title="Smart Planning" icon="lightbulb">
+    "Suggest an optimized schedule for next week"
+  </Card>
+  <Card title="Activity Setup" icon="folder-plus">
+    "Create a new Math activity with 3 weekly slots"
+  </Card>
+  <Card title="Block Tracking" icon="circle-check">
+    "Mark my morning study block as done"
+  </Card>
+  <Card title="Data Queries" icon="magnifying-glass">
+    "List all pending blocks for this week"
+  </Card>
+</CardGroup>
+
+## Supported Clients
+
+| Client | Status | Config File |
+|--------|--------|-------------|
+| **Claude Desktop** | Supported | `claude_desktop_config.json` |
+| **Claude Code** | Supported | `.claude/settings.json` |
+| **Cursor** | Supported | `.cursor/mcp.json` |
+| **Windsurf** | Supported | `~/.codeium/windsurf/mcp_config.json` |
+| **VS Code (Copilot)** | Supported | `.vscode/mcp.json` |
+
+## Architecture
+
+```
+┌─────────────────┐     stdio      ┌──────────────────┐     HTTPS     ┌─────────────────┐
+│   AI Assistant   │ ◄──────────► │  MCP Server      │ ◄───────────► │  Take Time API  │
+│  (Claude, etc.)  │               │  (@taketime/mcp) │               │  (Supabase)     │
+└─────────────────┘               └──────────────────┘               └─────────────────┘
+```
+
+The MCP Server runs as a **local process** on your machine. It communicates with the AI client via `stdio` and authenticates to the Take Time API using your API key.
+
+<Info>
+  Your data never passes through third-party servers. The MCP Server talks directly to the Take Time API.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/mcp/installation">
+    Set up the MCP Server in your client
+  </Card>
+  <Card title="Available Tools" icon="wrench" href="/mcp/tools">
+    See all MCP tools and what they do
+  </Card>
+</CardGroup>

@@ -1,0 +1,52 @@
+---
+title: Development Mode
+description: "Test your integration safely without affecting real data."
+---
+
+## What is Dev Mode?
+
+Development mode provides a **sandbox environment** where you can test API calls, webhooks, and MCP Server integrations without affecting your real study data.
+
+## How to Enable
+
+Use an API key with the `tt_test_` prefix. All requests made with test keys operate on a separate dataset.
+
+```bash
+# Production
+Authorization: Bearer tt_live_abc123
+
+# Development
+Authorization: Bearer tt_test_abc123
+```
+
+## Differences from Production
+
+| Feature | Production | Dev Mode |
+|---------|-----------|----------|
+| Data | Real user data | Isolated sandbox |
+| Rate limits | Standard | Relaxed (300/min) |
+| Webhooks | Real endpoints | Test endpoints only |
+| Blocks | Persistent | Reset daily at midnight UTC |
+
+## Seed Data
+
+Dev mode comes pre-loaded with sample data:
+
+- 3 activities (JavaScript, Mathematics, Morning Routine)
+- 14 blocks (current week, mix of done/undone)
+- Heatmap data for the past 30 days
+
+<Tip>
+  Use `POST /dev/reset` to reset your sandbox to the default seed data at any time.
+</Tip>
+
+## Transitioning to Production
+
+When you're ready to go live:
+
+1. Replace `tt_test_` with your `tt_live_` key
+2. Update webhook URLs to production endpoints
+3. Test one more time with a non-destructive read operation
+4. You're live!
+
+See [Production Checklist](/guides/production) for the full list.

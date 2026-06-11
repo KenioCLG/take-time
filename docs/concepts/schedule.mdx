@@ -1,0 +1,51 @@
+---
+title: Schedule
+description: "Your weekly time map — visualized as a pizza chart."
+---
+
+## How the Schedule Works
+
+The schedule is built from **weekly slots** defined on each activity. Take Time generates blocks automatically for the current week based on these recurring patterns.
+
+```
+Monday      09:00-10:00  JavaScript
+            14:00-15:30  Mathematics
+Tuesday     09:00-10:00  Upper Body Training
+            14:00-15:00  English
+Wednesday   09:00-10:00  JavaScript
+            ...
+```
+
+## Pizza Chart
+
+The app displays your daily schedule as a **pizza chart** — a circular 24-hour visualization where each colored slice is a study block.
+
+<Info>
+  The pizza chart updates in real-time as you complete blocks. Completed blocks show a checkmark overlay.
+</Info>
+
+## Week Navigation
+
+You can navigate between weeks to:
+- Review past performance
+- Plan ahead for next week
+- Compare week-over-week productivity
+
+## Conflict Detection
+
+When creating or editing slots, the system automatically detects:
+- **Internal conflicts** — overlapping slots within the same activity
+- **Cross-activity conflicts** — slots that overlap with other activities
+
+<Warning>
+  The API returns a `CONFLICT` error when attempting to create overlapping blocks. Use `get_schedule` to check availability first.
+</Warning>
+
+## Smart Scheduling
+
+The `suggest_schedule` endpoint analyzes your:
+- Completion patterns (when you're most productive)
+- Existing commitments (occupied time slots)
+- Study goals (natural language input)
+
+And returns an optimized schedule suggestion.

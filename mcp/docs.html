@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Take Time MCP — API Documentation</title>
+  <meta name="description" content="Full API documentation for the Take Time MCP Server. Learn about available tools, parameters, and responses.">
+  <link rel="icon" href="../icons/favicon.svg">
+  <style>
+    :root {
+      --c-bg: #0a0a0f;
+      --c-surface: #12121a;
+      --c-border: #1e1e2e;
+      --c-text: #e4e4e7;
+      --c-text-dim: #71717a;
+      --c-accent: #6366f1;
+      --c-accent-soft: rgba(99,102,241,.12);
+      --c-success: #22c55e;
+      --c-warning: #f59e0b;
+      --c-danger: #ef4444;
+      --c-code-bg: #16161e;
+      --radius: 12px;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --c-bg: #fafafa; --c-surface: #fff; --c-border: #e4e4e7;
+        --c-text: #18181b; --c-text-dim: #71717a; --c-accent: #4f46e5;
+        --c-accent-soft: rgba(79,70,229,.08); --c-code-bg: #f4f4f5;
+      }
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--c-bg); color: var(--c-text); line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .layout { display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      border-right: 1px solid var(--c-border); padding: 24px 16px;
+      background: var(--c-surface);
+    }
+    .sidebar h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--c-text-dim); margin-bottom: 12px; }
+    .sidebar a {
+      display: block; padding: 6px 10px; border-radius: 6px; font-size: 14px;
+      color: var(--c-text-dim); text-decoration: none; margin-bottom: 2px; transition: all .15s;
+    }
+    .sidebar a:hover { color: var(--c-text); background: var(--c-accent-soft); }
+    .sidebar .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; text-decoration: none; color: var(--c-text); font-weight: 700; }
+    .sidebar .brand img { width: 24px; height: 24px; border-radius: 6px; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; max-width: 720px; }
+    .main h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+    .main > p.subtitle { font-size: 16px; color: var(--c-text-dim); margin-bottom: 40px; }
+
+    .endpoint { margin-bottom: 48px; border-bottom: 1px solid var(--c-border); padding-bottom: 40px; }
+    .endpoint:last-child { border-bottom: none; }
+    .endpoint h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    .method-badge {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+      padding: 3px 8px; border-radius: 4px;
+    }
+    .method-read { background: rgba(34,197,94,.15); color: var(--c-success); }
+    .method-write { background: rgba(99,102,241,.15); color: var(--c-accent); }
+    .method-delete { background: rgba(239,68,68,.15); color: var(--c-danger); }
+
+    .endpoint > p { color: var(--c-text-dim); margin-bottom: 16px; }
+    .endpoint h3 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--c-text-dim); margin: 20px 0 10px; }
+
+    .param-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .param-table th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--c-text-dim); padding: 8px 12px; border-bottom: 1px solid var(--c-border); }
+    .param-table td { padding: 10px 12px; border-bottom: 1px solid var(--c-border); vertical-align: top; }
+    .param-table code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: var(--c-accent); }
+    .param-table .type { color: var(--c-warning); font-size: 12px; }
+    .param-table .req { color: var(--c-danger); font-size: 11px; font-weight: 600; }
+    .param-table .opt { color: var(--c-text-dim); font-size: 11px; }
+
+    .code-block {
+      background: var(--c-code-bg); border: 1px solid var(--c-border); border-radius: var(--radius);
+      padding: 16px 20px; overflow-x: auto; font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px; line-height: 1.6; margin-top: 8px; white-space: pre;
+    }
+    .code-block .k { color: var(--c-accent); }
+    .code-block .s { color: var(--c-success); }
+    .code-block .c { color: var(--c-text-dim); }
+    .code-block .n { color: var(--c-warning); }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <a href="../" class="brand">
+        <img src="../icons/favicon.svg" alt="">
+        Take Time
+      </a>
+      <h2>Overview</h2>
+      <a href="./">Landing Page</a>
+      <a href="#auth">Authentication</a>
+
+      <h2 style="margin-top:20px">Tools — Read</h2>
+      <a href="#list_blocks">list_blocks</a>
+      <a href="#list_subjects">list_subjects</a>
+      <a href="#get_stats">get_stats</a>
+      <a href="#get_schedule">get_schedule</a>
+
+      <h2 style="margin-top:20px">Tools — Write</h2>
+      <a href="#create_block">create_block</a>
+      <a href="#update_block">update_block</a>
+      <a href="#create_subject">create_subject</a>
+      <a href="#suggest_schedule">suggest_schedule</a>
+
+      <h2 style="margin-top:20px">Tools — Delete</h2>
+      <a href="#delete_block">delete_block</a>
+    </aside>
+
+    <main class="main">
+      <h1>API Documentation</h1>
+      <p class="subtitle">Complete reference for the Take Time MCP Server tools.</p>
+
+      <!-- AUTH -->
+      <div class="endpoint" id="auth">
+        <h2>Authentication</h2>
+        <p>The MCP server authenticates via an API key passed as an environment variable. Each user generates their own key in the Take Time app under Settings.</p>
+        <div class="code-block"><span class="c">// Environment variable</span>
+<span class="k">TAKETIME_API_KEY</span>=<span class="s">"tt_live_abc123..."</span></div>
+      </div>
+
+      <!-- list_blocks -->
+      <div class="endpoint" id="list_blocks">
+        <h2><span class="method-badge method-read">read</span> list_blocks</h2>
+        <p>Retrieve study blocks with optional filters. Returns an array of block objects.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>date</code></td><td class="type">string</td><td class="opt">optional</td><td>Filter by date (YYYY-MM-DD)</td></tr>
+          <tr><td><code>date_from</code></td><td class="type">string</td><td class="opt">optional</td><td>Start of date range</td></tr>
+          <tr><td><code>date_to</code></td><td class="type">string</td><td class="opt">optional</td><td>End of date range</td></tr>
+          <tr><td><code>subject_id</code></td><td class="type">string</td><td class="opt">optional</td><td>Filter by subject/activity ID</td></tr>
+          <tr><td><code>done</code></td><td class="type">boolean</td><td class="opt">optional</td><td>Filter by completion status</td></tr>
+        </table>
+        <h3>Response</h3>
+        <div class="code-block">[{
+  <span class="k">"id"</span>: <span class="s">"blk_abc123"</span>,
+  <span class="k">"subject_id"</span>: <span class="s">"sub_xyz"</span>,
+  <span class="k">"subject_name"</span>: <span class="s">"JavaScript"</span>,
+  <span class="k">"date"</span>: <span class="s">"2026-06-11"</span>,
+  <span class="k">"start"</span>: <span class="s">"09:00"</span>,
+  <span class="k">"end"</span>: <span class="s">"10:00"</span>,
+  <span class="k">"topic"</span>: <span class="s">"Ch. 3 - Arrays"</span>,
+  <span class="k">"done"</span>: <span class="n">false</span>
+}]</div>
+      </div>
+
+      <!-- create_block -->
+      <div class="endpoint" id="create_block">
+        <h2><span class="method-badge method-write">write</span> create_block</h2>
+        <p>Create a new study block on the user's schedule.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>subject_id</code></td><td class="type">string</td><td class="req">required</td><td>Activity/subject ID</td></tr>
+          <tr><td><code>date</code></td><td class="type">string</td><td class="req">required</td><td>Date (YYYY-MM-DD)</td></tr>
+          <tr><td><code>start</code></td><td class="type">string</td><td class="req">required</td><td>Start time (HH:MM)</td></tr>
+          <tr><td><code>end</code></td><td class="type">string</td><td class="req">required</td><td>End time (HH:MM)</td></tr>
+          <tr><td><code>topic</code></td><td class="type">string</td><td class="opt">optional</td><td>Topic or syllabus item</td></tr>
+        </table>
+      </div>
+
+      <!-- update_block -->
+      <div class="endpoint" id="update_block">
+        <h2><span class="method-badge method-write">write</span> update_block</h2>
+        <p>Update an existing study block. Only pass the fields you want to change.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>block_id</code></td><td class="type">string</td><td class="req">required</td><td>Block ID to update</td></tr>
+          <tr><td><code>subject_id</code></td><td class="type">string</td><td class="opt">optional</td><td>New activity ID</td></tr>
+          <tr><td><code>start</code></td><td class="type">string</td><td class="opt">optional</td><td>New start time</td></tr>
+          <tr><td><code>end</code></td><td class="type">string</td><td class="opt">optional</td><td>New end time</td></tr>
+          <tr><td><code>done</code></td><td class="type">boolean</td><td class="opt">optional</td><td>Mark as done/undone</td></tr>
+        </table>
+      </div>
+
+      <!-- delete_block -->
+      <div class="endpoint" id="delete_block">
+        <h2><span class="method-badge method-delete">delete</span> delete_block</h2>
+        <p>Permanently delete a study block.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>block_id</code></td><td class="type">string</td><td class="req">required</td><td>Block ID to delete</td></tr>
+        </table>
+      </div>
+
+      <!-- list_subjects -->
+      <div class="endpoint" id="list_subjects">
+        <h2><span class="method-badge method-read">read</span> list_subjects</h2>
+        <p>List all activities/subjects with their type, color, slots, and content (syllabus items, exercises, or habits).</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>type</code></td><td class="type">string</td><td class="opt">optional</td><td>Filter by type: <code>study</code>, <code>training</code>, or <code>inactive</code></td></tr>
+        </table>
+        <h3>Response</h3>
+        <div class="code-block">[{
+  <span class="k">"id"</span>: <span class="s">"sub_xyz"</span>,
+  <span class="k">"name"</span>: <span class="s">"JavaScript"</span>,
+  <span class="k">"type"</span>: <span class="s">"study"</span>,
+  <span class="k">"color"</span>: <span class="s">"#6366f1"</span>,
+  <span class="k">"slots"</span>: [{ <span class="k">"days"</span>: [<span class="n">1</span>,<span class="n">3</span>,<span class="n">5</span>], <span class="k">"start"</span>: <span class="s">"09:00"</span>, <span class="k">"end"</span>: <span class="s">"10:00"</span> }],
+  <span class="k">"syllabus"</span>: [{ <span class="k">"title"</span>: <span class="s">"Arrays"</span>, <span class="k">"duration"</span>: <span class="n">30</span>, <span class="k">"done"</span>: <span class="n">false</span> }]
+}]</div>
+      </div>
+
+      <!-- create_subject -->
+      <div class="endpoint" id="create_subject">
+        <h2><span class="method-badge method-write">write</span> create_subject</h2>
+        <p>Create a new activity/subject profile.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>name</code></td><td class="type">string</td><td class="req">required</td><td>Activity name (max 40 chars)</td></tr>
+          <tr><td><code>type</code></td><td class="type">string</td><td class="req">required</td><td><code>study</code>, <code>training</code>, or <code>inactive</code></td></tr>
+          <tr><td><code>color</code></td><td class="type">string</td><td class="opt">optional</td><td>Hex color (default: auto-assigned)</td></tr>
+          <tr><td><code>slots</code></td><td class="type">array</td><td class="opt">optional</td><td>Weekly time slots</td></tr>
+        </table>
+      </div>
+
+      <!-- get_stats -->
+      <div class="endpoint" id="get_stats">
+        <h2><span class="method-badge method-read">read</span> get_stats</h2>
+        <p>Get completion statistics, streaks, and heatmap data for the user.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>period</code></td><td class="type">string</td><td class="opt">optional</td><td><code>today</code>, <code>week</code>, <code>month</code>, or <code>all</code> (default: <code>week</code>)</td></tr>
+        </table>
+        <h3>Response</h3>
+        <div class="code-block">{
+  <span class="k">"total_blocks"</span>: <span class="n">42</span>,
+  <span class="k">"completed_blocks"</span>: <span class="n">35</span>,
+  <span class="k">"completion_rate"</span>: <span class="n">0.83</span>,
+  <span class="k">"streak_days"</span>: <span class="n">7</span>,
+  <span class="k">"total_minutes"</span>: <span class="n">2100</span>,
+  <span class="k">"heatmap"</span>: { <span class="s">"2026-06-11"</span>: <span class="n">5</span>, <span class="s">"2026-06-10"</span>: <span class="n">3</span> }
+}</div>
+      </div>
+
+      <!-- get_schedule -->
+      <div class="endpoint" id="get_schedule">
+        <h2><span class="method-badge method-read">read</span> get_schedule</h2>
+        <p>Get the user's full weekly schedule with all configured time slots per subject.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>week_offset</code></td><td class="type">number</td><td class="opt">optional</td><td>0 = current week, -1 = last week, 1 = next week</td></tr>
+        </table>
+      </div>
+
+      <!-- suggest_schedule -->
+      <div class="endpoint" id="suggest_schedule">
+        <h2><span class="method-badge method-write">write</span> suggest_schedule</h2>
+        <p>Get AI-powered schedule suggestions based on user's completion patterns, available time slots, and study goals.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>goal</code></td><td class="type">string</td><td class="opt">optional</td><td>Natural language goal (e.g. "study more math")</td></tr>
+          <tr><td><code>available_hours</code></td><td class="type">number</td><td class="opt">optional</td><td>Max hours per day available</td></tr>
+        </table>
+      </div>
+
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+---
+title: Study Blocks
+description: "The core unit of your schedule — time-boxed study sessions."
+---
+
+## What is a Block?
+
+A **block** is a time-boxed session assigned to an activity on a specific date. It's the fundamental unit of your study schedule.
+
+```
+┌─────────────────────────────┐
+│  09:00 - 10:00              │
+│  JavaScript                 │
+│  Topic: Arrays & Loops      │
+│  Status: ✅ Done            │
+└─────────────────────────────┘
+```
+
+## Block Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | string | Unique identifier (`blk_...`) |
+| `subject_id` | string | Reference to the parent activity |
+| `date` | string | Date in `YYYY-MM-DD` format |
+| `start` | string | Start time in `HH:MM` format |
+| `end` | string | End time in `HH:MM` format |
+| `topic` | string? | Optional topic from syllabus |
+| `done` | boolean | Whether the block was completed |
+| `completedItems` | array? | Completed sub-items (exercises, habits) |
+
+## Block Types
+
+Blocks inherit their type from the parent activity:
+
+<CardGroup cols={3}>
+  <Card title="Study" icon="book">
+    Linked to a **syllabus**. Each block can be assigned a specific topic with a time estimate.
+  </Card>
+  <Card title="Training" icon="dumbbell">
+    Linked to an **exercise sheet**. Contains sets, reps, and weights to track during the session.
+  </Card>
+  <Card title="Routine" icon="repeat">
+    Linked to **micro-habits**. A checklist of small daily habits to complete during the time slot.
+  </Card>
+</CardGroup>
+
+## Lifecycle
+
+```
+Created → Scheduled → In Progress → Done
+                         ↓
+                      Skipped (not completed by end time)
+```
+
+<Info>
+  Blocks are automatically generated from weekly slots when using the schedule system. You can also create one-off blocks via the API.
+</Info>
+
+## Pizza Chart
+
+In the app, blocks are visualized as a **pizza chart** — a 24-hour circular view of your day. Each slice represents a block, colored by its activity.

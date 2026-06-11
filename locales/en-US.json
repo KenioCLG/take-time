@@ -170,5 +170,57 @@
   "settings.app_installed": "App installed successfully!",
   "settings.ios_install_hint": "Tap the Share button (⎋) then \"Add to Home Screen\"",
 
-  "app.version": "Take Time v1.0"
+  "app.version": "Take Time v1.0",
+
+  "app.tagline": "Your smart study planner. Sync your cycles and reach your goals.",
+  "auth.show_login": "Log In",
+  "auth.cancel": "Cancel",
+  "auth.title": "Access",
+  "auth.email": "Email",
+  "auth.email_placeholder": "you@email.com",
+  "auth.password": "Password",
+  "auth.password_placeholder": "Your password",
+  "auth.password_repeat": "Repeat Password",
+  "auth.password_repeat_placeholder": "Repeat your password",
+  "auth.no_account": "Don't have an account?",
+  "auth.go_signup": "Sign Up",
+  "auth.has_account": "Already have an account?",
+  "auth.go_login": "Log In",
+
+  "common.close": "Close",
+  "common.info": "Information",
+
+  "pwa.install_title": "Install Take Time",
+  "pwa.install_subtitle": "Quick access on your home screen",
+  "pwa.install_btn": "Install",
+  "pwa.ios_step1": "Tap <strong>Share</strong>",
+  "pwa.ios_step2": "Choose <strong>\"Add to Home Screen\"</strong>",
+  "pwa.ios_step3": "Tap <strong>\"Add\"</strong>",
+
+  "marquee.title": "Motivational Marquee",
+  "marquee.description": "Add inspiring phrases for the top banner (one per line).",
+  "marquee.placeholder": "E.g.: Discipline is the bridge between goals and accomplishment...",
+  "marquee.reset": "Reset",
+  "marquee.save": "Save Phrases",
+
+  "info.smart_schedule_title": "Smart Schedule",
+  "info.smart_schedule_intro": "How to build an Elite Syllabus:",
+  "info.smart_schedule_tip1": "<strong>Short Cycles:</strong> Your brain focuses best in blocks up to 50 minutes.",
+  "info.smart_schedule_tip2": "<strong>Avoid Burnout:</strong> If the time slot you created is 60 min, don't create 90 min topics!",
+  "info.smart_schedule_tip3": "<strong>Break it down:</strong> If the topic is \"French Revolution\" and it's dense, create: \"French Rev. Part 1\" (30 min) and \"Part 2\" (30 min).",
+  "info.smart_schedule_tip4": "<strong>Minutes or Reps:</strong> You can use the field for time or for \"Pages read\" and \"Exercises done\" by selecting \"reps\".",
+
+  "info.heatmap_title": "How it works",
+  "info.heatmap_intro": "The map lights up as you complete tasks day by day. It smartly counts:",
+  "info.heatmap_item1": "Completed study blocks",
+  "info.heatmap_item2": "Physical exercises done",
+  "info.heatmap_item3": "Routine micro-habits checked",
+  "info.heatmap_footer": "The more productive your day, the more intense the color!",
+
+  "info.priorities_title": "Priority Circle",
+  "info.priorities_intro": "Organize your life areas into 3 priority levels to distribute your time wisely:",
+  "info.priorities_focus": "<strong style=\"color:var(--ds-danger);\">Main Focus</strong> — max 3 areas that deserve most of your time and energy",
+  "info.priorities_important": "<strong style=\"color:var(--ds-warning);\">Important</strong> — relevant areas you keep active, with moderate dedication",
+  "info.priorities_flexible": "<strong style=\"color:var(--ds-success);\">Flexible</strong> — complementary areas that fit when you have spare time",
+  "info.priorities_footer": "Drag areas between levels to reflect your current priorities."
 }

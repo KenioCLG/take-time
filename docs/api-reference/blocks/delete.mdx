@@ -1,0 +1,33 @@
+---
+title: Delete Block
+api: DELETE /blocks/{block_id}
+description: "Permanently delete a study block."
+---
+
+<ParamField path="block_id" type="string" required>
+  Block ID to delete
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X DELETE "https://api.taketime.app/v1/blocks/blk_abc123" \
+  -H "Authorization: Bearer tt_live_your_key_here"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": {
+    "deleted": true,
+    "id": "blk_abc123"
+  },
+  "error": null,
+  "meta": { ... }
+}
+```
+</ResponseExample>
+
+<Warning>
+  This action is irreversible. The block and its completion history will be permanently removed.
+</Warning>

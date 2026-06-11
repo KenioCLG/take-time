@@ -1,0 +1,127 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Take Time",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#6366f1",
+    "light": "#818cf8",
+    "dark": "#4f46e5",
+    "anchors": {
+      "from": "#6366f1",
+      "to": "#a78bfa"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "App",
+      "url": "https://study-planner-five-sand.vercel.app"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Dashboard",
+    "url": "https://study-planner-five-sand.vercel.app"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    },
+    {
+      "name": "MCP Server",
+      "url": "mcp"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/kenio"
+    },
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "#"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": [
+        "introduction",
+        "quickstart",
+        "authentication"
+      ]
+    },
+    {
+      "group": "Core Concepts",
+      "pages": [
+        "concepts/blocks",
+        "concepts/subjects",
+        "concepts/schedule",
+        "concepts/stats"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/webhooks",
+        "guides/dev-mode",
+        "guides/production"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/introduction"
+      ]
+    },
+    {
+      "group": "Blocks",
+      "pages": [
+        "api-reference/blocks/list",
+        "api-reference/blocks/create",
+        "api-reference/blocks/update",
+        "api-reference/blocks/delete"
+      ]
+    },
+    {
+      "group": "Subjects",
+      "pages": [
+        "api-reference/subjects/list",
+        "api-reference/subjects/create",
+        "api-reference/subjects/update",
+        "api-reference/subjects/delete"
+      ]
+    },
+    {
+      "group": "Stats & Schedule",
+      "pages": [
+        "api-reference/stats/get",
+        "api-reference/schedule/get",
+        "api-reference/schedule/suggest"
+      ]
+    },
+    {
+      "group": "MCP Server",
+      "pages": [
+        "mcp/overview",
+        "mcp/installation",
+        "mcp/tools",
+        "mcp/examples"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/kenio"
+  },
+  "api": {
+    "baseUrl": "https://api.taketime.app/v1",
+    "auth": {
+      "method": "bearer"
+    }
+  }
+}

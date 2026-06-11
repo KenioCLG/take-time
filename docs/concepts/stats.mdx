@@ -1,0 +1,64 @@
+---
+title: Stats & Progress
+description: "Track your productivity with heatmaps, streaks, and completion metrics."
+---
+
+## Heatmap
+
+The heatmap is a visual calendar that lights up based on your daily productivity. Each cell represents a day, and the color intensity reflects how many tasks you completed.
+
+The heatmap counts:
+- Completed study blocks
+- Finished exercises
+- Checked micro-habits
+
+## Metrics Available
+
+| Metric | Description |
+|--------|-------------|
+| `total_blocks` | Total blocks in the period |
+| `completed_blocks` | Blocks marked as done |
+| `completion_rate` | Ratio of done/total (0-1) |
+| `streak_days` | Consecutive days with at least one completion |
+| `total_minutes` | Total study time in minutes |
+| `heatmap` | Daily completion counts (`{ "YYYY-MM-DD": count }`) |
+
+## Periods
+
+The `get_stats` endpoint accepts these periods:
+
+| Period | Description |
+|--------|-------------|
+| `today` | Current day only |
+| `week` | Current week (Mon-Sun) |
+| `month` | Current calendar month |
+| `all` | All time |
+
+## Example Response
+
+```json
+{
+  "data": {
+    "total_blocks": 42,
+    "completed_blocks": 35,
+    "completion_rate": 0.83,
+    "streak_days": 7,
+    "total_minutes": 2100,
+    "heatmap": {
+      "2026-06-11": 5,
+      "2026-06-10": 3,
+      "2026-06-09": 4,
+      "2026-06-08": 0,
+      "2026-06-07": 6
+    },
+    "top_subjects": [
+      { "name": "JavaScript", "blocks": 12, "minutes": 720 },
+      { "name": "Mathematics", "blocks": 8, "minutes": 480 }
+    ]
+  }
+}
+```
+
+<Tip>
+  Use stats data to build custom dashboards or feed it to your AI assistant for personalized study recommendations.
+</Tip>

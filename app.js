@@ -1833,7 +1833,7 @@ function initSettings() {
         const steps = $('#pwaIosSteps');
         if (steps) {
           steps.classList.toggle('hidden');
-          btnInstall.textContent = steps.classList.contains('hidden') ? 'Instalar' : 'Fechar';
+          btnInstall.textContent = steps.classList.contains('hidden') ? I18n.t('pwa.install_btn') : I18n.t('common.close');
         }
       }
     });
@@ -2002,14 +2002,14 @@ window.showStudyTipsInfo = function() {
   
   if (!title || !body || !modal) return;
   
-  title.textContent = 'Horário Inteligente';
+  title.textContent = I18n.t('info.smart_schedule_title');
   body.innerHTML = `
-    <p style="margin-bottom: 12px; text-align: left; font-weight: 600;">Como montar um Edital de Elite:</p>
+    <p style="margin-bottom: 12px; text-align: left; font-weight: 600;">${I18n.t('info.smart_schedule_intro')}</p>
     <ul style="text-align: left; margin-left: 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
-      <li><strong>Ciclos Curtos:</strong> Seu cérebro foca melhor em blocos de até 50 minutos.</li>
-      <li><strong>Evite Exaustão:</strong> Se o slot de horário que você criou tem 60 min, não crie tópicos de 90 min!</li>
-      <li><strong>Quebre a matéria:</strong> Se o tópico é "Revolução Francesa" e é denso, crie: "Rev. Francesa Parte 1" (30 min) e "Parte 2" (30 min).</li>
-      <li><strong>Minutos ou Reps:</strong> Você pode usar o campo para tempo ou para "Páginas lidas" e "Exercícios feitos" selecionando "reps".</li>
+      <li>${I18n.t('info.smart_schedule_tip1')}</li>
+      <li>${I18n.t('info.smart_schedule_tip2')}</li>
+      <li>${I18n.t('info.smart_schedule_tip3')}</li>
+      <li>${I18n.t('info.smart_schedule_tip4')}</li>
     </ul>
   `;
   
@@ -2023,15 +2023,15 @@ window.showHeatmapInfo = function() {
   
   if (!title || !body || !modal) return;
   
-  title.textContent = 'Como funciona';
+  title.textContent = I18n.t('info.heatmap_title');
   body.innerHTML = `
-    <p style="margin-bottom: 12px; text-align: left;">O mapa acende conforme você conclui tarefas no dia a dia. Ele conta inteligentemente:</p>
+    <p style="margin-bottom: 12px; text-align: left;">${I18n.t('info.heatmap_intro')}</p>
     <ul style="text-align: left; margin-left: 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
-      <li>Blocos de estudo concluídos</li>
-      <li>Exercícios físicos realizados</li>
-      <li>Micro-hábitos da rotina marcados</li>
+      <li>${I18n.t('info.heatmap_item1')}</li>
+      <li>${I18n.t('info.heatmap_item2')}</li>
+      <li>${I18n.t('info.heatmap_item3')}</li>
     </ul>
-    <p style="text-align: left; font-weight: 600; color: var(--ds-text-primary);">Quanto mais produtivo for o dia, mais intensa fica a cor!</p>
+    <p style="text-align: left; font-weight: 600; color: var(--ds-text-primary);">${I18n.t('info.heatmap_footer')}</p>
   `;
   
   DS.sheet.open(modal, 0.5);
@@ -2042,15 +2042,15 @@ window.showPrioritiesInfo = function() {
   const body = document.getElementById('modalInfoBody');
   const modal = document.getElementById('modalInfo');
   if (!title || !body || !modal) return;
-  title.textContent = 'Círculo de Prioridades';
+  title.textContent = I18n.t('info.priorities_title');
   body.innerHTML = `
-    <p style="margin-bottom: 12px; text-align: left;">Organize suas áreas da vida em 3 níveis de prioridade para distribuir seu tempo de forma inteligente:</p>
+    <p style="margin-bottom: 12px; text-align: left;">${I18n.t('info.priorities_intro')}</p>
     <ul style="text-align: left; margin-left: 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
-      <li><strong style="color:var(--ds-danger);">Foco Principal</strong> — máximo 3 áreas que merecem a maior parte do seu tempo e energia</li>
-      <li><strong style="color:var(--ds-warning);">Importante</strong> — áreas relevantes que você mantém ativas, com dedicação moderada</li>
-      <li><strong style="color:var(--ds-success);">Flexível</strong> — áreas complementares que encaixam quando sobra tempo</li>
+      <li>${I18n.t('info.priorities_focus')}</li>
+      <li>${I18n.t('info.priorities_important')}</li>
+      <li>${I18n.t('info.priorities_flexible')}</li>
     </ul>
-    <p style="text-align: left; font-weight: 600; color: var(--ds-text-primary);">Arraste as áreas entre os níveis para refletir suas prioridades atuais.</p>
+    <p style="text-align: left; font-weight: 600; color: var(--ds-text-primary);">${I18n.t('info.priorities_footer')}</p>
   `;
   DS.sheet.open(modal, 0.55);
 }

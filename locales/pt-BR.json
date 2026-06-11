@@ -170,5 +170,57 @@
   "settings.app_installed": "App instalado com sucesso!",
   "settings.ios_install_hint": "Toque em Compartilhar (⎋) e depois \"Adicionar à Tela Inicial\"",
 
-  "app.version": "Take Time v1.0"
+  "app.version": "Take Time v1.0",
+
+  "app.tagline": "Seu planejador de estudos inteligente. Sincronize seus ciclos e alcance suas metas de aprovação.",
+  "auth.show_login": "Fazer Login",
+  "auth.cancel": "Cancelar",
+  "auth.title": "Acesso",
+  "auth.email": "E-mail",
+  "auth.email_placeholder": "seu@email.com",
+  "auth.password": "Senha",
+  "auth.password_placeholder": "Sua senha",
+  "auth.password_repeat": "Repetir Senha",
+  "auth.password_repeat_placeholder": "Repita sua senha",
+  "auth.no_account": "Não tem conta?",
+  "auth.go_signup": "Cadastrar",
+  "auth.has_account": "Já tem conta?",
+  "auth.go_login": "Fazer Login",
+
+  "common.close": "Fechar",
+  "common.info": "Informação",
+
+  "pwa.install_title": "Instalar Take Time",
+  "pwa.install_subtitle": "Acesso rápido na tela inicial",
+  "pwa.install_btn": "Instalar",
+  "pwa.ios_step1": "Toque em <strong>Compartilhar</strong>",
+  "pwa.ios_step2": "Escolha <strong>\"Adicionar à Tela de Início\"</strong>",
+  "pwa.ios_step3": "Toque em <strong>\"Adicionar\"</strong>",
+
+  "marquee.title": "Letreiro Motivacional",
+  "marquee.description": "Adicione frases inspiradoras para o painel superior (uma por linha).",
+  "marquee.placeholder": "Ex: A disciplina é a ponte entre metas e realizações...",
+  "marquee.reset": "Restaurar",
+  "marquee.save": "Salvar Frases",
+
+  "info.smart_schedule_title": "Horário Inteligente",
+  "info.smart_schedule_intro": "Como montar um Edital de Elite:",
+  "info.smart_schedule_tip1": "<strong>Ciclos Curtos:</strong> Seu cérebro foca melhor em blocos de até 50 minutos.",
+  "info.smart_schedule_tip2": "<strong>Evite Exaustão:</strong> Se o slot de horário que você criou tem 60 min, não crie tópicos de 90 min!",
+  "info.smart_schedule_tip3": "<strong>Quebre a matéria:</strong> Se o tópico é \"Revolução Francesa\" e é denso, crie: \"Rev. Francesa Parte 1\" (30 min) e \"Parte 2\" (30 min).",
+  "info.smart_schedule_tip4": "<strong>Minutos ou Reps:</strong> Você pode usar o campo para tempo ou para \"Páginas lidas\" e \"Exercícios feitos\" selecionando \"reps\".",
+
+  "info.heatmap_title": "Como funciona",
+  "info.heatmap_intro": "O mapa acende conforme você conclui tarefas no dia a dia. Ele conta inteligentemente:",
+  "info.heatmap_item1": "Blocos de estudo concluídos",
+  "info.heatmap_item2": "Exercícios físicos realizados",
+  "info.heatmap_item3": "Micro-hábitos da rotina marcados",
+  "info.heatmap_footer": "Quanto mais produtivo for o dia, mais intensa fica a cor!",
+
+  "info.priorities_title": "Círculo de Prioridades",
+  "info.priorities_intro": "Organize suas áreas da vida em 3 níveis de prioridade para distribuir seu tempo de forma inteligente:",
+  "info.priorities_focus": "<strong style=\"color:var(--ds-danger);\">Foco Principal</strong> — máximo 3 áreas que merecem a maior parte do seu tempo e energia",
+  "info.priorities_important": "<strong style=\"color:var(--ds-warning);\">Importante</strong> — áreas relevantes que você mantém ativas, com dedicação moderada",
+  "info.priorities_flexible": "<strong style=\"color:var(--ds-success);\">Flexível</strong> — áreas complementares que encaixam quando sobra tempo",
+  "info.priorities_footer": "Arraste as áreas entre os níveis para refletir suas prioridades atuais."
 }

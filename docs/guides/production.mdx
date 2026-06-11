@@ -1,0 +1,53 @@
+---
+title: Going to Production
+description: "Checklist for deploying your Take Time integration."
+---
+
+## Production Checklist
+
+Before going live with your integration, verify each item:
+
+<Steps>
+  <Step title="Use production API key">
+    Replace `tt_test_` keys with `tt_live_` keys. Never expose keys in client-side code.
+  </Step>
+  <Step title="Handle errors gracefully">
+    Implement proper error handling for all API responses. Check for `error` in the response envelope.
+  </Step>
+  <Step title="Respect rate limits">
+    Implement exponential backoff when receiving `429` responses. Check the `Retry-After` header.
+  </Step>
+  <Step title="Verify webhooks">
+    Always validate `X-TakeTime-Signature` before processing webhook payloads.
+  </Step>
+  <Step title="Secure your keys">
+    Store API keys in environment variables or a secrets manager. Never commit them to version control.
+  </Step>
+  <Step title="Test end-to-end">
+    Run through your complete user flow with real data to verify everything works.
+  </Step>
+</Steps>
+
+## Environment Variables
+
+```bash
+# .env
+TAKETIME_API_KEY=tt_live_your_key_here
+TAKETIME_WEBHOOK_SECRET=whsec_your_secret
+```
+
+<Warning>
+  Add `.env` to your `.gitignore` file. Never commit secrets to your repository.
+</Warning>
+
+## Support
+
+If you run into issues:
+
+- Check the [API Reference](/api-reference/introduction) for endpoint details
+- Review error codes and messages in responses
+- Open an issue on GitHub
+
+<Info>
+  The Take Time API is in active development. Breaking changes will be communicated via changelog and webhook notifications.
+</Info>
