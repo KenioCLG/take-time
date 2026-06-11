@@ -1651,6 +1651,7 @@ function initTabs() {
     });
     p.hide.forEach(s => { const el = $(s); if (el) el.classList.add('hidden'); });
     if (tabName === 'subjects') renderSubjects();
+    if (tabName === 'settings' && typeof initPriorities === 'function') initPriorities();
     try { localStorage.setItem('studyplan_tab', tabName); } catch(e) {}
   }
 
