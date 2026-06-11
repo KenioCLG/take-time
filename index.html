@@ -95,6 +95,7 @@
         
         <!-- Formulário de Login -->
         <div class="ds-sheet-body" id="authBodyLogin">
+          <form onsubmit="return false;">
           <div class="form-group">
             <label class="ds-label" data-i18n="auth.email">E-mail</label>
             <input type="email" id="inputAuthEmail" class="ds-input" data-i18n-placeholder="auth.email_placeholder" placeholder="seu@email.com">
@@ -109,10 +110,12 @@
               <span data-i18n="auth.no_account">Não tem conta?</span> <a href="#" id="linkGoToSignup" style="color: var(--ds-color-primary); text-decoration: none; font-weight: 600;" data-i18n="auth.go_signup">Cadastrar</a>
             </p>
           </div>
+          </form>
         </div>
 
         <!-- Formulário de Cadastro -->
         <div class="ds-sheet-body hidden" id="authBodySignup">
+          <form onsubmit="return false;">
           <div class="form-group">
             <label class="ds-label" data-i18n="auth.email">E-mail</label>
             <input type="email" id="inputSignupEmail" class="ds-input" data-i18n-placeholder="auth.email_placeholder" placeholder="seu@email.com">
@@ -131,6 +134,7 @@
               <span data-i18n="auth.has_account">Já tem conta?</span> <a href="#" id="linkGoToLogin" style="color: var(--ds-color-primary); text-decoration: none; font-weight: 600;" data-i18n="auth.go_login">Fazer Login</a>
             </p>
           </div>
+          </form>
         </div>
       </div>
     </div>
@@ -161,10 +165,10 @@
       <div class="pizza-wrapper">
         <svg class="pizza-svg" id="pizzaSvg" viewBox="0 0 400 400"></svg>
         <div class="pizza-center" id="pizzaCenter">
-          <button class="pizza-add-btn" id="btnPizzaAdd" aria-label="Adicionar bloco">
+          <button class="pizza-add-btn" id="btnPizzaAdd" aria-label="Adicionar bloco" data-i18n-aria="block.add_aria">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
-          <span class="pizza-center-label" id="pizzaCenterLabel">planejado</span>
+          <span class="pizza-center-label" id="pizzaCenterLabel" data-i18n="pizza.planned">planejado</span>
           <div class="pizza-progress" id="pizzaProgress">
             <div class="pizza-progress-fill" id="pizzaProgressFill"></div>
           </div>
@@ -211,21 +215,21 @@
         <div class="heatmap-header">
           <p class="settings-section-label" style="padding-bottom:0;">
             <span style="display:flex; align-items:center; gap:6px;">
-              Consistência
+              <span data-i18n="heatmap.section_label">Consistência</span>
               <svg onclick="showHeatmapInfo()" style="cursor:pointer; color:var(--ds-text-tertiary);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </span>
           </p>
-          <span id="heatmapStats" class="heatmap-stats-label">0 tarefas</span>
+          <span id="heatmapStats" class="heatmap-stats-label" data-i18n="heatmap.tasks">0 tarefas</span>
         </div>
         <div class="heatmap-scroll" id="heatmapTrack"></div>
         <div class="heatmap-legend">
-          <span>Menos</span>
+          <span data-i18n="heatmap.less">Menos</span>
           <div class="heatmap-cell" data-level="0"></div>
           <div class="heatmap-cell" data-level="1"></div>
           <div class="heatmap-cell" data-level="2"></div>
           <div class="heatmap-cell" data-level="3"></div>
           <div class="heatmap-cell" data-level="4"></div>
-          <span>Mais</span>
+          <span data-i18n="heatmap.more">Mais</span>
         </div>
       </div>
       <!-- ═══ GRUPO: Features Take Time ═══ -->
@@ -233,35 +237,35 @@
       <div class="settings-section priorities-section">
         <p class="settings-section-label" style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-          Círculo de Prioridades
+          <span data-i18n="priorities.title">Círculo de Prioridades</span>
           <svg onclick="showPrioritiesInfo()" style="cursor:pointer; color:var(--ds-text-tertiary);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
         </p>
 
         <div class="priorities-container">
           <div class="priority-zone priority-zone--1">
             <div class="priority-zone-header">
-              <h4>Foco Principal (Centro)</h4>
+              <h4 data-i18n="priorities.zone1">Foco Principal (Centro)</h4>
               <span class="priority-count" id="countZone1">0/3</span>
             </div>
             <div class="priority-list" id="listZone1" data-zone="1"></div>
           </div>
           <div class="priority-zone priority-zone--2">
             <div class="priority-zone-header">
-              <h4>Importante (Meio)</h4>
+              <h4 data-i18n="priorities.zone2">Importante (Meio)</h4>
               <span class="priority-count" id="countZone2">0</span>
             </div>
             <div class="priority-list" id="listZone2" data-zone="2"></div>
           </div>
           <div class="priority-zone priority-zone--3">
             <div class="priority-zone-header">
-              <h4>Flexível (Exterior)</h4>
+              <h4 data-i18n="priorities.zone3">Flexível (Exterior)</h4>
               <span class="priority-count" id="countZone3">0</span>
             </div>
             <div class="priority-list" id="listZone3" data-zone="3"></div>
           </div>
           <div class="priority-zone priority-zone--unallocated" id="containerUnallocated">
             <div class="priority-zone-header">
-              <h4>Áreas Não Alocadas</h4>
+              <h4 data-i18n="priorities.unallocated">Áreas Não Alocadas</h4>
               <span class="priority-count" id="countUnallocated">12</span>
             </div>
             <div class="priority-list" id="listUnallocated" data-zone="unallocated"></div>
@@ -336,7 +340,7 @@
 
       <!-- Install PWA -->
       <div class="settings-section hidden" id="installPwaSection">
-        <p class="settings-section-label">App</p>
+        <p class="settings-section-label" data-i18n="settings.section_app">App</p>
         <div class="pwa-install-card" id="pwaInstallCard">
           <div class="pwa-install-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ds-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12" y2="18.01" stroke-width="2.5"/></svg>
@@ -387,7 +391,7 @@
 
       <!-- ═══ GRUPO: Conta & Dados ═══ -->
       <div class="settings-section">
-        <p class="settings-section-label">Conta</p>
+        <p class="settings-section-label" data-i18n="settings.section_account">Conta</p>
         <div class="ds-list">
           <button class="ds-list-item settings-danger-btn" id="btnLogout" style="color: var(--ds-accent) !important;">
             <span data-i18n="auth.logout" style="color: var(--ds-text-primary);">Sair</span>
@@ -407,7 +411,7 @@
       <!-- Logs -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <p class="settings-section-label">Histórico</p>
+          <p class="settings-section-label" data-i18n="settings.section_history">Histórico</p>
           <button class="ds-btn ds-btn-plain" id="btnClearLogs" data-i18n="settings.clear_logs" style="font-size:var(--ds-text-xs);">Limpar</button>
         </div>
         <div class="ds-list" id="logsList" style="max-height: 200px; overflow-y: auto;"></div>
@@ -416,11 +420,11 @@
       <div class="settings-footer-links">
         <a href="https://docs.taketime.space" target="_blank" rel="noopener" data-i18n="footer.docs">Documentação</a>
         <span class="settings-footer-dot"></span>
-        <a href="https://docs.taketime.space/mcp/overview" target="_blank" rel="noopener">MCP Server</a>
+        <a href="https://docs.taketime.space/mcp/overview" target="_blank" rel="noopener" data-i18n="footer.mcp_server">MCP Server</a>
         <span class="settings-footer-dot"></span>
-        <a href="https://docs.taketime.space/api-reference/introduction" target="_blank" rel="noopener">API</a>
+        <a href="https://docs.taketime.space/api-reference/introduction" target="_blank" rel="noopener" data-i18n="footer.api">API</a>
         <span class="settings-footer-dot"></span>
-        <a href="https://github.com/KenioCLG/take-time" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/KenioCLG/take-time" target="_blank" rel="noopener" data-i18n="footer.github">GitHub</a>
       </div>
       <p class="settings-footer" data-i18n="app.version">Take Time v1.0</p>
     </main>
@@ -479,15 +483,15 @@
           <div class="ds-segmented-control" id="subjectTypeSegments">
             <button type="button" class="ds-segment-btn active" data-val="study">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-              Estudo
+              <span data-i18n="type.study_short">Estudo</span>
             </button>
             <button type="button" class="ds-segment-btn" data-val="training">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 5.5v13"></path><path d="M18 5.5v13"></path><path d="M4 8h4"></path><path d="M4 16h4"></path><path d="M16 8h4"></path><path d="M16 16h4"></path><path d="M9 12h6"></path></svg>
-              Treino
+              <span data-i18n="type.training_short">Treino</span>
             </button>
             <button type="button" class="ds-segment-btn" data-val="inactive">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-              Rotina
+              <span data-i18n="type.inactive_short">Rotina</span>
             </button>
           </div>
         </div>
@@ -527,8 +531,8 @@
             <input type="text" id="inputSyllabusTitle" class="ds-input" data-i18n-placeholder="content.add_syllabus_placeholder" placeholder="Novo tópico (ex: Arrays)">
             <div style="display:flex; gap:var(--ds-space-2); align-items:center;">
               <div style="flex:1; display:flex; position:relative;">
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="inputSyllabusDuration" class="ds-input" placeholder="Minutos" style="border-radius: var(--ds-radius-md) 0 0 var(--ds-radius-md); border-right:1px solid var(--ds-separator); z-index:1; min-width:0;">
-                <div class="ds-input" style="border-radius: 0 var(--ds-radius-md) var(--ds-radius-md) 0; background-color: var(--ds-bg-secondary); border-left:none; padding: 0 12px; display:flex; align-items:center; justify-content:center; min-width:0; color: var(--ds-text-tertiary); font-size: 14px; user-select:none;">min</div>
+                <input type="number" inputmode="numeric" pattern="[0-9]*" id="inputSyllabusDuration" class="ds-input" placeholder="Minutos" data-i18n-placeholder="content.duration_placeholder" style="border-radius: var(--ds-radius-md) 0 0 var(--ds-radius-md); border-right:1px solid var(--ds-separator); z-index:1; min-width:0;">
+                <div class="ds-input" style="border-radius: 0 var(--ds-radius-md) var(--ds-radius-md) 0; background-color: var(--ds-bg-secondary); border-left:none; padding: 0 12px; display:flex; align-items:center; justify-content:center; min-width:0; color: var(--ds-text-tertiary); font-size: 14px; user-select:none;" data-i18n="content.duration_min">min</div>
               </div>
               <button type="button" class="ds-btn ds-btn-icon-sm" id="btnSyllabusAdd" aria-label="Add" style="flex-shrink:0;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>

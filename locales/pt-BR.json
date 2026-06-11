@@ -223,5 +223,71 @@
   "info.priorities_focus": "<strong style=\"color:var(--ds-danger);\">Foco Principal</strong> — máximo 3 áreas que merecem a maior parte do seu tempo e energia",
   "info.priorities_important": "<strong style=\"color:var(--ds-warning);\">Importante</strong> — áreas relevantes que você mantém ativas, com dedicação moderada",
   "info.priorities_flexible": "<strong style=\"color:var(--ds-success);\">Flexível</strong> — áreas complementares que encaixam quando sobra tempo",
-  "info.priorities_footer": "Arraste as áreas entre os níveis para refletir suas prioridades atuais."
+  "info.priorities_footer": "Arraste as áreas entre os níveis para refletir suas prioridades atuais.",
+
+  "auth.login_loading": "⏳ Entrando…",
+  "auth.signup_loading": "⏳ Criando…",
+  "auth.login_error": "Erro ao fazer login",
+  "auth.signup_error": "Erro ao criar conta",
+
+  "block.edit_time": "Horário",
+  "block.edit_syllabus": "Editar Edital",
+  "block.edit_exercise": "Editar Ficha",
+  "block.edit_routine": "Editar Rotina",
+
+  "slot.remove_title": "Remover",
+  "slot.remove_msg": "Deseja remover este horário?",
+  "slot.remove_btn": "Remover",
+
+  "content.remove_title": "Remover",
+  "content.remove_msg": "Deseja remover este item?",
+  "content.remove_btn": "Remover",
+  "content.duration_min": "min",
+  "content.duration_reps": "reps",
+  "content.duration_placeholder": "Minutos",
+
+  "marquee.error_empty": "Adicione pelo menos uma frase",
+  "marquee.saved": "Frases salvas!",
+  "marquee.reset_done": "Frases restauradas ao padrão",
+
+  "heatmap.section_label": "Consistência",
+  "heatmap.less": "Menos",
+  "heatmap.more": "Mais",
+  "heatmap.tasks": "tarefas",
+
+  "priorities.title": "Círculo de Prioridades",
+  "priorities.zone1": "Foco Principal (Centro)",
+  "priorities.zone2": "Importante (Meio)",
+  "priorities.zone3": "Flexível (Exterior)",
+  "priorities.unallocated": "Áreas Não Alocadas",
+
+  "settings.section_app": "App",
+  "settings.section_account": "Conta",
+  "settings.section_history": "Histórico",
+
+  "footer.mcp_server": "MCP Server",
+  "footer.api": "API",
+  "footer.github": "GitHub",
+
+  "type.study_short": "Estudo",
+  "type.training_short": "Treino",
+  "type.inactive_short": "Rotina",
+
+  "alert.duration_exceeds_slot": "Atenção: O tempo do tópico (%{duration}min) excede seu maior horário de foco contínuo configurado (%{max}min). Divida o conteúdo!",
+
+  "language.pt_br": "Português (BR)",
+  "language.en_us": "English (US)",
+
+  "timezone.america_sao_paulo": "Brasília (SP/RJ/MG)",
+  "timezone.america_recife": "Recife (PE/PB/AL)",
+  "timezone.america_fortaleza": "Fortaleza (CE/PI/MA)",
+  "timezone.america_belem": "Belém (PA/AP)",
+  "timezone.america_manaus": "Manaus (AM/RR)",
+  "timezone.america_cuiaba": "Cuiabá (MT/MS)",
+  "timezone.america_rio_branco": "Rio Branco (AC)",
+  "timezone.america_noronha": "Fernando de Noronha",
+  "timezone.america_buenos_aires": "Buenos Aires",
+  "timezone.america_new_york": "Nova York (EST)",
+  "timezone.europe_lisbon": "Lisboa (WET)",
+  "timezone.europe_london": "Londres (GMT)"
 }

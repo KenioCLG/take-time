@@ -36,10 +36,11 @@ self.addEventListener('notificationclick', (e) => {
 
 // Network-first: try network, fall back to cache (ensures fresh code).
 self.addEventListener('fetch', (e) => {
+  if (e.request.method !== 'GET') return;
   e.respondWith(
     caches.open(CACHE).then(cache =>
       fetch(e.request).then(response => {
-        if (response.ok && e.request.url.startsWith('http')) {
+        if (response.ok) {
           cache.put(e.request, response.clone());
         }
         return response;

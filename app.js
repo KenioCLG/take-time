@@ -114,14 +114,14 @@ function setAuthLoading(loading) {
     btnLogin.disabled = loading;
     btnLogin.style.opacity = loading ? '0.6' : '1';
     btnLogin.style.pointerEvents = loading ? 'none' : 'auto';
-    btnLogin.innerHTML = loading ? '⏳ Entrando…' : __('auth.login_btn', null, 'Acessar Dashboard');
+    btnLogin.innerHTML = loading ? __('auth.login_loading') : __('auth.login_btn', null, 'Acessar Dashboard');
   }
   
   if (btnSignup) {
     btnSignup.disabled = loading;
     btnSignup.style.opacity = loading ? '0.6' : '1';
     btnSignup.style.pointerEvents = loading ? 'none' : 'auto';
-    btnSignup.innerHTML = loading ? '⏳ Criando…' : __('auth.signup_btn', null, 'Criar Conta');
+    btnSignup.innerHTML = loading ? __('auth.signup_loading') : __('auth.signup_btn', null, 'Criar Conta');
   }
 }
 
@@ -139,7 +139,7 @@ async function handleLoginSubmit() {
   } else {
     const msg = result.error === AuthError.INVALID_EMAIL ? __('auth.invalid_email', null, 'E-mail inválido')
              : result.error === AuthError.EMPTY_FIELDS ? __('auth.fill_fields', null, 'Preencha os campos')
-             : 'Erro ao fazer login';
+              : __('auth.login_error');
     DS.toast(msg, 'error');
   }
 }
@@ -168,7 +168,7 @@ async function handleSignupSubmit() {
     const msg = result.error === AuthError.PASSWORD_MISMATCH ? __('auth.password_mismatch', null, 'As senhas não coincidem')
              : result.error === AuthError.INVALID_EMAIL ? __('auth.invalid_email', null, 'E-mail inválido')
              : result.error === AuthError.EMPTY_FIELDS ? __('auth.fill_fields', null, 'Preencha todos os campos')
-             : 'Erro ao criar conta';
+              : __('auth.signup_error');
     DS.toast(msg, 'error');
   }
 }
@@ -452,7 +452,7 @@ function renderPizza() {
       label.setAttribute('class', 'pizza-hour-label');
       label.setAttribute('text-anchor', 'middle');
       label.setAttribute('dominant-baseline', 'central');
-      label.textContent = `${displayH}h`;
+      label.textContent = I18n.t('duration.hours', { h: displayH });
       svg.appendChild(label);
     }
   }
@@ -662,10 +662,10 @@ function renderBlockList() {
             ` : ''}
             <div class="block-details-footer" style="display:flex; gap:8px;">
               <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="flex:1; font-size:11px; padding:4px 8px;">
-                ${DS.icon('clock', { size: 14 })} Horário
+                ${DS.icon('clock', { size: 14 })} ${I18n.t('block.edit_time')}
               </button>
               <button class="ds-btn ds-btn-plain btn-edit-subject-content" data-subject-type="study" data-subject-id="${subj?.id}" style="flex:1; font-size:11px; padding:4px 8px;">
-                ${DS.icon('edit', { size: 14 })} Editar Edital
+                ${DS.icon('edit', { size: 14 })} ${I18n.t('block.edit_syllabus')}
               </button>
             </div>
           </div>
@@ -695,10 +695,10 @@ function renderBlockList() {
             }
             <div class="block-details-footer" style="display:flex; gap:8px;">
               <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="flex:1; font-size:11px; padding:4px 8px;">
-                ${DS.icon('clock', { size: 14 })} Horário
+                ${DS.icon('clock', { size: 14 })} ${I18n.t('block.edit_time')}
               </button>
               <button class="ds-btn ds-btn-plain btn-edit-subject-content" data-subject-type="training" data-subject-id="${subj?.id}" style="flex:1; font-size:11px; padding:4px 8px;">
-                ${DS.icon('edit', { size: 14 })} Editar Ficha
+                ${DS.icon('edit', { size: 14 })} ${I18n.t('block.edit_exercise')}
               </button>
             </div>
           </div>
@@ -727,10 +727,10 @@ function renderBlockList() {
             }
             <div class="block-details-footer" style="display:flex; gap:8px;">
               <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="flex:1; font-size:11px; padding:4px 8px;">
-                ${DS.icon('clock', { size: 14 })} Horário
+                ${DS.icon('clock', { size: 14 })} ${I18n.t('block.edit_time')}
               </button>
               <button class="ds-btn ds-btn-plain btn-edit-subject-content" data-subject-type="inactive" data-subject-id="${subj?.id}" style="flex:1; font-size:11px; padding:4px 8px;">
-                ${DS.icon('edit', { size: 14 })} Editar Rotina
+                ${DS.icon('edit', { size: 14 })} ${I18n.t('block.edit_routine')}
               </button>
             </div>
           </div>
@@ -1181,7 +1181,7 @@ let modalContentItems = [];
 function renderModalSlots(slots = []) {
   modalSlots = [...slots];
   const listEl = $('#profileSlotsList');
-  const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+  const days = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, i).toLocaleDateString(I18n.locale, { weekday: 'narrow' }));
 
   const render = () => {
     listEl.innerHTML = modalSlots.map((slot, index) => {
@@ -1242,7 +1242,7 @@ function renderModalSlots(slots = []) {
     
     listEl.querySelectorAll('.btn-remove-slot').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const ok = await DS.confirm('Remover', 'Deseja remover este horário?', 'Remover');
+        const ok = await DS.confirm(I18n.t('slot.remove_title'), I18n.t('slot.remove_msg'), I18n.t('slot.remove_btn'));
         if (ok) {
           modalSlots.splice(parseInt(btn.dataset.index), 1);
           render();
@@ -1268,7 +1268,7 @@ function renderModalContentList(items = [], type = 'study') {
       let desc = '';
       if (type === 'study') {
         const isRep = item.unit === 'rep';
-        const amt = item.duration ? item.duration + (isRep ? ' reps' : ' min') : '';
+        const amt = item.duration ? item.duration + ' ' + (isRep ? I18n.t('content.duration_reps') : I18n.t('content.duration_min')) : '';
         desc = `<span>${DS.escapeHtml(item.topic)}</span> <span class="content-meta">${amt}</span>`;
       } else if (type === 'training') {
         desc = `<div><strong>${DS.escapeHtml(item.name)}</strong> <span class="content-meta">${item.sets}x${item.reps} (${item.weight})</span></div>`;
@@ -1291,7 +1291,7 @@ function renderModalContentList(items = [], type = 'study') {
     
     listEl.querySelectorAll('.btn-remove-content').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const ok = await DS.confirm('Remover', 'Deseja remover este item?', 'Remover');
+        const ok = await DS.confirm(I18n.t('content.remove_title'), I18n.t('content.remove_msg'), I18n.t('content.remove_btn'));
         if (ok) {
           modalContentItems.splice(parseInt(btn.dataset.index), 1);
           render();
@@ -1899,13 +1899,13 @@ function initSettings() {
     $btnSaveMarquee.addEventListener('click', () => {
       const lines = $marqueeTA.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       if (lines.length === 0) {
-        DS.toast('Adicione pelo menos uma frase', 'warning');
+        DS.toast(I18n.t('marquee.error_empty'), 'warning');
         return;
       }
       state.settings.marqueeTexts = lines;
       Store.save(state);
       initVerseMarquee();
-      DS.toast('Frases salvas!', 'success');
+      DS.toast(I18n.t('marquee.saved'), 'success');
     });
   }
 
@@ -1915,7 +1915,7 @@ function initSettings() {
       Store.save(state);
       $marqueeTA.value = DEFAULT_VERSES.join('\n');
       initVerseMarquee();
-      DS.toast('Frases restauradas ao padrão', 'info');
+      DS.toast(I18n.t('marquee.reset_done'), 'info');
     });
   }
 
@@ -2073,7 +2073,7 @@ function renderHeatmap() {
       totalCompleted += count;
     }
   });
-  statsLabel.textContent = `${totalCompleted} tarefas`;
+  statsLabel.textContent = `${totalCompleted} ${I18n.t('heatmap.tasks')}`;
 
   function getLevel(count) {
     if (count === 0) return 0;
@@ -2091,8 +2091,8 @@ function renderHeatmap() {
     months.push({ year, month: m });
   }
 
-  const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const weekDays = ['D','S','T','Q','Q','S','S'];
+  const monthNames = Array.from({ length: 12 }, (_, i) => new Date(2024, i, 1).toLocaleDateString(I18n.locale, { month: 'short' }).replace('.', ''));
+  const weekDays = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, i).toLocaleDateString(I18n.locale, { weekday: 'narrow' }));
 
   track.innerHTML = months.map((m, idx) => {
     const firstDay = new Date(m.year, m.month, 1);
@@ -2120,7 +2120,7 @@ function renderHeatmap() {
 
     return `<div class="heatmap-slide">
         <div class="heatmap-month-label">${label}</div>
-        <div class="heatmap-month-stats">${statsText} tarefas</div>
+        <div class="heatmap-month-stats">${statsText} ${I18n.t('heatmap.tasks')}</div>
         <div class="heatmap-weekday-labels">${weekLabels}</div>
         <div class="heatmap-month-grid">${cells}</div>
       </div>`;
@@ -2393,7 +2393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (maxSlotMin > 0 && durationVal > maxSlotMin) {
-          DS.toast(`Atenção: O tempo do tópico (${durationVal}min) excede seu maior horário de foco contínuo configurado (${maxSlotMin}min). Divida o conteúdo!`, 'warning');
+          DS.toast(I18n.t('alert.duration_exceeds_slot', { duration: durationVal, max: maxSlotMin }), 'warning');
           return;
         }
       }
