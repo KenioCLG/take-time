@@ -1601,49 +1601,22 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 8px 6px 12px;
+  padding: 6px 12px;
   background: var(--ds-bg-primary);
   border-radius: var(--ds-radius-full);
   font-size: 12px;
   font-weight: var(--ds-weight-medium);
   color: var(--ds-text-primary);
   box-shadow: var(--ds-shadow-sm);
-  cursor: default;
+  cursor: grab;
   user-select: none;
   border: 1px solid var(--ds-separator);
   transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
               box-shadow 0.25s ease;
 }
 
-.priority-item-name {
-  flex: 1;
-}
-
-.priority-item-arrows {
-  display: flex;
-  gap: 2px;
-  margin-left: 4px;
-}
-
-.pri-arrow {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 2px 4px;
-  font-size: 10px;
-  color: var(--ds-text-tertiary);
-  border-radius: 4px;
-  line-height: 1;
-  transition: color 0.15s, background 0.15s;
-}
-
-.pri-arrow:hover {
-  color: var(--ds-accent);
-  background: var(--ds-fill-secondary);
-}
-
-.pri-arrow:active {
-  transform: scale(0.9);
+.priority-item:active {
+  cursor: grabbing;
 }
 
 .priority-item-dot {

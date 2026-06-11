@@ -1390,64 +1390,18 @@ function renderPriorities() {
   const p = state.priorities;
   if (!p) return;
 
-  const zoneOrder = ['zone1','zone2','zone3','unallocated'];
-
-  zoneOrder.forEach(zoneId => {
+  ['zone1','zone2','zone3','unallocated'].forEach(zoneId => {
     const listEl = getZoneListEl(zoneId);
     if (!listEl) return;
-    const zi = zoneOrder.indexOf(zoneId);
 
-    listEl.innerHTML = p[zoneId].map(item => {
-      const upDisabled = zi === 0 && zoneId === 'zone1';
-      const downDisabled = zoneId === 'unallocated';
-      return `
+    listEl.innerHTML = p[zoneId].map(item => `
       <div class="priority-item" data-id="${item.id}" data-pillar="${item.pillar}">
         <div class="priority-item-dot" style="background:${item.color}"></div>
-        <span class="priority-item-name">${DS.escapeHtml(item.name)}</span>
-        <span class="priority-item-arrows">
-          ${!upDisabled ? `<button class="pri-arrow pri-up" data-id="${item.id}" data-dir="up" title="Mover para cima">&#9650;</button>` : ''}
-          ${!downDisabled ? `<button class="pri-arrow pri-down" data-id="${item.id}" data-dir="down" title="Mover para baixo">&#9660;</button>` : ''}
-        </span>
-      </div>`;
-    }).join('');
+        ${DS.escapeHtml(item.name)}
+      </div>
+    `).join('');
   });
-
-  // Bind arrow click handlers
-  document.querySelectorAll('.pri-arrow').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      movePriorityItem(btn.dataset.id, btn.dataset.dir);
-    });
-  });
-
   updatePriorityCounts();
-}
-
-function movePriorityItem(itemId, direction) {
-  const p = state.priorities;
-  const zoneOrder = ['zone1','zone2','zone3','unallocated'];
-
-  let fromZone = null, itemIdx = -1;
-  for (const z of zoneOrder) {
-    const idx = p[z].findIndex(i => i.id === itemId);
-    if (idx !== -1) { fromZone = z; itemIdx = idx; break; }
-  }
-  if (!fromZone) return;
-
-  const fromIdx = zoneOrder.indexOf(fromZone);
-  const toIdx = direction === 'up' ? fromIdx - 1 : fromIdx + 1;
-  if (toIdx < 0 || toIdx >= zoneOrder.length) return;
-
-  const toZone = zoneOrder[toIdx];
-
-  // Block zone1 max 3
-  if (toZone === 'zone1' && p.zone1.length >= 3) return;
-
-  const [item] = p[fromZone].splice(itemIdx, 1);
-  p[toZone].push(item);
-
-  renderPriorities();
-  Store.save(state);
 }
 
 function syncPrioritiesFromDOM() {
@@ -1468,7 +1422,7 @@ function syncPrioritiesFromDOM() {
 }
 
 function initPriorities() {
-  if (!window.Sortable) return;
+  if (!window.Sortable) { console.warn('[Priorities] Sortable not loaded'); return; }
 
   renderPriorities();
 
