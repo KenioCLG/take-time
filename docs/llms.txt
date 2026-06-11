@@ -4,41 +4,41 @@
 
 ## Documentation
 
-- [Introduction](https://docs.taketime.app/introduction): Overview of Take Time and its capabilities
-- [Quickstart](https://docs.taketime.app/quickstart): Get started in 5 minutes
-- [Authentication](https://docs.taketime.app/authentication): API keys and authentication
+- [Introduction](https://docs.taketime.space/introduction): Overview of Take Time and its capabilities
+- [Quickstart](https://docs.taketime.space/quickstart): Get started in 5 minutes
+- [Authentication](https://docs.taketime.space/authentication): API keys and authentication
 
 ## Core Concepts
 
-- [Study Blocks](https://docs.taketime.app/concepts/blocks): Time-boxed study sessions
-- [Activities & Subjects](https://docs.taketime.app/concepts/subjects): Study, training, and routine profiles
-- [Schedule](https://docs.taketime.app/concepts/schedule): Weekly time management with pizza chart
-- [Stats & Progress](https://docs.taketime.app/concepts/stats): Heatmaps, streaks, and metrics
+- [Study Blocks](https://docs.taketime.space/concepts/blocks): Time-boxed study sessions
+- [Activities & Subjects](https://docs.taketime.space/concepts/subjects): Study, training, and routine profiles
+- [Schedule](https://docs.taketime.space/concepts/schedule): Weekly time management with pizza chart
+- [Stats & Progress](https://docs.taketime.space/concepts/stats): Heatmaps, streaks, and metrics
 
 ## API Reference
 
-- [API Introduction](https://docs.taketime.app/api-reference/introduction): Base URL, auth, error codes, pagination
-- [List Blocks](https://docs.taketime.app/api-reference/blocks/list): GET /blocks - List study blocks
-- [Create Block](https://docs.taketime.app/api-reference/blocks/create): POST /blocks - Create study block
-- [Update Block](https://docs.taketime.app/api-reference/blocks/update): PATCH /blocks/:id - Update block
-- [Delete Block](https://docs.taketime.app/api-reference/blocks/delete): DELETE /blocks/:id - Delete block
-- [List Subjects](https://docs.taketime.app/api-reference/subjects/list): GET /subjects - List activities
-- [Create Subject](https://docs.taketime.app/api-reference/subjects/create): POST /subjects - Create activity
-- [Update Subject](https://docs.taketime.app/api-reference/subjects/update): PATCH /subjects/:id - Update activity
-- [Delete Subject](https://docs.taketime.app/api-reference/subjects/delete): DELETE /subjects/:id - Delete activity
-- [Get Stats](https://docs.taketime.app/api-reference/stats/get): GET /stats - Completion stats and heatmap
-- [Get Schedule](https://docs.taketime.app/api-reference/schedule/get): GET /schedule - Weekly schedule
-- [Suggest Schedule](https://docs.taketime.app/api-reference/schedule/suggest): POST /schedule/suggest - AI suggestions
+- [API Introduction](https://docs.taketime.space/api-reference/introduction): Base URL, auth, error codes, pagination
+- [List Blocks](https://docs.taketime.space/api-reference/blocks/list): GET /blocks - List study blocks
+- [Create Block](https://docs.taketime.space/api-reference/blocks/create): POST /blocks - Create study block
+- [Update Block](https://docs.taketime.space/api-reference/blocks/update): PATCH /blocks/:id - Update block
+- [Delete Block](https://docs.taketime.space/api-reference/blocks/delete): DELETE /blocks/:id - Delete block
+- [List Subjects](https://docs.taketime.space/api-reference/subjects/list): GET /subjects - List activities
+- [Create Subject](https://docs.taketime.space/api-reference/subjects/create): POST /subjects - Create activity
+- [Update Subject](https://docs.taketime.space/api-reference/subjects/update): PATCH /subjects/:id - Update activity
+- [Delete Subject](https://docs.taketime.space/api-reference/subjects/delete): DELETE /subjects/:id - Delete activity
+- [Get Stats](https://docs.taketime.space/api-reference/stats/get): GET /stats - Completion stats and heatmap
+- [Get Schedule](https://docs.taketime.space/api-reference/schedule/get): GET /schedule - Weekly schedule
+- [Suggest Schedule](https://docs.taketime.space/api-reference/schedule/suggest): POST /schedule/suggest - AI suggestions
 
 ## MCP Server
 
-- [Overview](https://docs.taketime.app/mcp/overview): Connect AI assistants via Model Context Protocol
-- [Installation](https://docs.taketime.app/mcp/installation): Setup for Claude Desktop, Cursor, VS Code
-- [Tools](https://docs.taketime.app/mcp/tools): Available MCP tools reference
-- [Examples](https://docs.taketime.app/mcp/examples): Real-world usage examples
+- [Overview](https://docs.taketime.space/mcp/overview): Connect AI assistants via Model Context Protocol
+- [Installation](https://docs.taketime.space/mcp/installation): Setup for Claude Desktop, Cursor, VS Code
+- [Tools](https://docs.taketime.space/mcp/tools): Available MCP tools reference
+- [Examples](https://docs.taketime.space/mcp/examples): Real-world usage examples
 
 ## Guides
 
-- [Webhooks](https://docs.taketime.app/guides/webhooks): Real-time event notifications
-- [Development Mode](https://docs.taketime.app/guides/dev-mode): Sandbox testing environment
-- [Production](https://docs.taketime.app/guides/production): Go-live checklist
+- [Webhooks](https://docs.taketime.space/guides/webhooks): Real-time event notifications
+- [Development Mode](https://docs.taketime.space/guides/dev-mode): Sandbox testing environment
+- [Production](https://docs.taketime.space/guides/production): Go-live checklist

@@ -125,7 +125,7 @@
   },
   "api": {
     "mdx": {
-      "server": "https://api.taketime.app/v1",
+      "server": "https://api.taketime.space/v1",
       "auth": {
         "method": "bearer"
       }
@@ -135,13 +135,13 @@
     "links": [
       {
         "label": "App",
-        "href": "https://study-planner-five-sand.vercel.app"
+        "href": "https://taketime.space"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://study-planner-five-sand.vercel.app"
+      "href": "https://taketime.space"
     }
   },
   "footer": {

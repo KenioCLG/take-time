@@ -5,7 +5,7 @@ description: "Get up and running with the Take Time API in under 5 minutes."
 
 ## 1. Get your API key
 
-After creating your account at [Take Time](https://study-planner-five-sand.vercel.app), go to **Settings** and generate an API key.
+After creating your account at [Take Time](https://taketime.space), go to **Settings** and generate an API key.
 
 <Info>
   Your API key starts with `tt_live_` for production or `tt_test_` for development mode. Keep it secret — treat it like a password.
@@ -18,12 +18,12 @@ Let's list your study blocks for today:
 <CodeGroup>
 
 ```bash cURL
-curl -X GET "https://api.taketime.app/v1/blocks?date=2026-06-11" \
+curl -X GET "https://api.taketime.space/v1/blocks?date=2026-06-11" \
   -H "Authorization: Bearer tt_live_your_key_here"
 ```
 
 ```javascript Node.js
-const response = await fetch('https://api.taketime.app/v1/blocks?date=2026-06-11', {
+const response = await fetch('https://api.taketime.space/v1/blocks?date=2026-06-11', {
   headers: {
     'Authorization': 'Bearer tt_live_your_key_here'
   }
@@ -36,7 +36,7 @@ console.log(data);
 import requests
 
 response = requests.get(
-    'https://api.taketime.app/v1/blocks',
+    'https://api.taketime.space/v1/blocks',
     params={'date': '2026-06-11'},
     headers={'Authorization': 'Bearer tt_live_your_key_here'}
 )
@@ -51,7 +51,7 @@ print(data)
 <CodeGroup>
 
 ```bash cURL
-curl -X POST "https://api.taketime.app/v1/blocks" \
+curl -X POST "https://api.taketime.space/v1/blocks" \
   -H "Authorization: Bearer tt_live_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -64,7 +64,7 @@ curl -X POST "https://api.taketime.app/v1/blocks" \
 ```
 
 ```javascript Node.js
-const response = await fetch('https://api.taketime.app/v1/blocks', {
+const response = await fetch('https://api.taketime.space/v1/blocks', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer tt_live_your_key_here',
@@ -85,7 +85,7 @@ const { data } = await response.json();
 import requests
 
 response = requests.post(
-    'https://api.taketime.app/v1/blocks',
+    'https://api.taketime.space/v1/blocks',
     headers={'Authorization': 'Bearer tt_live_your_key_here'},
     json={
         'subject_id': 'sub_xyz',
