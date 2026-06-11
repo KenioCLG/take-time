@@ -1486,9 +1486,8 @@ function initPriorities() {
       ghostClass: 'sortable-ghost',
       chosenClass: 'sortable-chosen',
       dragClass: 'sortable-drag',
-      delay: 80,
-      delayOnTouchOnly: true,
-      touchStartThreshold: 3,
+      forceFallback: true,
+      fallbackOnBody: true,
       swapThreshold: 0.65,
       onMove: (evt) => {
         // Block drops into zone1 if already at max 3 (excluding ghost/dragged item)
