@@ -223,5 +223,71 @@
   "info.priorities_focus": "<strong style=\"color:var(--ds-danger);\">Main Focus</strong> — max 3 areas that deserve most of your time and energy",
   "info.priorities_important": "<strong style=\"color:var(--ds-warning);\">Important</strong> — relevant areas you keep active, with moderate dedication",
   "info.priorities_flexible": "<strong style=\"color:var(--ds-success);\">Flexible</strong> — complementary areas that fit when you have spare time",
-  "info.priorities_footer": "Drag areas between levels to reflect your current priorities."
+  "info.priorities_footer": "Drag areas between levels to reflect your current priorities.",
+
+  "auth.login_loading": "⏳ Signing in…",
+  "auth.signup_loading": "⏳ Creating account…",
+  "auth.login_error": "Error signing in",
+  "auth.signup_error": "Error creating account",
+
+  "block.edit_time": "Time",
+  "block.edit_syllabus": "Edit Syllabus",
+  "block.edit_exercise": "Edit Workout",
+  "block.edit_routine": "Edit Routine",
+
+  "slot.remove_title": "Remove",
+  "slot.remove_msg": "Remove this time slot?",
+  "slot.remove_btn": "Remove",
+
+  "content.remove_title": "Remove",
+  "content.remove_msg": "Remove this item?",
+  "content.remove_btn": "Remove",
+  "content.duration_min": "min",
+  "content.duration_reps": "reps",
+  "content.duration_placeholder": "Minutes",
+
+  "marquee.error_empty": "Add at least one phrase",
+  "marquee.saved": "Phrases saved!",
+  "marquee.reset_done": "Phrases restored to default",
+
+  "heatmap.section_label": "Consistency",
+  "heatmap.less": "Less",
+  "heatmap.more": "More",
+  "heatmap.tasks": "tasks",
+
+  "priorities.title": "Priority Circle",
+  "priorities.zone1": "Main Focus (Center)",
+  "priorities.zone2": "Important (Middle)",
+  "priorities.zone3": "Flexible (Outer)",
+  "priorities.unallocated": "Unallocated Areas",
+
+  "settings.section_app": "App",
+  "settings.section_account": "Account",
+  "settings.section_history": "History",
+
+  "footer.mcp_server": "MCP Server",
+  "footer.api": "API",
+  "footer.github": "GitHub",
+
+  "type.study_short": "Study",
+  "type.training_short": "Training",
+  "type.inactive_short": "Routine",
+
+  "alert.duration_exceeds_slot": "Warning: Topic time (%{duration}min) exceeds your longest continuous focus slot (%{max}min). Split the content!",
+
+  "language.pt_br": "Português (BR)",
+  "language.en_us": "English (US)",
+
+  "timezone.america_sao_paulo": "Brasília (SP/RJ/MG)",
+  "timezone.america_recife": "Recife (PE/PB/AL)",
+  "timezone.america_fortaleza": "Fortaleza (CE/PI/MA)",
+  "timezone.america_belem": "Belém (PA/AP)",
+  "timezone.america_manaus": "Manaus (AM/RR)",
+  "timezone.america_cuiaba": "Cuiabá (MT/MS)",
+  "timezone.america_rio_branco": "Rio Branco (AC)",
+  "timezone.america_noronha": "Fernando de Noronha",
+  "timezone.america_buenos_aires": "Buenos Aires",
+  "timezone.america_new_york": "New York (EST)",
+  "timezone.europe_lisbon": "Lisbon (WET)",
+  "timezone.europe_london": "London (GMT)"
 }

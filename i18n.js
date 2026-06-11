@@ -25,12 +25,12 @@ const I18n = (() => {
 
   async function load(localeCode) {
     try {
-      const resp = await fetch(`locales/${localeCode}.json`);
+      const resp = await fetch(`locales/${localeCode}.json?t=${Date.now()}`);
       translations = await resp.json();
     } catch { translations = {}; }
     if (localeCode !== DEFAULT) {
       try {
-        const resp = await fetch(`locales/${DEFAULT}.json`);
+        const resp = await fetch(`locales/${DEFAULT}.json?t=${Date.now()}`);
         fallbackTranslations = await resp.json();
       } catch { fallbackTranslations = {}; }
     } else {
