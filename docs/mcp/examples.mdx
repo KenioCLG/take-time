@@ -11,7 +11,7 @@ The AI calls `list_blocks` with today's date and presents your schedule.
 
 > **You:** "I want to add a Math study session from 2pm to 3:30pm about Linear Algebra"
 
-The AI calls `create_block` with the subject, time, and topic.
+The AI calls `create_block` with the subject name, time, and topic.
 
 ---
 
@@ -32,19 +32,22 @@ Weekly Summary:
 
 ---
 
-## Schedule Optimization
+## Full Schedule View
 
-> **You:** "I want to focus more on Math next week. I have 4 hours per day, mornings are best."
+> **You:** "Show me my complete schedule for this week"
 
-The AI calls `suggest_schedule` and presents recommendations:
+The AI calls `get_schedule` and presents all blocks organized by day:
 
 ```
-Suggested changes:
-1. Mathematics: Mon-Fri 08:00-09:30 (up from 2 days)
-2. JavaScript: Mon/Wed/Fri 10:00-10:45 (reduced)
-3. Morning Routine: Keep daily 07:00-07:30
+Monday:
+  08:00-09:00  JavaScript — React Hooks
+  10:00-11:00  Mathematics — Linear Algebra
+  14:00-15:00  English — Listening Practice
 
-Would you like me to apply these changes?
+Tuesday:
+  08:00-09:30  JavaScript — Node.js APIs
+  11:00-12:00  Training — Morning Run
+  ...
 ```
 
 ---
@@ -55,37 +58,43 @@ Would you like me to apply these changes?
   <Card title="Mark done">
     "Mark my 9am JavaScript block as done"
 
-    → `update_block({ block_id, done: true })`
+    The AI calls `list_blocks` to find the block, then `update_block` with `done: true`
   </Card>
   <Card title="Reschedule">
     "Move my math block to 3pm"
 
-    → `update_block({ block_id, start: "15:00", end: "16:00" })`
+    The AI calls `update_block` with new `start` and `end` times
   </Card>
   <Card title="Cancel block">
     "Delete my evening study block"
 
-    → `delete_block({ block_id })`
+    The AI calls `list_blocks` to find it, then `delete_block`
   </Card>
   <Card title="New activity">
-    "Create a Physics study profile with MWF at 11am"
+    "Create a Physics study profile"
 
-    → `create_subject({ name, type, slots })`
+    The AI calls `create_subject` with name, type, and color
   </Card>
 </CardGroup>
 
 ---
 
-## Advanced: Building Automations
+## Smart Combinations
 
-You can combine MCP tools with your AI assistant's capabilities:
+Your AI can chain tools for complex requests:
 
-> **You:** "Every Monday, check my previous week's completion rate. If it's below 80%, suggest adjustments for the new week."
+> **You:** "Check my completion rate for this week. If any subject is below 50%, create extra blocks for it tomorrow."
 
-The AI can chain:
-1. `get_stats({ period: "week" })` — check last week
-2. If `completion_rate < 0.8` → `suggest_schedule()` — get suggestions
-3. Present recommendations for your approval
+The AI chains:
+1. `get_stats({ period: "week" })` — check completion
+2. `list_subjects()` — get all activities
+3. `create_block(...)` — schedule make-up blocks for struggling subjects
+
+> **You:** "I'm done studying for today. Mark all remaining blocks as done."
+
+The AI chains:
+1. `list_blocks({ date: "2026-06-11", done: false })` — find pending blocks
+2. `update_block({ block_id, done: true })` — mark each one
 
 <Info>
   The MCP Server doesn't auto-apply changes. Your AI always asks for confirmation before modifying your schedule.

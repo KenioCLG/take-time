@@ -6,20 +6,38 @@ description: "Install and configure the Take Time MCP Server for your AI client.
 ## Prerequisites
 
 - **Node.js 18+** installed
-- A **Take Time account** with an API key
+- A **Take Time account** (sign up at [taketime.space](https://taketime.space))
 - One of the supported AI clients
 
 ## Install
 
 ```bash
-npm install -g @taketime/mcp-server
+git clone https://github.com/KenioCLG/take-time.git
+cd take-time/mcp-server
+npm install
 ```
 
-Or use directly with `npx` (no install needed):
+## Authentication
 
-```bash
-npx @taketime/mcp-server
-```
+The MCP Server supports two authentication methods:
+
+<Tabs>
+  <Tab title="Email/Password (Recommended)">
+    Use your Take Time account credentials. The session **auto-refreshes** so the server runs indefinitely.
+
+    ```
+    TAKETIME_EMAIL=your@email.com
+    TAKETIME_PASSWORD=your-password
+    ```
+  </Tab>
+  <Tab title="Access Token">
+    Use a Supabase access token from your browser session. **Expires after ~1 hour** — suitable for testing only.
+
+    ```
+    TAKETIME_API_KEY=your_access_token
+    ```
+  </Tab>
+</Tabs>
 
 ## Configure Your Client
 
@@ -31,10 +49,11 @@ npx @taketime/mcp-server
     {
       "mcpServers": {
         "taketime": {
-          "command": "npx",
-          "args": ["@taketime/mcp-server"],
+          "command": "node",
+          "args": ["/path/to/take-time/mcp-server/src/index.js"],
           "env": {
-            "TAKETIME_API_KEY": "tt_live_your_key_here"
+            "TAKETIME_EMAIL": "your@email.com",
+            "TAKETIME_PASSWORD": "your-password"
           }
         }
       }
@@ -42,16 +61,17 @@ npx @taketime/mcp-server
     ```
   </Tab>
   <Tab title="Claude Code">
-    Edit `.claude/settings.json` in your project or globally:
+    Edit `~/.claude/settings.json`:
 
     ```json
     {
       "mcpServers": {
         "taketime": {
-          "command": "npx",
-          "args": ["@taketime/mcp-server"],
+          "command": "node",
+          "args": ["/path/to/take-time/mcp-server/src/index.js"],
           "env": {
-            "TAKETIME_API_KEY": "tt_live_your_key_here"
+            "TAKETIME_EMAIL": "your@email.com",
+            "TAKETIME_PASSWORD": "your-password"
           }
         }
       }
@@ -65,27 +85,47 @@ npx @taketime/mcp-server
     {
       "mcpServers": {
         "taketime": {
-          "command": "npx",
-          "args": ["@taketime/mcp-server"],
+          "command": "node",
+          "args": ["/path/to/take-time/mcp-server/src/index.js"],
           "env": {
-            "TAKETIME_API_KEY": "tt_live_your_key_here"
+            "TAKETIME_EMAIL": "your@email.com",
+            "TAKETIME_PASSWORD": "your-password"
           }
         }
       }
     }
     ```
   </Tab>
-  <Tab title="VS Code">
+  <Tab title="VS Code (Copilot)">
     Edit `.vscode/mcp.json`:
 
     ```json
     {
       "servers": {
         "taketime": {
-          "command": "npx",
-          "args": ["@taketime/mcp-server"],
+          "command": "node",
+          "args": ["/path/to/take-time/mcp-server/src/index.js"],
           "env": {
-            "TAKETIME_API_KEY": "tt_live_your_key_here"
+            "TAKETIME_EMAIL": "your@email.com",
+            "TAKETIME_PASSWORD": "your-password"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Windsurf">
+    Edit `~/.codeium/windsurf/mcp_config.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "taketime": {
+          "command": "node",
+          "args": ["/path/to/take-time/mcp-server/src/index.js"],
+          "env": {
+            "TAKETIME_EMAIL": "your@email.com",
+            "TAKETIME_PASSWORD": "your-password"
           }
         }
       }
@@ -94,30 +134,35 @@ npx @taketime/mcp-server
   </Tab>
 </Tabs>
 
+<Note>
+  Replace `/path/to/take-time` with the actual absolute path where you cloned the repository.
+</Note>
+
 ## Verify Installation
 
 After configuring, restart your AI client. You should see the Take Time tools available. Try asking:
 
-> "List my study blocks for today"
+> "List my study subjects"
 
-If the tools are working, you'll get a response with your block data.
+If the tools are working, you'll get a response with your activity data.
 
 ## Troubleshooting
 
 <AccordionGroup>
   <Accordion title="Tools not appearing">
-    - Verify the config file path is correct for your OS
-    - Check that `npx` is in your system PATH
+    - Verify the path to `src/index.js` is absolute and correct
+    - Check that `node` is in your system PATH
+    - Make sure `npm install` was run in the `mcp-server/` directory
     - Restart the AI client completely (not just the conversation)
   </Accordion>
   <Accordion title="Authentication errors">
-    - Verify your API key starts with `tt_live_` or `tt_test_`
-    - Check for extra spaces or quotes around the key
-    - Generate a new key if the current one expired
+    - Verify your email and password are correct
+    - Make sure you have a Take Time account at [taketime.space](https://taketime.space)
+    - If using access token, note it expires after ~1 hour
   </Accordion>
   <Accordion title="Connection timeouts">
     - Check your internet connection
-    - The Take Time API may be experiencing downtime
-    - Try running `npx @taketime/mcp-server --health` to check
+    - The server needs to reach `gwujukwvufmfecqgzvrs.supabase.co`
+    - Try running `node src/index.js` directly to see error messages
   </Accordion>
 </AccordionGroup>

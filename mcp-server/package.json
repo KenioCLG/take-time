@@ -1,0 +1,19 @@
+{
+  "name": "@taketime/mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for Take Time — manage study blocks, activities, and schedules via AI assistants",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "taketime-mcp": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": ["mcp", "study-planner", "take-time", "ai", "claude"],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.24.0"
+  }
+}
