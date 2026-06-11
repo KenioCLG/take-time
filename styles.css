@@ -89,16 +89,18 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 .header-title {
   font-size: var(--ds-text-4xl);
-  font-weight: 300;
+  font-weight: var(--ds-weight-bold);
   letter-spacing: var(--ds-tracking-tight);
   color: var(--ds-text-primary);
   line-height: 1.1;
 }
 
 .header-subtitle {
-  font-size: var(--ds-text-sm);
+  font-size: var(--ds-text-xs);
   color: var(--ds-text-secondary);
-  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: var(--ds-tracking-wide);
+  font-weight: var(--ds-weight-semibold);
 }
 
 .header-right {
