@@ -171,6 +171,7 @@
   "settings.ios_install_hint": "Tap the Share button (⎋) then \"Add to Home Screen\"",
 
   "app.version": "Take Time v1.0",
+  "footer.docs": "Documentation",
 
   "app.tagline": "Your smart study planner. Sync your cycles and reach your goals.",
   "auth.show_login": "Log In",

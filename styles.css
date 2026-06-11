@@ -686,11 +686,37 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   opacity: 0.6;
 }
 
+.settings-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4) 0 0;
+}
+
+.settings-footer-links a {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-tertiary);
+  text-decoration: none;
+  transition: color var(--ds-duration-fast) var(--ds-ease-default);
+}
+
+.settings-footer-links a:hover {
+  color: var(--ds-accent);
+}
+
+.settings-footer-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ds-text-quaternary);
+}
+
 .settings-footer {
   text-align: center;
   font-size: var(--ds-text-xs);
   color: var(--ds-text-quaternary);
-  padding: var(--ds-space-4) 0 var(--ds-space-8);
+  padding: var(--ds-space-2) 0 var(--ds-space-8);
 }
 
 /* ===== MODAL ENHANCEMENTS ===== */
