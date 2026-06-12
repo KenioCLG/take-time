@@ -608,6 +608,46 @@ server.tool(
   }
 );
 
+server.tool(
+  'delete_subject',
+  'Permanently delete an activity/subject and all its associated blocks.',
+  {
+    subject_name: z.string().describe('Name of the activity/subject to delete'),
+  },
+  async ({ subject_name }) => {
+    let deletedBlocks = 0;
+
+    await updateState(s => {
+      const subject = getSubjectByName(s, subject_name);
+      if (!subject) throw new Error(`Subject "${subject_name}" not found.`);
+
+      // Remove all blocks for this subject
+      const before = s.blocks.length;
+      s.blocks = s.blocks.filter(b => b.subjectId !== subject.id);
+      deletedBlocks = before - s.blocks.length;
+
+      // Remove from priorities
+      if (s.priorities) {
+        for (const zone of ['zone1', 'zone2', 'zone3', 'unallocated']) {
+          if (s.priorities[zone]) {
+            s.priorities[zone] = s.priorities[zone].filter(i => i.id !== subject.id);
+          }
+        }
+      }
+
+      // Remove the subject
+      s.subjects = s.subjects.filter(sub => sub.id !== subject.id);
+    });
+
+    return {
+      content: [{
+        type: 'text',
+        text: `Subject "${subject_name}" deleted. ${deletedBlocks} associated block(s) also removed.`,
+      }],
+    };
+  }
+);
+
 // ==================== BLOCK ATOMIC ITEM TOOL ====================
 
 server.tool(
@@ -806,14 +846,18 @@ server.tool(
     reminder_min: z.number().optional().describe('Minutes before block to send reminder'),
     theme: z.enum(['light', 'dark', 'auto']).optional().describe('Theme preference'),
     show_marquee: z.boolean().optional().describe('Show/hide the motivational marquee phrases'),
+    timezone: z.string().optional().describe('Timezone (e.g. "America/Sao_Paulo")'),
+    language: z.enum(['pt-BR', 'en-US']).optional().describe('Interface language'),
   },
-  async ({ notifications, reminder_min, theme, show_marquee }) => {
+  async ({ notifications, reminder_min, theme, show_marquee, timezone, language }) => {
     const state = await updateState(s => {
       if (!s.settings) s.settings = {};
       if (notifications !== undefined) s.settings.notifications = notifications;
       if (reminder_min !== undefined) s.settings.reminderMin = reminder_min;
       if (theme !== undefined) s.settings.theme = theme;
       if (show_marquee !== undefined) s.settings.showMarquee = show_marquee;
+      if (timezone !== undefined) s.settings.timezone = timezone;
+      if (language !== undefined) s.settings.language = language;
     });
 
     return {

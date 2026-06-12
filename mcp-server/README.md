@@ -166,7 +166,7 @@ Three methods supported:
 
 **Refresh Token** is the best option — copy it from the app's MCP settings panel. It auto-refreshes indefinitely without exposing your password.
 
-## Available Tools — 21 tools
+## Available Tools — 22 tools
 
 ### Schedule (blocks)
 
@@ -188,6 +188,7 @@ Three methods supported:
 | `add_subject_item` | Add syllabus topic, exercise, or micro-habit |
 | `update_subject_item` | Update item details (topic, duration, sets, etc.) |
 | `remove_subject_item` | Remove an item from a subject |
+| `delete_subject` | Delete an activity and all its blocks |
 
 ### Atomic Habits
 
