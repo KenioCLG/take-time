@@ -50,6 +50,8 @@
   "block.training_summary": "Training: %{done}/%{total} exercises done",
   "block.routine_summary": "Routine: %{done}/%{total} habits done",
   "block.add_aria": "Add block",
+  "block.repeat_daily": "Repeat Daily",
+  "block.repeat_daily_hint": "Auto-create this block every day",
 
   "syllabus.label": "Syllabus Topic",
   "syllabus.select_prompt": "-- Select a topic --",

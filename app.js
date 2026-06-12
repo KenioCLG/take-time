@@ -1158,12 +1158,14 @@ function openBlockModal(blockId = null) {
     $('#inputTopic').value = block.topic || '';
     $('#inputStart').value = block.start;
     $('#inputEnd').value = block.end;
+    $('#inputRepeatDaily').checked = block.repeatDaily || false;
     $('#btnDeleteBlock').classList.remove('hidden');
   } else {
     $('#modalTitle').textContent = I18n.t('block.new');
     $('#inputTopic').value = '';
     $('#inputStart').value = '08:00';
     $('#inputEnd').value = '09:00';
+    $('#inputRepeatDaily').checked = false;
     $('#btnDeleteBlock').classList.add('hidden');
     if (state.subjects.length > 0) $('#inputSubject').value = state.subjects[0].id;
   }
@@ -1498,12 +1500,13 @@ function saveBlock() {
   const isEditing = !!editingBlockId;
   if (isEditing) {
     const block = state.blocks.find(b => b.id === editingBlockId);
-    if (block) { block.subjectId = subjectId; block.topic = topic; block.start = start; block.end = end; }
+    if (block) { block.subjectId = subjectId; block.topic = topic; block.start = start; block.end = end; block.repeatDaily = $('#inputRepeatDaily').checked; }
     logAction(I18n.t('log.edited_block', { name: topic || subj?.name, start, end }));
   } else {
     state.blocks.push({
       id: uid(), date: dateKey(selectedDate),
       subjectId, topic, start, end, done: false,
+      repeatDaily: $('#inputRepeatDaily').checked,
     });
     logAction(I18n.t('log.created_block', { name: topic || subj?.name, start, end }));
   }
@@ -2024,6 +2027,35 @@ function updateThemeColor() {
   document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', color));
 }
 
+function autoRepeatDailyBlocks() {
+  const todayKey = dateKey(selectedDate);
+  const yesterday = new Date(selectedDate);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayKey = dateKey(yesterday);
+
+  state.blocks
+    .filter(b => b.repeatDaily && b.date === yesterdayKey)
+    .forEach(b => {
+      const alreadyExists = state.blocks.some(
+        other => other.date === todayKey && other.subjectId === b.subjectId && other.start === b.start && other.end === b.end
+      );
+      if (!alreadyExists) {
+        state.blocks.push({
+          id: uid(),
+          date: todayKey,
+          subjectId: b.subjectId,
+          topic: b.topic,
+          start: b.start,
+          end: b.end,
+          done: false,
+          repeatDaily: true,
+          selectedSyllabusId: b.selectedSyllabusId || null,
+          completedItems: b.completedItems ? [...b.completedItems] : [],
+        });
+      }
+    });
+}
+
 // ===== DAILY BLOCKS GENERATOR FROM WEEKLY SLOTS =====
 function initDailyBlocksFromProfiles(date) {
   const dKey = dateKey(date);
@@ -2212,6 +2244,7 @@ function renderHeatmap() {
 
 // ===== MAIN RENDER =====
 function render() {
+  autoRepeatDailyBlocks();
   initDailyBlocksFromProfiles(selectedDate);
   $('#headerDate').textContent = formatFullDate(selectedDate);
   renderWeekNav();
