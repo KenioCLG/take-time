@@ -28,7 +28,10 @@ const Supabase = {
       headers: { ...this._headers(opts.auth !== false), ...opts.headers },
     });
     const data = await res.json().catch(() => null);
-    if (!res.ok) throw new Error(data?.error_description || data?.msg || data?.message || `HTTP ${res.status}`);
+    if (!res.ok) {
+      console.warn('[Auth]', res.status, path, data);
+      throw new Error(data?.error_description || data?.msg || data?.message || `HTTP ${res.status}`);
+    }
     return data;
   },
 
