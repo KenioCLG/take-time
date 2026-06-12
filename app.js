@@ -158,9 +158,10 @@ async function handleLoginSubmit() {
   if (result.success) {
     loginUser();
   } else {
-    const msg = result.error === AuthError.INVALID_EMAIL ? __('auth.invalid_email', null, 'E-mail inválido')
-             : result.error === AuthError.EMPTY_FIELDS ? __('auth.fill_fields', null, 'Preencha os campos')
-              : __('auth.login_error');
+    let msg = __('auth.login_error', null, 'Erro ao fazer login');
+    if (result.error === AuthError.INVALID_EMAIL) msg = __('auth.invalid_email', null, 'E-mail inválido');
+    else if (result.error === AuthError.EMPTY_FIELDS) msg = __('auth.fill_fields', null, 'Preencha os campos');
+    else if (typeof result.error === 'string') msg = result.error;
     DS.toast(msg, 'error');
   }
 }
@@ -182,14 +183,23 @@ async function handleSignupSubmit() {
   setAuthLoading(false);
   
   if (result.success) {
-    DS.toast(__('auth.account_created', null, 'Conta criada com sucesso!'), 'success');
-    loginUser();
+    if (Supabase.getSession()) {
+      DS.toast(__('auth.account_created', null, 'Conta criada com sucesso!'), 'success');
+      loginUser();
+    } else {
+      DS.toast('Conta criada! Verifique seu e-mail para confirmar.', 'success', 5000);
+      $('#authBodySignup').classList.add('hidden');
+      $('#authBodyLogin').classList.remove('hidden');
+      $('#authTitle').textContent = __('auth.login', null, 'Acessar Conta');
+    }
   } else {
-    const msg = result.error === AuthError.PASSWORD_MISMATCH ? __('auth.password_mismatch', null, 'As senhas não coincidem')
-             : result.error === AuthError.INVALID_EMAIL ? __('auth.invalid_email', null, 'E-mail inválido')
-             : result.error === AuthError.EMPTY_FIELDS ? __('auth.fill_fields', null, 'Preencha todos os campos')
-              : __('auth.signup_error');
-    DS.toast(msg, 'error');
+    let msg = __('auth.signup_error', null, 'Erro ao criar conta');
+    if (result.error === AuthError.PASSWORD_MISMATCH) msg = __('auth.password_mismatch', null, 'As senhas não coincidem');
+    else if (result.error === AuthError.INVALID_EMAIL) msg = __('auth.invalid_email', null, 'E-mail inválido');
+    else if (result.error === AuthError.EMPTY_FIELDS) msg = __('auth.fill_fields', null, 'Preencha todos os campos');
+    else if (typeof result.error === 'string') msg = result.error;
+    
+    DS.toast(msg, 'error', 4000);
   }
 }
 
