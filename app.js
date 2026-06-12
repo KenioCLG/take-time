@@ -90,6 +90,9 @@ function renderUserProfile() {
 
 async function loginUser() {
   DS.sheet.close($('#authDrawerOverlay'));
+  // Ensure body is unlocked immediately — sheet close is async and
+  // hiding authScreen can prevent transitionend from firing
+  DS.sheet.unlockBody();
   $('#authScreen').style.display = 'none';
   document.documentElement.classList.add('authenticated');
   const app = $('#app');
