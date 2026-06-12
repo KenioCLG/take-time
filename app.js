@@ -1936,6 +1936,30 @@ function initSettings() {
     }
   }
 
+  // MCP API Key Generator
+  const $btnGenKey = $('#btnGenApiKey');
+  if ($btnGenKey) {
+    $btnGenKey.addEventListener('click', () => {
+      const token = Supabase._accessToken;
+      if (!token) {
+        DS.toast(I18n.t('mcp.key_error'));
+        return;
+      }
+      const $result = $('#mcpApiKeyResult');
+      const $input = $('#mcpApiKeyValue');
+      $input.value = token;
+      $result.classList.remove('hidden');
+    });
+
+    const $btnCopyKey = $('#btnCopyApiKey');
+    if ($btnCopyKey) {
+      $btnCopyKey.addEventListener('click', () => {
+        const val = $('#mcpApiKeyValue').value;
+        if (val) navigator.clipboard.writeText(val).then(() => DS.toast(I18n.t('mcp.copied')));
+      });
+    }
+  }
+
   // Marquee custom texts
   const $marqueeTA = $('#marqueeTextarea');
   const $btnSaveMarquee = $('#btnSaveMarquee');

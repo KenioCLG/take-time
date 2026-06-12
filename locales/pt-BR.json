@@ -281,6 +281,10 @@
   "mcp.copy": "Copiar",
   "mcp.copied": "Configuração copiada!",
   "mcp.config_note": "Substitua /path/to/take-time pelo caminho real do repositório clonado e your-password pela sua senha.",
+  "mcp.api_key_label": "API Key (Access Token)",
+  "mcp.generate_key": "Gerar",
+  "mcp.key_warning": "Este token expira em ~1h. Para uso permanente, use email/senha na configuração.",
+  "mcp.key_error": "Erro: nenhuma sessão ativa. Faça login primeiro.",
 
   "type.study_short": "Estudo",
   "type.training_short": "Treino",
