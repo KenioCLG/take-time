@@ -14,6 +14,8 @@
   "auth.account_created": "Account created successfully!",
   "auth.invalid_email": "Invalid email",
   "auth.password_mismatch": "Passwords don't match",
+  "auth.weak_password": "Password must be at least 6 characters",
+  "auth.confirm_email": "Account created! Check your email to confirm.",
   "auth.fill_fields": "Fill in all fields",
   "auth.login_btn": "Access Dashboard",
   "auth.signup_btn": "Create Account",

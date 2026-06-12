@@ -196,6 +196,7 @@ async function handleSignupSubmit() {
     let msg = __('auth.signup_error', null, 'Erro ao criar conta');
     if (result.error === AuthError.PASSWORD_MISMATCH) msg = __('auth.password_mismatch', null, 'As senhas não coincidem');
     else if (result.error === AuthError.INVALID_EMAIL) msg = __('auth.invalid_email', null, 'E-mail inválido');
+    else if (result.error === AuthError.WEAK_PASSWORD) msg = __('auth.weak_password', null, 'A senha deve ter pelo menos 6 caracteres');
     else if (result.error === AuthError.EMPTY_FIELDS) msg = __('auth.fill_fields', null, 'Preencha todos os campos');
     else if (typeof result.error === 'string') msg = result.error;
     

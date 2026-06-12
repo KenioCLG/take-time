@@ -133,6 +133,7 @@ const Supabase = {
 const AuthError = {
   EMPTY_FIELDS: 'EMPTY_FIELDS',
   INVALID_EMAIL: 'INVALID_EMAIL',
+  WEAK_PASSWORD: 'WEAK_PASSWORD',
   PASSWORD_MISMATCH: 'PASSWORD_MISMATCH',
 };
 
@@ -164,6 +165,7 @@ const AuthService = {
   async signup(email, password, passwordRepeat) {
     if (!email || !password || !passwordRepeat) return { success: false, error: AuthError.EMPTY_FIELDS };
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { success: false, error: AuthError.INVALID_EMAIL };
+    if (password.length < 6) return { success: false, error: AuthError.WEAK_PASSWORD };
     if (password !== passwordRepeat) return { success: false, error: AuthError.PASSWORD_MISMATCH };
 
     try {

@@ -14,6 +14,8 @@
   "auth.account_created": "Conta criada com sucesso!",
   "auth.invalid_email": "E-mail inválido",
   "auth.password_mismatch": "As senhas não coincidem",
+  "auth.weak_password": "A senha deve ter pelo menos 6 caracteres",
+  "auth.confirm_email": "Conta criada! Verifique seu e-mail para confirmar.",
   "auth.fill_fields": "Preencha todos os campos",
   "auth.login_btn": "Acessar Dashboard",
   "auth.signup_btn": "Criar Conta",
