@@ -1351,7 +1351,6 @@ function openSubjectModal(type = 'study', subjectId = null) {
       $('#modalSubjectTitle').textContent = I18n.t('subject.edit_profile', { label: I18n.t(cfg.i18nKey) });
       $('#inputSubjectName').value = subj.name;
       setColorPicker('#subjectColorPicker', subj.color);
-      $('#inputSubjectDaily').checked = subj.daily || false;
       slots = subj.slots || [];
       databaseItems = subj.type === 'study' ? (subj.syllabus || []) :
                       (subj.type === 'training' ? (subj.exercises || []) : (subj.checklist || []));
@@ -1360,7 +1359,6 @@ function openSubjectModal(type = 'study', subjectId = null) {
     $('#modalSubjectTitle').textContent = I18n.t('subject.new_profile', { label: I18n.t(cfg.i18nKey) });
     $('#inputSubjectName').value = '';
     setColorPicker('#subjectColorPicker', '#007aff');
-    $('#inputSubjectDaily').checked = false;
   }
   
   renderModalSlots(slots);
@@ -1588,7 +1586,6 @@ function saveSubject() {
     if (subj) {
       subj.name = name;
       subj.color = color;
-      subj.daily = $('#inputSubjectDaily').checked;
       subj.slots = modalSlots;
       if (subjectModalType === 'study') subj.syllabus = modalContentItems;
       else if (subjectModalType === 'training') subj.exercises = modalContentItems;
@@ -1601,7 +1598,6 @@ function saveSubject() {
       name,
       color,
       type: subjectModalType,
-      daily: $('#inputSubjectDaily').checked,
       slots: modalSlots
     };
     if (subjectModalType === 'study') newSubj.syllabus = modalContentItems;
@@ -2075,7 +2071,7 @@ function initDailyBlocksFromProfiles(date) {
     const slots = profile.slots || [];
     slots.forEach(slot => {
       const slotDays = slot.daysOfWeek || (slot.dayOfWeek !== undefined ? [slot.dayOfWeek] : []);
-      if (profile.daily || slotDays.includes(dayOfWeek)) {
+      if (slotDays.includes(dayOfWeek)) {
         let selectedId = null;
         if (profile.type === 'study' && profile.syllabus) {
           const nextPending = profile.syllabus.find(item => item.status === 'pending');

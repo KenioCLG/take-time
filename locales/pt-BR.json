@@ -84,8 +84,6 @@
   "subject.empty": "Nenhuma atividade cadastrada",
   "subject.none": "Nenhum item",
   "subject.saved": "%{name} salva com sucesso",
-  "subject.daily": "Atividade Diária",
-  "subject.daily_hint": "Cria blocos automaticamente todos os dias",
   "subject.add_aria": "Adicionar atividade",
 
   "content.none": "Nenhum item cadastrado",

@@ -84,8 +84,6 @@
   "subject.empty": "No activities registered",
   "subject.none": "No items",
   "subject.saved": "%{name} saved successfully",
-  "subject.daily": "Daily Activity",
-  "subject.daily_hint": "Auto-create blocks every day",
   "subject.add_aria": "Add activity",
 
   "content.none": "No items registered",
