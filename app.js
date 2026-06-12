@@ -2628,7 +2628,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }, 60000);
     
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(reg => {
+        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
           reg.update();
         }).catch(() => {});
       }
