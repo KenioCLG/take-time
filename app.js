@@ -1890,12 +1890,12 @@ function initSettings() {
   const $btnGenMcp = $('#btnGenMcpConfig');
   if ($btnGenMcp) {
     const MCP_CLIENTS = {
-      'claude-code':    { name: 'Claude Code',    icon: '⌨️', wrap: 'mcpServers', path: '~/.claude/settings.json' },
-      'claude-desktop': { name: 'Claude Desktop',  icon: '🖥️', wrap: 'mcpServers', path: '~/Library/Application Support/Claude/claude_desktop_config.json' },
-      'cursor':         { name: 'Cursor',          icon: '📝', wrap: 'mcpServers', path: '.cursor/mcp.json' },
-      'vscode':         { name: 'VS Code',         icon: '💻', wrap: 'servers',    path: '.vscode/mcp.json' },
-      'windsurf':       { name: 'Windsurf',        icon: '🏄', wrap: 'mcpServers', path: '~/.codeium/windsurf/mcp_config.json' },
-      'opencode':       { name: 'OpenCode',        icon: '🔓', wrap: 'mcpServers', path: '~/.opencode/config.json' },
+      'claude-code':    { name: 'Claude Code',    icon: 'https://cdn.simpleicons.org/claude', wrap: 'mcpServers', path: '~/.claude/settings.json' },
+      'claude-desktop': { name: 'Claude Desktop',  icon: 'https://cdn.simpleicons.org/claude', wrap: 'mcpServers', path: '~/Library/Application Support/Claude/claude_desktop_config.json' },
+      'cursor':         { name: 'Cursor',          icon: 'https://cdn.simpleicons.org/cursor', wrap: 'mcpServers', path: '.cursor/mcp.json' },
+      'vscode':         { name: 'VS Code',         icon: 'https://cdn.simpleicons.org/visualstudiocode', wrap: 'servers',    path: '.vscode/mcp.json' },
+      'windsurf':       { name: 'Windsurf',        icon: 'https://cdn.simpleicons.org/codeium', wrap: 'mcpServers', path: '~/.codeium/windsurf/mcp_config.json' },
+      'opencode':       { name: 'OpenCode',        icon: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 60 42%22%3E%3Cpath d=%22M18 30H6V18H18V30Z%22 fill=%22%23CFCECD%22/%3E%3Cpath d=%22M18 12H6V30H18V12ZM24 36H0V6H24V36Z%22 fill=%22%23656363%22/%3E%3Cpath d=%22M48 30H36V18H48V30Z%22 fill=%22%23CFCECD%22/%3E%3Cpath d=%22M36 30H48V12H36V30ZM54 36H36V42H30V6H54V36Z%22 fill=%22%23656363%22/%3E%3C/svg%3E', wrap: 'mcpServers', path: '~/.opencode/config.json' },
     };
 
     function buildConfig(clientId) {
@@ -1936,7 +1936,7 @@ function initSettings() {
         card.style.cssText = 'background:var(--ds-bg-card); border-radius:var(--ds-radius-md); padding:10px 12px; box-shadow:var(--ds-shadow-sm); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;';
         card.innerHTML = `
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:16px;">${client.icon}</span>
+            <img src="${client.icon}" style="height:16px; width:auto;" alt="${client.name}">
             <div>
               <span style="font-size:13px; font-weight:600; color:var(--ds-text-primary);">${client.name}</span>
               <p style="font-size:11px; color:var(--ds-text-tertiary); margin:0;">${new Date(intg.createdAt).toLocaleDateString(I18n.locale)}</p>
@@ -1982,7 +1982,7 @@ function initSettings() {
       }
 
       const json = buildConfig(clientId);
-      $('#mcpGenLabel').textContent = `${client.icon} ${client.name}`;
+      $('#mcpGenLabel').innerHTML = `<img src="${client.icon}" style="height:16px; width:auto; vertical-align:middle; margin-right:6px;" alt="${client.name}"> ${client.name}`;
       $('#mcpGenPath').textContent = client.path;
       $('#mcpGenJson').textContent = json;
       $('#mcpGeneratedConfig').classList.remove('hidden');

@@ -139,6 +139,8 @@ export function formatBlock(block, state) {
     topic: block.topic || null,
     done: !!block.done,
     completed_items: block.completedItems || [],
+    repeat_daily: !!block.repeatDaily,
+    selected_syllabus_id: block.selectedSyllabusId || null,
   };
 }
 
@@ -152,12 +154,87 @@ export function formatSubject(subject) {
   };
 
   if (subject.type === 'study') {
-    result.syllabus = subject.syllabus || [];
+    const items = subject.syllabus || [];
+    result.syllabus = items;
+    result.syllabus_count = items.length;
+    result.syllabus_completed = items.filter(i => i.status === 'completed').length;
   } else if (subject.type === 'training') {
-    result.exercises = subject.exercises || [];
+    const items = subject.exercises || [];
+    result.exercises = items;
+    result.exercise_count = items.length;
   } else if (subject.type === 'inactive') {
-    result.habits = subject.routines || subject.habits || [];
+    const items = subject.routines || subject.habits || [];
+    result.habits = items;
+    result.habit_count = items.length;
   }
 
   return result;
+}
+
+// Subject content item helpers
+export function getSubjectItems(subject) {
+  if (subject.type === 'study') return subject.syllabus || [];
+  if (subject.type === 'training') return subject.exercises || [];
+  return subject.checklist || [];
+}
+
+export function getSubjectItemById(subject, itemId) {
+  return getSubjectItems(subject).find(i => i.id === itemId);
+}
+
+export function addSubjectItem(subject, item) {
+  const items = getSubjectItems(subject);
+  const newItem = { id: uid(), ...item };
+  if (subject.type === 'study') {
+    if (!subject.syllabus) subject.syllabus = [];
+    subject.syllabus.push(newItem);
+  } else if (subject.type === 'training') {
+    if (!subject.exercises) subject.exercises = [];
+    subject.exercises.push(newItem);
+  } else {
+    if (!subject.checklist) subject.checklist = [];
+    subject.checklist.push(newItem);
+  }
+  return newItem;
+}
+
+export function removeSubjectItem(subject, itemId) {
+  if (subject.type === 'study') {
+    subject.syllabus = (subject.syllabus || []).filter(i => i.id !== itemId);
+  } else if (subject.type === 'training') {
+    subject.exercises = (subject.exercises || []).filter(i => i.id !== itemId);
+  } else {
+    subject.checklist = (subject.checklist || []).filter(i => i.id !== itemId);
+  }
+}
+
+export function updateSubjectItem(subject, itemId, updates) {
+  const items = getSubjectItems(subject);
+  const item = items.find(i => i.id === itemId);
+  if (!item) throw new Error(`Item "${itemId}" not found in subject "${subject.name}".`);
+  Object.assign(item, updates);
+  return item;
+}
+
+// Priority helpers
+const VALID_PILLARS = ['pessoal', 'profissional', 'relacionamentos', 'qualidade'];
+const PRIORITY_ZONES = ['zone1', 'zone2', 'zone3', 'unallocated'];
+
+export function validatePillar(pillar) {
+  if (!VALID_PILLARS.includes(pillar)) {
+    throw new Error(`Invalid pillar "${pillar}". Valid: ${VALID_PILLARS.join(', ')}`);
+  }
+}
+
+export function getPriorityItemById(state, itemId) {
+  const p = state.priorities || {};
+  for (const zone of PRIORITY_ZONES) {
+    const item = (p[zone] || []).find(i => i.id === itemId);
+    if (item) return { item, zone };
+  }
+  return null;
+}
+
+export function formatLog(log) {
+  return { timestamp: log.timestamp, message: log.message };
 }
