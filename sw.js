@@ -1,4 +1,4 @@
-const CACHE = 'taketime-v18';
+const CACHE = 'taketime-v19';
 const ASSETS = ['/', '/index.html', '/ds.css', '/ds.js', '/store.js', '/i18n.js', '/styles.css', '/auth.js', '/notifications.js', '/app.js', '/svg3d.js', '/manifest.json', '/locales/pt-BR.json', '/locales/en-US.json', '/icons/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/favicon-32.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
@@ -37,6 +37,7 @@ self.addEventListener('notificationclick', (e) => {
 // Network-first: try network, fall back to cache (ensures fresh code).
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  if (!e.request.url.startsWith('http')) return;
   e.respondWith(
     caches.open(CACHE).then(cache =>
       fetch(e.request).then(response => {
