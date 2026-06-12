@@ -16,12 +16,10 @@ description: "Best practices for using Take Time with AI assistants."
     In your MCP config, use the full absolute path to `src/index.js`. Relative paths may not resolve correctly depending on your AI client.
   </Step>
   <Step title="Keep the server updated">
-    Pull the latest changes periodically:
+    The `npx` command always fetches the latest version. To update a global install:
 
     ```bash
-    cd take-time/mcp-server
-    git pull origin master
-    npm install
+    npm install -g @taketimemcp/mcp-server@latest
     ```
   </Step>
 </Steps>

@@ -1,6 +1,6 @@
 {
-  "name": "@taketime/mcp-server",
-  "version": "1.1.0",
+  "name": "@taketimemcp/mcp-server",
+  "version": "1.2.0",
   "description": "MCP Server for Take Time — manage study blocks, activities, and schedules via AI assistants",
   "type": "module",
   "main": "src/index.js",

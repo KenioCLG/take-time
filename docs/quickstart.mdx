@@ -7,17 +7,9 @@ description: "Get up and running with Take Time MCP Server in under 5 minutes."
 
 Sign up at [taketime.space](https://taketime.space) with email and password. Add a few activities and study blocks to have data to work with.
 
-## 2. Install the MCP Server
+## 2. Configure your AI client
 
-```bash
-git clone https://github.com/KenioCLG/take-time.git
-cd take-time/mcp-server
-npm install
-```
-
-## 3. Configure your AI client
-
-Add the MCP Server to your AI client using your Take Time credentials:
+Add the MCP Server to your AI client — no installation needed:
 
 <Tabs>
   <Tab title="Claude Code">
@@ -27,8 +19,8 @@ Add the MCP Server to your AI client using your Take Time credentials:
     {
       "mcpServers": {
         "taketime": {
-          "command": "node",
-          "args": ["/path/to/take-time/mcp-server/src/index.js"],
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
           "env": {
             "TAKETIME_EMAIL": "your@email.com",
             "TAKETIME_PASSWORD": "your-password"
@@ -45,8 +37,8 @@ Add the MCP Server to your AI client using your Take Time credentials:
     {
       "mcpServers": {
         "taketime": {
-          "command": "node",
-          "args": ["/path/to/take-time/mcp-server/src/index.js"],
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
           "env": {
             "TAKETIME_EMAIL": "your@email.com",
             "TAKETIME_PASSWORD": "your-password"
@@ -63,8 +55,8 @@ Add the MCP Server to your AI client using your Take Time credentials:
     {
       "mcpServers": {
         "taketime": {
-          "command": "node",
-          "args": ["/path/to/take-time/mcp-server/src/index.js"],
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
           "env": {
             "TAKETIME_EMAIL": "your@email.com",
             "TAKETIME_PASSWORD": "your-password"
@@ -76,11 +68,7 @@ Add the MCP Server to your AI client using your Take Time credentials:
   </Tab>
 </Tabs>
 
-<Note>
-  Replace `/path/to/take-time` with the actual absolute path where you cloned the repository.
-</Note>
-
-## 4. Try it out
+## 3. Try it out
 
 Restart your AI client and try these prompts:
 

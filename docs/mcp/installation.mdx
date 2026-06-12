@@ -11,10 +11,12 @@ description: "Install and configure the Take Time MCP Server for your AI client.
 
 ## Install
 
+No manual installation needed — just configure your AI client below. The server runs automatically via `npx`.
+
+If you prefer to install globally:
+
 ```bash
-git clone https://github.com/KenioCLG/take-time.git
-cd take-time/mcp-server
-npm install
+npm install -g @taketimemcp/mcp-server
 ```
 
 ## Authentication
@@ -49,8 +51,8 @@ The MCP Server supports two authentication methods:
     {
       "mcpServers": {
         "taketime": {
-          "command": "node",
-          "args": ["/path/to/take-time/mcp-server/src/index.js"],
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
           "env": {
             "TAKETIME_EMAIL": "your@email.com",
             "TAKETIME_PASSWORD": "your-password"
@@ -67,8 +69,8 @@ The MCP Server supports two authentication methods:
     {
       "mcpServers": {
         "taketime": {
-          "command": "node",
-          "args": ["/path/to/take-time/mcp-server/src/index.js"],
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
           "env": {
             "TAKETIME_EMAIL": "your@email.com",
             "TAKETIME_PASSWORD": "your-password"
@@ -85,8 +87,8 @@ The MCP Server supports two authentication methods:
     {
       "mcpServers": {
         "taketime": {
-          "command": "node",
-          "args": ["/path/to/take-time/mcp-server/src/index.js"],
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
           "env": {
             "TAKETIME_EMAIL": "your@email.com",
             "TAKETIME_PASSWORD": "your-password"
@@ -103,8 +105,8 @@ The MCP Server supports two authentication methods:
     {
       "servers": {
         "taketime": {
-          "command": "node",
-          "args": ["/path/to/take-time/mcp-server/src/index.js"],
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
           "env": {
             "TAKETIME_EMAIL": "your@email.com",
             "TAKETIME_PASSWORD": "your-password"
@@ -121,8 +123,8 @@ The MCP Server supports two authentication methods:
     {
       "mcpServers": {
         "taketime": {
-          "command": "node",
-          "args": ["/path/to/take-time/mcp-server/src/index.js"],
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
           "env": {
             "TAKETIME_EMAIL": "your@email.com",
             "TAKETIME_PASSWORD": "your-password"
@@ -133,10 +135,6 @@ The MCP Server supports two authentication methods:
     ```
   </Tab>
 </Tabs>
-
-<Note>
-  Replace `/path/to/take-time` with the actual absolute path where you cloned the repository.
-</Note>
 
 ## Verify Installation
 
