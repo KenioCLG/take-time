@@ -1670,6 +1670,9 @@ function initTabs() {
   };
 
   function switchTab(tabName, animate) {
+    // Safety: ensure body scroll is unlocked when switching tabs
+    if (document.body.style.overflow === 'hidden') DS.sheet.unlockBody();
+
     $$('.ds-tab').forEach(t => t.classList.remove('active'));
     const activeTab = [...$$('.ds-tab')].find(t => t.dataset.tab === tabName);
     if (activeTab) activeTab.classList.add('active');

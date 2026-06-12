@@ -261,13 +261,19 @@ const DS = (() => {
       const sheetEl = overlay.querySelector('.ds-sheet');
       overlay.removeEventListener('touchmove', onOverlayTouchMove);
       if (sheetEl) {
-        snapTo(sheetEl, 0, () => {
+        let cleaned = false;
+        const cleanup = () => {
+          if (cleaned) return;
+          cleaned = true;
           overlay.classList.add('hidden');
           sheetEl.style.height = '';
           sheetEl.style.transition = '';
           unlockBody();
           activeSheet = null;
-        });
+        };
+        snapTo(sheetEl, 0, cleanup);
+        // Safety: if transitionend never fires, unlock after 400ms
+        setTimeout(cleanup, 400);
       } else {
         overlay.classList.add('hidden');
         unlockBody();
