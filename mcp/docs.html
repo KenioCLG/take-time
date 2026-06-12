@@ -110,6 +110,7 @@
       <a href="#list_subjects">list_subjects</a>
       <a href="#create_subject">create_subject</a>
       <a href="#update_subject">update_subject</a>
+      <a href="#delete_subject">delete_subject</a>
 
       <h2>Content Items</h2>
       <a href="#add_subject_item">add_subject_item</a>
@@ -137,7 +138,7 @@
 
     <main class="main">
       <h1>API Documentation</h1>
-      <p class="subtitle">Complete reference for all 21 tools in the Take Time MCP Server.</p>
+      <p class="subtitle">Complete reference for all 22 tools in the Take Time MCP Server.</p>
 
       <!-- AUTH -->
       <div class="endpoint" id="auth">
@@ -255,6 +256,16 @@
           <tr><td><code>new_name</code></td><td class="type">string</td><td class="opt">optional</td><td>New name (max 40 chars)</td></tr>
           <tr><td><code>color</code></td><td class="type">string</td><td class="opt">optional</td><td>New hex color</td></tr>
           <tr><td><code>slots</code></td><td class="type">array</td><td class="opt">optional</td><td>Replacement time slots</td></tr>
+        </table>
+      </div>
+
+      <div class="endpoint" id="delete_subject">
+        <h2><span class="method-badge method-delete">delete</span> delete_subject</h2>
+        <p>Permanently delete an activity and all its associated blocks. Also removes from priority circle.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>subject_name</code></td><td class="type">string</td><td class="req">required</td><td>Activity name to delete</td></tr>
         </table>
       </div>
 
@@ -422,6 +433,8 @@
           <tr><td><code>reminder_min</code></td><td class="type">number</td><td class="opt">optional</td><td>Minutes before block reminder</td></tr>
           <tr><td><code>theme</code></td><td class="type">string</td><td class="opt">optional</td><td><code>light</code>, <code>dark</code>, or <code>auto</code></td></tr>
           <tr><td><code>show_marquee</code></td><td class="type">boolean</td><td class="opt">optional</td><td>Show/hide motivational marquee</td></tr>
+          <tr><td><code>timezone</code></td><td class="type">string</td><td class="opt">optional</td><td>Timezone (e.g. "America/Sao_Paulo")</td></tr>
+          <tr><td><code>language</code></td><td class="type">string</td><td class="opt">optional</td><td><code>pt-BR</code> or <code>en-US</code></td></tr>
         </table>
       </div>
 

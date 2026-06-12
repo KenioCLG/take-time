@@ -1,11 +1,11 @@
 ---
 title: MCP Tools
-description: "Complete reference of all 21 tools available through the Take Time MCP Server."
+description: "Complete reference of all 22 tools available through the Take Time MCP Server."
 ---
 
 ## Available Tools
 
-The Take Time MCP Server exposes **21 tools** to your AI assistant, organized in 7 categories.
+The Take Time MCP Server exposes **22 tools** to your AI assistant, organized in 7 categories.
 
 ---
 
@@ -106,6 +106,15 @@ The Take Time MCP Server exposes **21 tools** to your AI assistant, organized in
   | `new_name` | string | No | New name (max 40 chars) |
   | `color` | string | No | New hex color |
   | `slots` | array | No | Replacement time slots array |
+</ResponseField>
+
+<ResponseField name="delete_subject" type="write">
+  Permanently delete an activity/subject and all its associated blocks. Also removes from priority circle.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `subject_name` | string | Yes | Name of the activity to delete |
 </ResponseField>
 
 ---
@@ -266,4 +275,6 @@ The Take Time MCP Server exposes **21 tools** to your AI assistant, organized in
   | `reminder_min` | number | No | Minutes before block to send reminder |
   | `theme` | string | No | `light`, `dark`, or `auto` |
   | `show_marquee` | boolean | No | Show/hide motivational marquee phrases |
+  | `timezone` | string | No | Timezone (e.g. `America/Sao_Paulo`) |
+  | `language` | string | No | `pt-BR` or `en-US` |
 </ResponseField>
