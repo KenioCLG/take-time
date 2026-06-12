@@ -1414,7 +1414,7 @@ function renderPriorities() {
     listEl.innerHTML = p[zoneId].map(item => `
       <div class="priority-item" data-id="${item.id}" data-pillar="${item.pillar}">
         <div class="priority-item-dot" style="background:${item.color}"></div>
-        ${DS.escapeHtml(item.name)}
+        ${DS.escapeHtml(__('priorities.' + item.id, null, item.name))}
       </div>
     `).join('');
   });
