@@ -2556,6 +2556,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try { render(); } catch(e) { console.error('[i18n] render error:', e); }
     try { renderSubjects(); } catch(e) { console.error('[i18n] renderSubjects error:', e); }
     try { renderPriorities(); } catch(e) { console.error('[i18n] renderPriorities error:', e); }
+    I18n.applyStatic();
   });
 
   initTabs();
