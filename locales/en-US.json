@@ -272,7 +272,7 @@
   "footer.github": "GitHub",
 
   "settings.section_mcp": "MCP Server",
-  "mcp.open_btn": "MCP",
+  "mcp.open_btn": "Configure",
   "mcp.copy": "Copy",
   "mcp.copied": "Copied!",
   "mcp.no_session": "Log in to generate integrations.",
