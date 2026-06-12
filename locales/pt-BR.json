@@ -50,6 +50,8 @@
   "block.training_summary": "Treino: %{done}/%{total} exercícios feitos",
   "block.routine_summary": "Rotina: %{done}/%{total} hábitos feitos",
   "block.add_aria": "Adicionar bloco",
+  "block.repeat_daily": "Repetir Diariamente",
+  "block.repeat_daily_hint": "Recria este bloco todos os dias",
 
   "syllabus.label": "Tópico do Edital",
   "syllabus.select_prompt": "-- Selecione um tópico --",
