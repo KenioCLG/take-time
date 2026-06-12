@@ -818,9 +818,6 @@ server.tool(
     target_zone: z.enum(['zone1', 'zone2', 'zone3', 'unallocated']).describe('Destination zone'),
   },
   async ({ item_id, target_zone }) => {
-    let moved;
-
-  async ({ item_id, target_zone }) => {
     const existingItem = await db.query('priorities', { id: item_id });
     if (!existingItem || existingItem.length === 0) throw new Error(`Priority item "${item_id}" not found.`);
     const item = existingItem[0];
@@ -839,8 +836,7 @@ server.tool(
       }
     }
 
-    const updates = { zone: target_zone };
-    const res = await db.update('priorities', item_id, updates);
+    const res = await db.update('priorities', item_id, { zone: target_zone });
     const moved = res?.[0] || item;
 
     return {
