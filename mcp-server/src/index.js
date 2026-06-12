@@ -7,7 +7,7 @@ import { SupabaseClient } from './supabase.js';
 import {
   uid, getBlocksForDate, getBlocksInRange, getSubjectById, getSubjectByName,
   getCurrentWeekDates, computeStats, formatBlock, formatSubject,
-  validateDate, validateTime, validatePillar,
+  validateDate, validateTime, validateColor, validatePillar,
   getSubjectItems, getSubjectItemById,
   addSubjectItem, removeSubjectItem, updateSubjectItem,
   getPriorityItemById, formatLog,
@@ -28,6 +28,8 @@ if (!refreshToken && !accessToken && (!email || !password)) {
 const db = new SupabaseClient(accessToken || 'pending');
 
 // --- State helpers ---
+let _stateLock = Promise.resolve();
+
 async function getState() {
   const state = await db.loadState();
   if (!state) throw new Error('No data found. Make sure you have logged into the Take Time app at least once.');
@@ -35,16 +37,25 @@ async function getState() {
 }
 
 async function updateState(mutator) {
-  const state = await getState();
-  mutator(state);
-  await db.saveState(state);
-  return state;
+  let result;
+  const op = _stateLock.then(async () => {
+    const state = await getState();
+    mutator(state);
+    await db.saveState(state);
+    result = state;
+  });
+  _stateLock = op.catch(() => {});
+  await op;
+  return result;
 }
 
 // --- MCP Server ---
+import { readFileSync } from 'fs';
+const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+
 const server = new McpServer({
   name: 'taketime',
-  version: '1.0.0',
+  version: pkg.version,
 });
 
 // ==================== READ TOOLS ====================
@@ -266,32 +277,15 @@ server.tool(
   async () => {
     const state = await getState();
     const priorities = state.priorities || {};
-    const subjects = state.subjects || [];
-
-    function resolveZone(ids) {
-      return (ids || []).map(id => {
-        const s = getSubjectById(state, id);
-        return s ? { id: s.id, name: s.name, type: s.type, color: s.color } : { id, name: 'Unknown' };
-      });
-    }
-
-    const allocatedIds = new Set([
-      ...(priorities.zone1 || []),
-      ...(priorities.zone2 || []),
-      ...(priorities.zone3 || []),
-    ]);
-    const unallocated = subjects
-      .filter(s => !allocatedIds.has(s.id))
-      .map(s => ({ id: s.id, name: s.name, type: s.type, color: s.color }));
 
     return {
       content: [{
         type: 'text',
         text: JSON.stringify({
-          zone1_main_focus: resolveZone(priorities.zone1),
-          zone2_important: resolveZone(priorities.zone2),
-          zone3_flexible: resolveZone(priorities.zone3),
-          unallocated,
+          zone1_main_focus: priorities.zone1 || [],
+          zone2_important: priorities.zone2 || [],
+          zone3_flexible: priorities.zone3 || [],
+          unallocated: priorities.unallocated || [],
         }, null, 2),
       }],
     };
@@ -428,6 +422,7 @@ server.tool(
     })).optional().describe('Preferred time slots for this activity'),
   },
   async ({ name, type, color, slots }) => {
+    if (color) validateColor(color);
     const colors = ['#007aff', '#34c759', '#ff9500', '#ff3b30', '#af52de', '#5ac8fa', '#ffcc00', '#5856d6'];
 
     const state = await updateState(s => {
@@ -442,7 +437,7 @@ server.tool(
         slots: slots || [],
         syllabus: type === 'study' ? [] : undefined,
         exercises: type === 'training' ? [] : undefined,
-        routines: type === 'inactive' ? [] : undefined,
+        checklist: type === 'inactive' ? [] : undefined,
       };
 
       s.subjects.push(subject);
@@ -589,6 +584,7 @@ server.tool(
     })).optional().describe('Replacement time slots array'),
   },
   async ({ subject_name, new_name, color, slots }) => {
+    if (color !== undefined) validateColor(color);
     const state = await getState();
     const subject = getSubjectByName(state, subject_name);
     if (!subject) throw new Error(`Subject "${subject_name}" not found.`);
@@ -626,11 +622,12 @@ server.tool(
       s.blocks = s.blocks.filter(b => b.subjectId !== subject.id);
       deletedBlocks = before - s.blocks.length;
 
-      // Remove from priorities
+      // Remove matching priority items (priorities are independent objects with their own IDs)
       if (s.priorities) {
+        const nameLower = subject.name.toLowerCase();
         for (const zone of ['zone1', 'zone2', 'zone3', 'unallocated']) {
           if (s.priorities[zone]) {
-            s.priorities[zone] = s.priorities[zone].filter(i => i.id !== subject.id);
+            s.priorities[zone] = s.priorities[zone].filter(i => i.name.toLowerCase() !== nameLower);
           }
         }
       }
@@ -708,6 +705,7 @@ server.tool(
     zone: z.enum(['zone1', 'zone2', 'zone3', 'unallocated']).optional().describe('Target zone (default: unallocated)'),
   },
   async ({ name, pillar, color, zone }) => {
+    if (color) validateColor(color);
     const pillarColors = { pessoal: '#34c759', profissional: '#ff9500', relacionamentos: '#ff2d55', qualidade: '#5ac8fa' };
     const targetZone = zone || 'unallocated';
 

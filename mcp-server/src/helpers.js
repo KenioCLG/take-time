@@ -163,7 +163,7 @@ export function formatSubject(subject) {
     result.exercises = items;
     result.exercise_count = items.length;
   } else if (subject.type === 'inactive') {
-    const items = subject.routines || subject.habits || [];
+    const items = subject.checklist || [];
     result.habits = items;
     result.habit_count = items.length;
   }
@@ -175,7 +175,7 @@ export function formatSubject(subject) {
 export function getSubjectItems(subject) {
   if (subject.type === 'study') return subject.syllabus || [];
   if (subject.type === 'training') return subject.exercises || [];
-  return subject.checklist || [];
+  return subject.checklist || subject.routines || [];
 }
 
 export function getSubjectItemById(subject, itemId) {
@@ -219,6 +219,12 @@ export function updateSubjectItem(subject, itemId, updates) {
 // Priority helpers
 const VALID_PILLARS = ['pessoal', 'profissional', 'relacionamentos', 'qualidade'];
 const PRIORITY_ZONES = ['zone1', 'zone2', 'zone3', 'unallocated'];
+
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+
+export function validateColor(color) {
+  if (!HEX_COLOR_RE.test(color)) throw new Error(`Invalid hex color "${color}". Use format #RRGGBB.`);
+}
 
 export function validatePillar(pillar) {
   if (!VALID_PILLARS.includes(pillar)) {
