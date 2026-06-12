@@ -21,10 +21,17 @@ npm install -g @taketimemcp/mcp-server
 
 ## Authentication
 
-The MCP Server supports two authentication methods:
+The MCP Server supports three authentication methods:
 
 <Tabs>
-  <Tab title="Email/Password (Recommended)">
+  <Tab title="Refresh Token (Recommended)">
+    Copy the refresh token from the app's **Settings → MCP Server** panel. Auto-refreshes indefinitely without exposing your password.
+
+    ```
+    TAKETIME_REFRESH_TOKEN=your_refresh_token
+    ```
+  </Tab>
+  <Tab title="Email/Password">
     Use your Take Time account credentials. The session **auto-refreshes** so the server runs indefinitely.
 
     ```
@@ -144,6 +151,16 @@ After configuring, restart your AI client. You should see the Take Time tools av
 
 If the tools are working, you'll get a response with your activity data.
 
+<Tip>
+  **Prefer Refresh Token over Email/Password.** You can replace the `env` block in any config above:
+  ```json
+  "env": {
+    "TAKETIME_REFRESH_TOKEN": "your_refresh_token"
+  }
+  ```
+  Copy the token from **Settings → MCP Server** in the app.
+</Tip>
+
 ## Troubleshooting
 
 <AccordionGroup>
@@ -160,7 +177,7 @@ If the tools are working, you'll get a response with your activity data.
   </Accordion>
   <Accordion title="Connection timeouts">
     - Check your internet connection
-    - The server needs to reach `gwujukwvufmfecqgzvrs.supabase.co`
+    - The server needs to reach `zkzhqgbhxhkwpgevddot.supabase.co`
     - Try running `node src/index.js` directly to see error messages
   </Accordion>
 </AccordionGroup>

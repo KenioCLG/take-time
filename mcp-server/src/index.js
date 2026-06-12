@@ -5,12 +5,9 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { SupabaseClient, loadPersistedRefreshToken } from './supabase.js';
 import {
-  uid, getBlocksForDate, getBlocksInRange, getSubjectById, getSubjectByName,
-  getCurrentWeekDates, computeStats, formatBlock, formatSubject,
-  validateDate, validateTime, validateColor, validatePillar,
-  getSubjectItems, getSubjectItemById,
-  addSubjectItem, removeSubjectItem, updateSubjectItem,
-  getPriorityItemById, formatLog,
+  uid, getBlocksInRange, getSubjectById,
+  getCurrentWeekDates, computeStats, formatBlock,
+  validateDate, validateTime, validateColor,
 } from './helpers.js';
 
 // --- Auth ---
@@ -555,8 +552,7 @@ server.tool(
     item_id: z.string().describe('ID of the item to remove'),
   },
   async ({ subject_name, item_id }) => {
-    // Apenas remover do BD diretamente pelo ID do item
-    // (A checagem de subject_name pode ser ignorada no BD pois deletamos pelo item_id)
+    // Delete directly by item ID
     const existing = await db.query('subject_items', { id: item_id });
     if (!existing || existing.length === 0) throw new Error(`Item "${item_id}" not found.`);
 
@@ -652,14 +648,11 @@ server.tool(
     subject_name: z.string().describe('Name of the activity/subject to delete'),
   },
   async ({ subject_name }) => {
-    // Buscar subject existente pelo nome
     const existing = await db.query('subjects', { name: subject_name });
     if (!existing || existing.length === 0) throw new Error(`Subject "${subject_name}" not found.`);
     const subject = existing[0];
 
-    // O PostgREST com On Delete Cascade no schema cuidará de deletar os subject_items e blocks associados.
-    // Mas as priorities não têm uma constraint física com subjects no BD, a relação é via texto `name`.
-    // Primeiro deletamos as priorities usando o nome da subject
+    // Delete matching priorities (no FK constraint, matched by name)
     const priorities = await db.query('priorities', {});
     if (priorities && priorities.length > 0) {
       const nameLower = subject.name.toLowerCase();
@@ -669,7 +662,6 @@ server.tool(
       }
     }
 
-    // Agora deleta a subject
     await db.remove('subjects', subject.id);
 
     return {
@@ -691,16 +683,12 @@ server.tool(
     item_id: z.string().describe('Item ID (exercise ID or habit ID) from the subject\'s content'),
   },
   async ({ block_id, item_id }) => {
-    // Buscar block
     const existingBlock = await db.query('blocks', { id: block_id });
     if (!existingBlock || existingBlock.length === 0) throw new Error(`Block "${block_id}" not found.`);
     const block = existingBlock[0];
 
-    // Buscar subject items para contar total
     const subjectItems = await db.query('subject_items', { subject_id: block.subject_id }) || [];
     const total = subjectItems.length;
-
-    // Atualizar completed_items array
     let completedItems = block.completed_items || [];
     const wasChecked = completedItems.includes(item_id);
 
@@ -718,7 +706,6 @@ server.tool(
       isDone = false;
     }
 
-    // Atualizar BD
     await db.update('blocks', block_id, {
       completed_items: completedItems,
       done: isDone
@@ -746,35 +733,24 @@ server.tool(
 
 server.tool(
   'add_priority_item',
-  'Add an item to the priority circle in a specific zone.',
+  'Add an item to the priority circle in a specific zone. Zone1 (Main Focus) has a max of 3 items.',
   {
-    name: z.string().describe('Item name (e.g. "Saúde e disposição")'),
-    pillar: z.enum(['pessoal', 'profissional', 'relacionamentos', 'qualidade']).describe('Life pillar: pessoal, profissional, relacionamentos, or qualidade'),
-    color: z.string().optional().describe('Hex color. Auto-assigned by pillar if omitted.'),
-    zone: z.enum(['zone1', 'zone2', 'zone3', 'unallocated']).optional().describe('Target zone (default: unallocated)'),
+    name: z.string().describe('Item name (e.g. "Health & Energy", "Finances")'),
+    zone: z.enum(['zone1', 'zone2', 'zone3', 'unallocated']).optional().describe('Target zone (default: unallocated). zone1=Main Focus, zone2=Important, zone3=Flexible'),
   },
-  async ({ name, pillar, color, zone }) => {
-    if (color) validateColor(color);
-    const pillarColors = { pessoal: '#34c759', profissional: '#ff9500', relacionamentos: '#ff2d55', qualidade: '#5ac8fa' };
+  async ({ name, zone }) => {
     const targetZone = zone || 'unallocated';
 
-    // Get current items in zone to determine sort_order
     const existing = await db.query('priorities', { zone: targetZone }) || [];
-    
-    // Zone1 limit check (only 3 allowed)
+
     if (targetZone === 'zone1' && existing.length >= 3) {
-      throw new Error('Zone1 already has 3 items. Remove one first or use a different zone.');
+      throw new Error('Zone1 (Main Focus) already has 3 items. Remove one first or use a different zone.');
     }
 
     const priorityData = {
       name,
       zone: targetZone,
       sort_order: existing.length,
-      // Color and Pillar are kept in the new schema if we added them? 
-      // Wait, in migration: insert into priorities (..., name, sort_order) 
-      // The old priorities array didn't have color/pillar in SQL schema but we can save it if the schema allows it. 
-      // But looking at migration SQL: `zone`, `name`, `sort_order` are the only fields!
-      // So we will just save name and zone.
     };
 
     const res = await db.insert('priorities', priorityData);
@@ -858,8 +834,6 @@ server.tool(
   },
   async ({ limit }) => {
     const limitNum = Math.min(limit || 20, 50);
-    // order=created_at.desc não é suportado no nosso db.query simples, 
-    // então buscaremos e faremos sort na memória (em produção usaríamos PostgREST querystring)
     const logs = await db.query('logs', {}) || [];
     
     const sorted = logs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, limitNum);
@@ -963,10 +937,6 @@ async function main() {
 
   // Write mcp_last_seen so the app can verify the server is actually running
   try {
-    // Agora que mudamos para relacionais, podemos ignorar isso por enquanto 
-    // ou atualizar 'updated_at' no profiles para o app saber. 
-    // Vamos apenas focar no log para nao quebrar a permissao caso 'mcp_last_seen' 
-    // não exista na tabela profiles.
     console.error('[Take Time MCP] Ready to process requests.');
   } catch (e) {
     console.error('[Take Time MCP] Could not update status:', e.message);

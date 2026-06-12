@@ -1,4 +1,4 @@
-// Minimal Supabase client for MCP Server — reads/writes user_data JSON blob
+// Minimal Supabase client for MCP Server — reads/writes relational tables via PostgREST
 
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';

@@ -93,7 +93,7 @@ The Take Time MCP Server exposes **22 tools** to your AI assistant, organized in
   | `name` | string | Yes | Activity name (max 40 characters) |
   | `type` | string | Yes | `study`, `training`, or `inactive` |
   | `color` | string | No | Hex color (e.g. `#6366f1`). Auto-assigned if omitted. |
-  | `slots` | array | No | Preferred time slots (`[{start, end}]`) |
+  | `slots` | number | No | Number of preferred weekly slots (default: 0) |
 </ResponseField>
 
 <ResponseField name="update_subject" type="write">
@@ -105,7 +105,7 @@ The Take Time MCP Server exposes **22 tools** to your AI assistant, organized in
   | `subject_name` | string | Yes | Current name of the activity |
   | `new_name` | string | No | New name (max 40 chars) |
   | `color` | string | No | New hex color |
-  | `slots` | array | No | Replacement time slots array |
+  | `slots` | number | No | New number of preferred slots |
 </ResponseField>
 
 <ResponseField name="delete_subject" type="write">
@@ -216,15 +216,13 @@ The Take Time MCP Server exposes **22 tools** to your AI assistant, organized in
 </ResponseField>
 
 <ResponseField name="add_priority_item" type="write">
-  Add an item to the priority circle in a specific zone.
+  Add an item to the priority circle in a specific zone. Zone1 (Main Focus) has a max of 3 items.
 
   **Parameters:**
   | Name | Type | Required | Description |
   |------|------|----------|-------------|
-  | `name` | string | Yes | Item name |
-  | `pillar` | string | Yes | `pessoal`, `profissional`, `relacionamentos`, or `qualidade` |
-  | `color` | string | No | Hex color. Auto-assigned by pillar if omitted. |
-  | `zone` | string | No | `zone1`, `zone2`, `zone3`, or `unallocated` (default) |
+  | `name` | string | Yes | Item name (e.g. "Health & Energy", "Finances") |
+  | `zone` | string | No | `zone1` (Main Focus), `zone2` (Important), `zone3` (Flexible), or `unallocated` (default) |
 </ResponseField>
 
 <ResponseField name="remove_priority_item" type="write">
