@@ -61,16 +61,16 @@ const I18n = (() => {
       // Check for direct child elements (SVG, span, etc.)
       const hasChildElements = Array.from(el.childNodes).some(n => n.nodeType === 1);
       if (hasChildElements) {
-        // Find direct text node children and replace their content
+        // Find the first non-whitespace text node and replace its content
         const childNodes = el.childNodes;
         for (let i = 0; i < childNodes.length; i++) {
-          if (childNodes[i].nodeType === 3) { // TEXT_NODE
+          if (childNodes[i].nodeType === 3 && childNodes[i].textContent.trim()) {
             childNodes[i].textContent = val;
             return;
           }
         }
-        // No text node found, fallback to textContent
-        el.textContent = val;
+        // All text nodes are whitespace — prepend a new text node
+        el.insertBefore(document.createTextNode(val), el.firstChild);
       } else {
         el.textContent = val;
       }
