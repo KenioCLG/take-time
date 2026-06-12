@@ -229,13 +229,15 @@ AI Client (Claude, Cursor, etc.)
 Take Time MCP Server (local)
      │ HTTPS
      ▼
-Supabase (user_data)
+Supabase (per-user data, RLS isolated)
 ```
 
 - Runs locally on your machine
 - Communicates via stdio (JSON-RPC)
-- Reads/writes your Take Time data directly on Supabase
+- Each user authenticates with their own email/password
+- Data is fully isolated per user via Row Level Security (RLS)
 - Your data never passes through third-party servers
+- Session auto-refreshes — no manual token management needed
 
 ## Development
 
