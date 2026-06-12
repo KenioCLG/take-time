@@ -265,6 +265,7 @@
 
   "settings.section_app": "App",
   "settings.section_account": "Conta",
+  "settings.member_since": "Membro desde",
   "settings.section_history": "Histórico",
 
   "footer.mcp_server": "MCP Server",

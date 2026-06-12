@@ -1,7 +1,13 @@
 // ===== DATA LAYER (with Supabase sync) =====
 const Store = {
-  _key: 'studyplan_v1',
+  _keyPrefix: 'studyplan_',
   _syncDebounce: null,
+
+  // Key per user — isolates localStorage between accounts
+  get _key() {
+    const uid = window.Supabase?._user?.id;
+    return uid ? this._keyPrefix + uid : this._keyPrefix + 'anonymous';
+  },
 
   load() {
     try { return JSON.parse(localStorage.getItem(this._key)) || this._defaults(); }
@@ -43,6 +49,15 @@ const Store = {
   },
 
   async syncOnLogin() {
+    // Migrate data from old shared key if it exists and user key is empty
+    const oldKey = 'studyplan_v1';
+    const oldData = localStorage.getItem(oldKey);
+    const userData = localStorage.getItem(this._key);
+    if (oldData && !userData) {
+      localStorage.setItem(this._key, oldData);
+      localStorage.removeItem(oldKey);
+    }
+
     const local = this.load();
     const remote = await this.pullFromCloud();
 
@@ -57,20 +72,9 @@ const Store = {
       remote.priorities = local.priorities;
     }
 
-    // Merge strategy: remote wins if it has more recent data
-    // Simple heuristic: use whichever has more blocks/subjects
-    const localItems = (local.subjects?.length || 0) + (local.blocks?.length || 0);
-    const remoteItems = (remote.subjects?.length || 0) + (remote.blocks?.length || 0);
-
-    if (remoteItems >= localItems) {
-      // Remote has more data — use it and save locally
-      localStorage.setItem(this._key, JSON.stringify(remote));
-      return remote;
-    } else {
-      // Local has more data — push to cloud
-      await this.pushToCloud(local);
-      return local;
-    }
+    // Remote always wins — it's the source of truth per user
+    localStorage.setItem(this._key, JSON.stringify(remote));
+    return remote;
   },
 
   _defaults() {

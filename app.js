@@ -74,6 +74,20 @@ function seedKenioWorkout() {
   Store.save(state);
 }
 
+function renderUserProfile() {
+  const user = AuthService.getSessionUser();
+  if (!user) return;
+  const el = $('#userEmail');
+  const avatar = $('#userAvatar');
+  const since = $('#userSince');
+  if (el) el.textContent = user.email || '—';
+  if (avatar) avatar.textContent = (user.email || '?')[0].toUpperCase();
+  if (since && user.created_at) {
+    const d = new Date(user.created_at);
+    since.textContent = __('settings.member_since', null, 'Membro desde') + ' ' + d.toLocaleDateString(state.settings?.language || 'pt-BR', { month: 'short', year: 'numeric' });
+  }
+}
+
 async function loginUser() {
   DS.sheet.close($('#authDrawerOverlay'));
   $('#authScreen').style.display = 'none';
@@ -82,6 +96,7 @@ async function loginUser() {
   app.style.display = 'block';
   app.classList.add('app-fade-in');
   app.addEventListener('animationend', () => app.classList.remove('app-fade-in'), { once: true });
+  renderUserProfile();
 
   // Sync data from cloud
   try {
@@ -1878,10 +1893,13 @@ function initSettings() {
     $btnClearData.addEventListener('click', async () => {
       const ok = await DS.confirm(I18n.t('settings.clear_title'), I18n.t('settings.clear_msg'));
       if (ok) {
-        localStorage.removeItem(Store._key);
-        state = Store.load();
+        // Reset state to defaults and sync empty state to cloud
+        state = Store._defaults();
+        Store.save(state);
         render();
-        logAction(I18n.t('log.cleared_data'));
+        if (typeof renderSubjects === 'function') renderSubjects();
+        if (typeof initPriorities === 'function') initPriorities();
+        DS.toast(I18n.t('log.cleared_data') || 'Dados apagados', 'info');
       }
     });
   }
@@ -2436,6 +2454,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.documentElement.classList.add('authenticated');
     $('#authScreen').style.display = 'none';
     $('#app').style.display = 'block';
+    renderUserProfile();
     // Sync data from cloud in background
     Store.syncOnLogin().then(synced => {
       if (synced) {

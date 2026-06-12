@@ -401,6 +401,13 @@
       <!-- ═══ GRUPO: Conta & Dados ═══ -->
       <div class="settings-section">
         <p class="settings-section-label" data-i18n="settings.section_account">Conta</p>
+        <div id="userProfile" class="ds-card" style="padding:12px 16px; margin-bottom:8px; display:flex; align-items:center; gap:12px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--ds-accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:18px;" id="userAvatar">?</div>
+          <div style="flex:1;min-width:0;">
+            <p id="userEmail" style="margin:0;font-size:var(--ds-text-sm);font-weight:500;color:var(--ds-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</p>
+            <p id="userSince" style="margin:2px 0 0;font-size:var(--ds-text-xs);color:var(--ds-text-tertiary);">—</p>
+          </div>
+        </div>
         <div class="ds-list">
           <button class="ds-list-item settings-danger-btn" id="btnLogout" style="color: var(--ds-accent) !important;">
             <span data-i18n="auth.logout" style="color: var(--ds-text-primary);">Sair</span>

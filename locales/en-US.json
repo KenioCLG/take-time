@@ -265,6 +265,7 @@
 
   "settings.section_app": "App",
   "settings.section_account": "Account",
+  "settings.member_since": "Member since",
   "settings.section_history": "History",
 
   "footer.mcp_server": "MCP Server",
