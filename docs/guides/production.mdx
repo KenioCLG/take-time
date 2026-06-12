@@ -1,53 +1,65 @@
 ---
-title: Going to Production
-description: "Checklist for deploying your Take Time integration."
+title: Setup Guide
+description: "Best practices for using Take Time with AI assistants."
 ---
 
-## Production Checklist
-
-Before going live with your integration, verify each item:
+## Recommended Setup
 
 <Steps>
-  <Step title="Use production API key">
-    Replace `tt_test_` keys with `tt_live_` keys. Never expose keys in client-side code.
+  <Step title="Use email/password auth">
+    Always prefer email/password over access tokens. Email/password sessions auto-refresh, while access tokens expire after ~1 hour.
   </Step>
-  <Step title="Handle errors gracefully">
-    Implement proper error handling for all API responses. Check for `error` in the response envelope.
+  <Step title="Secure your credentials">
+    Store credentials in environment variables via your AI client's MCP config. Never commit config files with passwords to version control.
   </Step>
-  <Step title="Respect rate limits">
-    Implement exponential backoff when receiving `429` responses. Check the `Retry-After` header.
+  <Step title="Use absolute paths">
+    In your MCP config, use the full absolute path to `src/index.js`. Relative paths may not resolve correctly depending on your AI client.
   </Step>
-  <Step title="Verify webhooks">
-    Always validate `X-TakeTime-Signature` before processing webhook payloads.
-  </Step>
-  <Step title="Secure your keys">
-    Store API keys in environment variables or a secrets manager. Never commit them to version control.
-  </Step>
-  <Step title="Test end-to-end">
-    Run through your complete user flow with real data to verify everything works.
+  <Step title="Keep the server updated">
+    Pull the latest changes periodically:
+
+    ```bash
+    cd take-time/mcp-server
+    git pull origin master
+    npm install
+    ```
   </Step>
 </Steps>
 
-## Environment Variables
+## Supported AI Clients
 
-```bash
-# .env
-TAKETIME_API_KEY=tt_live_your_key_here
-TAKETIME_WEBHOOK_SECRET=whsec_your_secret
-```
+| Client | Config File | Docs |
+|--------|-------------|------|
+| Claude Code | `~/.claude/settings.json` | [Installation](/mcp/installation) |
+| Claude Desktop | Platform-specific `claude_desktop_config.json` | [Installation](/mcp/installation) |
+| Cursor | `.cursor/mcp.json` | [Installation](/mcp/installation) |
+| VS Code (Copilot) | `.vscode/mcp.json` | [Installation](/mcp/installation) |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | [Installation](/mcp/installation) |
 
-<Warning>
-  Add `.env` to your `.gitignore` file. Never commit secrets to your repository.
-</Warning>
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Tools not appearing">
+    - Verify the path to `src/index.js` is absolute and correct
+    - Check that `node` is in your system PATH
+    - Make sure `npm install` was run in the `mcp-server/` directory
+    - Restart the AI client completely (not just the conversation)
+  </Accordion>
+  <Accordion title="Authentication errors">
+    - Verify your email and password are correct
+    - Make sure you have a Take Time account at [taketime.space](https://taketime.space)
+    - If using access token, note it expires after ~1 hour
+  </Accordion>
+  <Accordion title="Connection timeouts">
+    - Check your internet connection
+    - The server needs to reach `gwujukwvufmfecqgzvrs.supabase.co`
+    - Try running `node src/index.js` directly to see error messages
+  </Accordion>
+</AccordionGroup>
 
 ## Support
 
 If you run into issues:
 
-- Check the [API Reference](/api-reference/introduction) for endpoint details
-- Review error codes and messages in responses
-- Open an issue on GitHub
-
-<Info>
-  The Take Time API is in active development. Breaking changes will be communicated via changelog and webhook notifications.
-</Info>
+- Check the [MCP Tools Reference](/mcp/tools) for parameter details
+- Open an issue on [GitHub](https://github.com/KenioCLG/take-time)

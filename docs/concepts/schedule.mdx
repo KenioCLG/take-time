@@ -37,15 +37,6 @@ When creating or editing slots, the system automatically detects:
 - **Internal conflicts** — overlapping slots within the same activity
 - **Cross-activity conflicts** — slots that overlap with other activities
 
-<Warning>
-  The API returns a `CONFLICT` error when attempting to create overlapping blocks. Use `get_schedule` to check availability first.
-</Warning>
-
-## Smart Scheduling
-
-The `suggest_schedule` endpoint analyzes your:
-- Completion patterns (when you're most productive)
-- Existing commitments (occupied time slots)
-- Study goals (natural language input)
-
-And returns an optimized schedule suggestion.
+<Info>
+  The MCP Server's `create_block` tool automatically detects conflicts and returns an error if blocks overlap. Use `get_schedule` to check availability first.
+</Info>

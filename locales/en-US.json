@@ -266,8 +266,14 @@
   "settings.section_history": "History",
 
   "footer.mcp_server": "MCP Server",
-  "footer.api": "API",
+  "footer.mcp_tools": "MCP Tools",
   "footer.github": "GitHub",
+
+  "settings.section_mcp": "MCP Server",
+  "mcp.overview_link": "Overview",
+  "mcp.install_link": "Installation",
+  "mcp.tools_link": "8 Available Tools",
+  "mcp.examples_link": "Usage Examples",
 
   "type.study_short": "Study",
   "type.training_short": "Training",

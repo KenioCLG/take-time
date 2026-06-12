@@ -1,6 +1,6 @@
 ---
 title: Welcome to Take Time
-description: "Your smart study planner — now with an API and MCP Server for AI assistants."
+description: "Your smart study planner — with an MCP Server for AI assistants."
 ---
 
 <img
@@ -18,7 +18,7 @@ description: "Your smart study planner — now with an API and MCP Server for AI
 
 Take Time is a **personal study planner** designed to help students organize their time using cycles, intelligent scheduling, and visual progress tracking.
 
-With the Take Time **API** and **MCP Server**, you can now connect your AI assistant (Claude, Cursor, etc.) to manage your study schedule using natural language.
+With the Take Time **MCP Server**, you can connect your AI assistant (Claude, ChatGPT, Cursor, VS Code Copilot, and others) to manage your study schedule using natural language.
 
 <CardGroup cols={2}>
   <Card
@@ -29,13 +29,6 @@ With the Take Time **API** and **MCP Server**, you can now connect your AI assis
     Get up and running in under 5 minutes
   </Card>
   <Card
-    title="API Reference"
-    icon="code"
-    href="/api-reference/introduction"
-  >
-    Full REST API documentation
-  </Card>
-  <Card
     title="MCP Server"
     icon="bolt"
     href="/mcp/overview"
@@ -43,11 +36,18 @@ With the Take Time **API** and **MCP Server**, you can now connect your AI assis
     Connect your AI assistant to Take Time
   </Card>
   <Card
+    title="MCP Tools"
+    icon="code"
+    href="/mcp/tools"
+  >
+    All 8 tools available for AI assistants
+  </Card>
+  <Card
     title="Authentication"
     icon="lock"
     href="/authentication"
   >
-    Learn how to authenticate your requests
+    How authentication works
   </Card>
 </CardGroup>
 
@@ -77,17 +77,16 @@ With the Take Time **API** and **MCP Server**, you can now connect your AI assis
 ## Design Principles
 
 <AccordionGroup>
-  <Accordion title="Intention-based API">
-    Our API is designed around **what you want to do**, not how the database works.
-    `create_block` takes a subject name and time — the API handles the rest.
+  <Accordion title="Intention-based tools">
+    The MCP tools are designed around **what you want to do**, not how the database works.
+    `create_block` takes a subject name and time — the server handles the rest.
   </Accordion>
-  <Accordion title="Consistent Responses">
-    Every endpoint returns the same shape: `{ data, error, meta }`.
-    No surprises, no guessing.
-  </Accordion>
-  <Accordion title="Offline-first App">
+  <Accordion title="Offline-first app">
     The Take Time app works offline with local storage and syncs to Supabase when online.
-    The API always reflects the latest synced state.
+    The MCP Server always reflects the latest synced state.
+  </Accordion>
+  <Accordion title="Works with any AI client">
+    The MCP Server uses the standard Model Context Protocol, compatible with Claude Desktop, Claude Code, Cursor, VS Code Copilot, Windsurf, and any MCP-compatible client.
   </Accordion>
 </AccordionGroup>
 
@@ -97,13 +96,13 @@ With the Take Time **API** and **MCP Server**, you can now connect your AI assis
   <Step title="Create an account">
     Sign up at [Take Time](https://taketime.space) and set up your first activities.
   </Step>
-  <Step title="Generate an API key">
-    Go to **Settings** in the app and generate your API key.
+  <Step title="Install the MCP Server">
+    Clone the repo and run `npm install` in the `mcp-server/` directory.
   </Step>
-  <Step title="Choose your integration">
-    Use the **REST API** directly or install the **MCP Server** for AI-powered management.
+  <Step title="Configure your AI client">
+    Add your credentials to your AI client's MCP config.
   </Step>
-  <Step title="Start building">
-    Follow the [Quickstart](/quickstart) guide to make your first API call.
+  <Step title="Start managing with AI">
+    Ask your assistant: "What do I have scheduled for today?"
   </Step>
 </Steps>

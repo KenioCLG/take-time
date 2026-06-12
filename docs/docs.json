@@ -56,46 +56,7 @@
               {
                 "group": "Guides",
                 "pages": [
-                  "guides/webhooks",
-                  "guides/dev-mode",
                   "guides/production"
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "API Reference",
-            "groups": [
-              {
-                "group": "API Reference",
-                "pages": [
-                  "api-reference/introduction"
-                ]
-              },
-              {
-                "group": "Blocks",
-                "pages": [
-                  "api-reference/blocks/list",
-                  "api-reference/blocks/create",
-                  "api-reference/blocks/update",
-                  "api-reference/blocks/delete"
-                ]
-              },
-              {
-                "group": "Subjects",
-                "pages": [
-                  "api-reference/subjects/list",
-                  "api-reference/subjects/create",
-                  "api-reference/subjects/update",
-                  "api-reference/subjects/delete"
-                ]
-              },
-              {
-                "group": "Stats & Schedule",
-                "pages": [
-                  "api-reference/stats/get",
-                  "api-reference/schedule/get",
-                  "api-reference/schedule/suggest"
                 ]
               }
             ]
@@ -122,14 +83,6 @@
         "icon": "github"
       }
     ]
-  },
-  "api": {
-    "mdx": {
-      "server": "https://api.taketime.space/v1",
-      "auth": {
-        "method": "bearer"
-      }
-    }
   },
   "navbar": {
     "links": [

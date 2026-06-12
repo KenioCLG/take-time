@@ -1,74 +1,55 @@
 ---
 title: Authentication
-description: "How to authenticate your requests to the Take Time API."
+description: "How authentication works in Take Time."
 ---
 
-## API Keys
+## App Authentication
 
-All API requests require an API key passed via the `Authorization` header using Bearer token authentication.
+Take Time uses **Supabase Auth** with email and password. When you sign up at [taketime.space](https://taketime.space), your account is created in Supabase and your data is stored securely with Row Level Security (RLS).
 
-```bash
-Authorization: Bearer tt_live_your_key_here
-```
+Your data syncs between the app (local storage) and the cloud automatically.
 
-### Key types
+## MCP Server Authentication
 
-| Prefix | Environment | Description |
-|--------|-------------|-------------|
-| `tt_live_` | Production | Full access to your real data |
-| `tt_test_` | Development | Sandbox mode — no real data affected |
+The MCP Server supports two authentication methods:
 
-### Generate a key
+<Tabs>
+  <Tab title="Email/Password (Recommended)">
+    Use your Take Time account credentials. The session **auto-refreshes** — the server runs indefinitely without re-authentication.
 
-<Steps>
-  <Step title="Open Settings">
-    In the Take Time app, navigate to the **Settings** tab (gear icon).
-  </Step>
-  <Step title="API Keys section">
-    Scroll to **Developer** and tap **Generate API Key**.
-  </Step>
-  <Step title="Copy and save">
-    Copy the key immediately — it will only be shown once. Store it securely.
-  </Step>
-</Steps>
-
-<Warning>
-  Never expose your API key in client-side code, public repositories, or browser requests. Always use it server-side or in secure environments like MCP server configs.
-</Warning>
-
-## Rate Limits
-
-| Plan | Requests/min | Requests/day |
-|------|-------------|-------------|
-| Free | 30 | 1,000 |
-| Pro | 120 | 10,000 |
-
-When rate limited, the API returns `429 Too Many Requests` with a `Retry-After` header.
-
-## Permissions
-
-Each API key has full access to the owner's data. There are no granular permission scopes at this time.
-
-<Info>
-  Scoped permissions (read-only keys, per-resource access) are planned for a future release.
-</Info>
-
-## Using with MCP
-
-When configuring the MCP Server, pass your API key as an environment variable:
-
-```json
-{
-  "mcpServers": {
-    "taketime": {
-      "command": "npx",
-      "args": ["@taketime/mcp-server"],
+    ```json
+    {
       "env": {
-        "TAKETIME_API_KEY": "tt_live_your_key_here"
+        "TAKETIME_EMAIL": "your@email.com",
+        "TAKETIME_PASSWORD": "your-password"
       }
     }
-  }
-}
-```
+    ```
+  </Tab>
+  <Tab title="Access Token">
+    Use a Supabase access token extracted from your browser session. **Expires after ~1 hour** — suitable for quick testing only.
 
-The MCP Server reads `TAKETIME_API_KEY` from the environment and authenticates all requests automatically.
+    ```json
+    {
+      "env": {
+        "TAKETIME_API_KEY": "your_supabase_access_token"
+      }
+    }
+    ```
+
+    <Warning>
+      Access tokens expire. For persistent use, always prefer email/password authentication.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Security
+
+- Credentials are passed as environment variables in your MCP config — they are never stored in the codebase
+- All communication with Supabase uses HTTPS
+- Row Level Security ensures users can only access their own data
+- Add your MCP config files to `.gitignore` if they contain credentials
+
+<Info>
+  There is no REST API or API key system (`tt_live_`, etc.). All programmatic access goes through the MCP Server using your account credentials.
+</Info>

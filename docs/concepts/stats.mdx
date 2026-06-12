@@ -34,31 +34,33 @@ The `get_stats` endpoint accepts these periods:
 | `month` | Current calendar month |
 | `all` | All time |
 
-## Example Response
+## Example
+
+Ask your AI assistant: *"How was my study week?"*
+
+The `get_stats` MCP tool returns:
 
 ```json
 {
-  "data": {
-    "total_blocks": 42,
-    "completed_blocks": 35,
-    "completion_rate": 0.83,
-    "streak_days": 7,
-    "total_minutes": 2100,
-    "heatmap": {
-      "2026-06-11": 5,
-      "2026-06-10": 3,
-      "2026-06-09": 4,
-      "2026-06-08": 0,
-      "2026-06-07": 6
-    },
-    "top_subjects": [
-      { "name": "JavaScript", "blocks": 12, "minutes": 720 },
-      { "name": "Mathematics", "blocks": 8, "minutes": 480 }
-    ]
-  }
+  "total_blocks": 42,
+  "completed_blocks": 35,
+  "completion_rate": 0.83,
+  "streak_days": 7,
+  "total_minutes": 2100,
+  "heatmap": {
+    "2026-06-11": 5,
+    "2026-06-10": 3,
+    "2026-06-09": 4,
+    "2026-06-08": 0,
+    "2026-06-07": 6
+  },
+  "top_subjects": [
+    { "name": "JavaScript", "blocks": 12, "minutes": 720 },
+    { "name": "Mathematics", "blocks": 8, "minutes": 480 }
+  ]
 }
 ```
 
 <Tip>
-  Use stats data to build custom dashboards or feed it to your AI assistant for personalized study recommendations.
+  Your AI assistant can use stats data to give personalized study recommendations and identify subjects that need more attention.
 </Tip>
