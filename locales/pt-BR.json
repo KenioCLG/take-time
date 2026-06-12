@@ -268,8 +268,22 @@
   "settings.section_history": "Histórico",
 
   "footer.mcp_server": "MCP Server",
-  "footer.api": "API",
+  "footer.mcp_tools": "MCP Tools",
   "footer.github": "GitHub",
+
+  "settings.section_mcp": "MCP Server",
+  "mcp.open_btn": "Configurar",
+  "mcp.copy": "Copiar",
+  "mcp.copied": "Copiado!",
+  "mcp.no_session": "Faça login para gerar integrações.",
+  "mcp.no_integrations": "Nenhuma integração criada. Selecione uma IA abaixo.",
+  "mcp.active_integrations": "Integrações Ativas",
+  "mcp.select_client": "Selecione a IA",
+  "mcp.generate": "Gerar Integração",
+  "mcp.paste_hint": "Cole no arquivo indicado e reinicie a IA.",
+  "mcp.remove_title": "Remover integração",
+  "mcp.remove_msg": "Deseja remover esta integração?",
+  "mcp.docs_link": "Documentação MCP",
 
   "type.study_short": "Estudo",
   "type.training_short": "Treino",

@@ -268,8 +268,22 @@
   "settings.section_history": "History",
 
   "footer.mcp_server": "MCP Server",
-  "footer.api": "API",
+  "footer.mcp_tools": "MCP Tools",
   "footer.github": "GitHub",
+
+  "settings.section_mcp": "MCP Server",
+  "mcp.open_btn": "Configure",
+  "mcp.copy": "Copy",
+  "mcp.copied": "Copied!",
+  "mcp.no_session": "Log in to generate integrations.",
+  "mcp.no_integrations": "No integrations yet. Select an AI below.",
+  "mcp.active_integrations": "Active Integrations",
+  "mcp.select_client": "Select AI",
+  "mcp.generate": "Generate Integration",
+  "mcp.paste_hint": "Paste into the file shown above and restart your AI.",
+  "mcp.remove_title": "Remove integration",
+  "mcp.remove_msg": "Remove this integration?",
+  "mcp.docs_link": "MCP Documentation",
 
   "type.study_short": "Study",
   "type.training_short": "Training",
