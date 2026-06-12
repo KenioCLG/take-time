@@ -57,7 +57,23 @@ const I18n = (() => {
 
   function applyStatic() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
-      el.textContent = t(el.dataset.i18n);
+      const val = t(el.dataset.i18n);
+      // Check for direct child elements (SVG, span, etc.)
+      const hasChildElements = Array.from(el.childNodes).some(n => n.nodeType === 1);
+      if (hasChildElements) {
+        // Find direct text node children and replace their content
+        const childNodes = el.childNodes;
+        for (let i = 0; i < childNodes.length; i++) {
+          if (childNodes[i].nodeType === 3) { // TEXT_NODE
+            childNodes[i].textContent = val;
+            return;
+          }
+        }
+        // No text node found, fallback to textContent
+        el.textContent = val;
+      } else {
+        el.textContent = val;
+      }
     });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       el.placeholder = t(el.dataset.i18nPlaceholder);
