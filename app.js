@@ -1902,13 +1902,16 @@ function initSettings() {
     function buildConfig(clientId) {
       const client = MCP_CLIENTS[clientId];
       if (!client) return '';
-      const refreshToken = Supabase._refreshToken || '';
+      const email = Supabase._user?.email || '';
       const obj = {
         [client.wrap]: {
           taketime: {
             command: 'npx',
             args: ['-y', '@taketimemcp/mcp-server@latest'],
-            env: { TAKETIME_REFRESH_TOKEN: refreshToken }
+            env: {
+              TAKETIME_EMAIL: email,
+              TAKETIME_PASSWORD: 'YOUR_PASSWORD'
+            }
           }
         }
       };
@@ -1933,14 +1936,18 @@ function initSettings() {
       integrations.forEach((intg, idx) => {
         const client = MCP_CLIENTS[intg.client];
         if (!client) return;
+        const isActive = AuthService.isAuthenticated();
         const card = document.createElement('div');
         card.style.cssText = 'background:var(--ds-bg-card); border-radius:var(--ds-radius-md); padding:10px 12px; box-shadow:var(--ds-shadow-sm); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;';
         card.innerHTML = `
           <div style="display:flex; align-items:center; gap:8px;">
-            <img src="${client.icon}" style="height:16px; width:auto;" alt="${client.name}">
+            <div style="position:relative;">
+              <img src="${client.icon}" style="height:16px; width:auto;" alt="${client.name}">
+              <span style="position:absolute; bottom:-2px; right:-2px; width:7px; height:7px; border-radius:50%; background:${isActive ? '#34c759' : '#8e8e93'}; border:1.5px solid var(--ds-bg-card);"></span>
+            </div>
             <div>
               <span style="font-size:13px; font-weight:600; color:var(--ds-text-primary);">${client.name}</span>
-              <p style="font-size:11px; color:var(--ds-text-tertiary); margin:0;">${new Date(intg.createdAt).toLocaleDateString(I18n.locale)}</p>
+              <p style="font-size:11px; color:${isActive ? '#34c759' : 'var(--ds-text-tertiary)'}; margin:0;">${isActive ? 'Connected' : 'Offline'}</p>
             </div>
           </div>
           <div style="display:flex; gap:6px;">
@@ -1977,7 +1984,7 @@ function initSettings() {
     $('#btnMcpGenerate').addEventListener('click', () => {
       const clientId = $('#mcpClientSelect').value;
       const client = MCP_CLIENTS[clientId];
-      if (!Supabase._refreshToken) {
+      if (!AuthService.isAuthenticated()) {
         DS.toast(I18n.t('mcp.no_session'), 'warning');
         return;
       }
