@@ -173,6 +173,118 @@ server.tool(
   }
 );
 
+server.tool(
+  'get_heatmap',
+  'Get the consistency heatmap — daily task completion counts for the last 90 days with intensity levels (0-4).',
+  {
+    days: z.number().optional().describe('Number of days to include (default: 90, max: 365)'),
+  },
+  async ({ days }) => {
+    const state = await getState();
+    const numDays = Math.min(days || 90, 365);
+    const now = new Date();
+    const heatmap = {};
+
+    // Build daily counts from all blocks
+    (state.blocks || []).forEach(b => {
+      if (!b.date) return;
+      let count = b.done ? 1 : 0;
+      count += (b.completedItems || []).length;
+      if (count > 0) heatmap[b.date] = (heatmap[b.date] || 0) + count;
+    });
+
+    // Build the last N days with levels
+    const result = [];
+    let maxCount = 0;
+    const dates = [];
+    for (let i = numDays - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      const ds = d.toISOString().split('T')[0];
+      dates.push(ds);
+      const count = heatmap[ds] || 0;
+      if (count > maxCount) maxCount = count;
+    }
+
+    // Assign levels 0-4 based on relative intensity
+    dates.forEach(ds => {
+      const count = heatmap[ds] || 0;
+      let level = 0;
+      if (maxCount > 0 && count > 0) {
+        const ratio = count / maxCount;
+        if (ratio <= 0.25) level = 1;
+        else if (ratio <= 0.5) level = 2;
+        else if (ratio <= 0.75) level = 3;
+        else level = 4;
+      }
+      result.push({ date: ds, count, level });
+    });
+
+    // Streak calculation
+    let streak = 0;
+    for (let i = result.length - 1; i >= 0; i--) {
+      if (result[i].count > 0) streak++;
+      else break;
+    }
+
+    const totalTasks = result.reduce((s, d) => s + d.count, 0);
+    const activeDays = result.filter(d => d.count > 0).length;
+
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify({
+          period_days: numDays,
+          total_tasks_completed: totalTasks,
+          active_days: activeDays,
+          current_streak: streak,
+          max_daily: maxCount,
+          days: result,
+        }, null, 2),
+      }],
+    };
+  }
+);
+
+server.tool(
+  'get_priorities',
+  'Get the Priority Circle — activities organized by priority zone (Main Focus, Important, Flexible, Unallocated).',
+  {},
+  async () => {
+    const state = await getState();
+    const priorities = state.priorities || {};
+    const subjects = state.subjects || [];
+
+    function resolveZone(ids) {
+      return (ids || []).map(id => {
+        const s = getSubjectById(state, id);
+        return s ? { id: s.id, name: s.name, type: s.type, color: s.color } : { id, name: 'Unknown' };
+      });
+    }
+
+    const allocatedIds = new Set([
+      ...(priorities.zone1 || []),
+      ...(priorities.zone2 || []),
+      ...(priorities.zone3 || []),
+    ]);
+    const unallocated = subjects
+      .filter(s => !allocatedIds.has(s.id))
+      .map(s => ({ id: s.id, name: s.name, type: s.type, color: s.color }));
+
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify({
+          zone1_main_focus: resolveZone(priorities.zone1),
+          zone2_important: resolveZone(priorities.zone2),
+          zone3_flexible: resolveZone(priorities.zone3),
+          unallocated,
+        }, null, 2),
+      }],
+    };
+  }
+);
+
 // ==================== WRITE TOOLS ====================
 
 server.tool(
@@ -350,3 +462,4 @@ main().catch(e => {
   console.error('[Take Time MCP] Fatal error:', e.message);
   process.exit(1);
 });
+
