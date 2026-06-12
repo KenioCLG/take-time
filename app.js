@@ -183,11 +183,11 @@ async function handleSignupSubmit() {
   setAuthLoading(false);
   
   if (result.success) {
-    if (Supabase.getSession()) {
+    if (AuthService.isAuthenticated()) {
       DS.toast(__('auth.account_created', null, 'Conta criada com sucesso!'), 'success');
       loginUser();
     } else {
-      DS.toast('Conta criada! Verifique seu e-mail para confirmar.', 'success', 5000);
+      DS.toast(__('auth.confirm_email', null, 'Conta criada! Verifique seu e-mail para confirmar.'), 'success', 5000);
       $('#authBodySignup').classList.add('hidden');
       $('#authBodyLogin').classList.remove('hidden');
       $('#authTitle').textContent = __('auth.login', null, 'Acessar Conta');
