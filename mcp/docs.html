@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Take Time MCP — API Documentation</title>
-  <meta name="description" content="Full API documentation for the Take Time MCP Server. Learn about available tools, parameters, and responses.">
+  <meta name="description" content="Full API documentation for the Take Time MCP Server. All 21 tools with parameters and responses.">
   <link rel="icon" href="../icons/favicon.svg">
   <style>
     :root {
@@ -38,55 +38,49 @@
 
     /* SIDEBAR */
     .sidebar {
-      width: 240px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      width: 260px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
       border-right: 1px solid var(--c-border); padding: 24px 16px;
       background: var(--c-surface);
     }
-    .sidebar h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--c-text-dim); margin-bottom: 12px; }
+    .sidebar h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--c-text-dim); margin: 20px 0 8px; }
+    .sidebar h2:first-of-type { margin-top: 0; }
     .sidebar a {
-      display: block; padding: 6px 10px; border-radius: 6px; font-size: 14px;
-      color: var(--c-text-dim); text-decoration: none; margin-bottom: 2px; transition: all .15s;
+      display: block; padding: 4px 10px; border-radius: 6px; font-size: 13px;
+      color: var(--c-text-dim); text-decoration: none; margin-bottom: 1px; transition: all .15s;
+      font-family: 'SF Mono', 'Fira Code', monospace;
     }
     .sidebar a:hover { color: var(--c-text); background: var(--c-accent-soft); }
-    .sidebar .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; text-decoration: none; color: var(--c-text); font-weight: 700; }
+    .sidebar .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; text-decoration: none; color: var(--c-text); font-weight: 700; font-family: -apple-system, system-ui, sans-serif; }
     .sidebar .brand img { width: 24px; height: 24px; border-radius: 6px; }
 
     /* MAIN */
-    .main { flex: 1; padding: 40px 48px; max-width: 720px; }
+    .main { flex: 1; padding: 40px 48px; max-width: 760px; }
     .main h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
     .main > p.subtitle { font-size: 16px; color: var(--c-text-dim); margin-bottom: 40px; }
 
-    .endpoint { margin-bottom: 48px; border-bottom: 1px solid var(--c-border); padding-bottom: 40px; }
+    .section-title { font-size: 18px; font-weight: 700; margin: 40px 0 16px; padding-top: 20px; border-top: 1px solid var(--c-border); color: var(--c-text); }
+
+    .endpoint { margin-bottom: 40px; border-bottom: 1px solid var(--c-border); padding-bottom: 32px; }
     .endpoint:last-child { border-bottom: none; }
-    .endpoint h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    .endpoint h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
     .method-badge {
-      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
-      padding: 3px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+      padding: 2px 7px; border-radius: 4px;
     }
     .method-read { background: rgba(34,197,94,.15); color: var(--c-success); }
     .method-write { background: rgba(99,102,241,.15); color: var(--c-accent); }
     .method-delete { background: rgba(239,68,68,.15); color: var(--c-danger); }
 
-    .endpoint > p { color: var(--c-text-dim); margin-bottom: 16px; }
-    .endpoint h3 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--c-text-dim); margin: 20px 0 10px; }
+    .endpoint > p { color: var(--c-text-dim); margin-bottom: 16px; font-size: 14px; }
+    .endpoint h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--c-text-dim); margin: 16px 0 8px; }
 
-    .param-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .param-table th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--c-text-dim); padding: 8px 12px; border-bottom: 1px solid var(--c-border); }
-    .param-table td { padding: 10px 12px; border-bottom: 1px solid var(--c-border); vertical-align: top; }
-    .param-table code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: var(--c-accent); }
-    .param-table .type { color: var(--c-warning); font-size: 12px; }
-    .param-table .req { color: var(--c-danger); font-size: 11px; font-weight: 600; }
-    .param-table .opt { color: var(--c-text-dim); font-size: 11px; }
-
-    .code-block {
-      background: var(--c-code-bg); border: 1px solid var(--c-border); border-radius: var(--radius);
-      padding: 16px 20px; overflow-x: auto; font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 13px; line-height: 1.6; margin-top: 8px; white-space: pre;
-    }
-    .code-block .k { color: var(--c-accent); }
-    .code-block .s { color: var(--c-success); }
-    .code-block .c { color: var(--c-text-dim); }
-    .code-block .n { color: var(--c-warning); }
+    .param-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .param-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--c-text-dim); padding: 6px 10px; border-bottom: 1px solid var(--c-border); }
+    .param-table td { padding: 8px 10px; border-bottom: 1px solid var(--c-border); vertical-align: top; }
+    .param-table code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; color: var(--c-accent); }
+    .param-table .type { color: var(--c-warning); font-size: 11px; }
+    .param-table .req { color: var(--c-danger); font-size: 10px; font-weight: 600; }
+    .param-table .opt { color: var(--c-text-dim); font-size: 10px; }
 
     @media (max-width: 768px) {
       .sidebar { display: none; }
@@ -99,97 +93,121 @@
     <aside class="sidebar">
       <a href="../" class="brand">
         <img src="../icons/favicon.svg" alt="">
-        Take Time
+        Take Time MCP
       </a>
       <h2>Overview</h2>
-      <a href="./">Landing Page</a>
-      <a href="#auth">Authentication</a>
+      <a href="./" style="font-family:-apple-system,system-ui,sans-serif">Landing Page</a>
+      <a href="#auth" style="font-family:-apple-system,system-ui,sans-serif">Authentication</a>
 
-      <h2 style="margin-top:20px">Tools — Read</h2>
+      <h2>Schedule</h2>
       <a href="#list_blocks">list_blocks</a>
-      <a href="#list_subjects">list_subjects</a>
-      <a href="#get_stats">get_stats</a>
       <a href="#get_schedule">get_schedule</a>
-
-      <h2 style="margin-top:20px">Tools — Write</h2>
       <a href="#create_block">create_block</a>
       <a href="#update_block">update_block</a>
-      <a href="#create_subject">create_subject</a>
-      <a href="#suggest_schedule">suggest_schedule</a>
-
-      <h2 style="margin-top:20px">Tools — Delete</h2>
       <a href="#delete_block">delete_block</a>
+
+      <h2>Activities</h2>
+      <a href="#list_subjects">list_subjects</a>
+      <a href="#create_subject">create_subject</a>
+      <a href="#update_subject">update_subject</a>
+
+      <h2>Content Items</h2>
+      <a href="#add_subject_item">add_subject_item</a>
+      <a href="#update_subject_item">update_subject_item</a>
+      <a href="#remove_subject_item">remove_subject_item</a>
+
+      <h2>Atomic Habits</h2>
+      <a href="#toggle_block_item">toggle_block_item</a>
+
+      <h2>Stats & Reports</h2>
+      <a href="#get_stats">get_stats</a>
+      <a href="#get_heatmap">get_heatmap</a>
+
+      <h2>Priority Circle</h2>
+      <a href="#get_priorities">get_priorities</a>
+      <a href="#add_priority_item">add_priority_item</a>
+      <a href="#remove_priority_item">remove_priority_item</a>
+      <a href="#move_priority_item">move_priority_item</a>
+
+      <h2>Logs & Settings</h2>
+      <a href="#get_logs">get_logs</a>
+      <a href="#get_settings">get_settings</a>
+      <a href="#update_setting">update_setting</a>
     </aside>
 
     <main class="main">
       <h1>API Documentation</h1>
-      <p class="subtitle">Complete reference for the Take Time MCP Server tools.</p>
+      <p class="subtitle">Complete reference for all 21 tools in the Take Time MCP Server.</p>
 
       <!-- AUTH -->
       <div class="endpoint" id="auth">
         <h2>Authentication</h2>
-        <p>The MCP server authenticates via an API key passed as an environment variable. Each user generates their own key in the Take Time app under Settings.</p>
-        <div class="code-block"><span class="c">// Environment variable</span>
-<span class="k">TAKETIME_API_KEY</span>=<span class="s">"tt_live_abc123..."</span></div>
+        <p>The MCP server supports three auth methods. Refresh token is recommended — copy it from the app's MCP settings panel.</p>
+        <table class="param-table">
+          <tr><th>Method</th><th>Env Var</th><th>Auto-refresh</th></tr>
+          <tr><td>Refresh Token</td><td><code>TAKETIME_REFRESH_TOKEN</code></td><td>Yes (recommended)</td></tr>
+          <tr><td>Email/Password</td><td><code>TAKETIME_EMAIL</code> + <code>TAKETIME_PASSWORD</code></td><td>Yes</td></tr>
+          <tr><td>Access Token</td><td><code>TAKETIME_API_KEY</code></td><td>No (~1h)</td></tr>
+        </table>
       </div>
 
-      <!-- list_blocks -->
+      <!-- SCHEDULE -->
+      <h2 class="section-title">Schedule (Blocks)</h2>
+
       <div class="endpoint" id="list_blocks">
         <h2><span class="method-badge method-read">read</span> list_blocks</h2>
-        <p>Retrieve study blocks with optional filters. Returns an array of block objects.</p>
+        <p>List study blocks with optional date range and status filters. Returns today's blocks by default.</p>
         <h3>Parameters</h3>
         <table class="param-table">
           <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
-          <tr><td><code>date</code></td><td class="type">string</td><td class="opt">optional</td><td>Filter by date (YYYY-MM-DD)</td></tr>
+          <tr><td><code>date</code></td><td class="type">string</td><td class="opt">optional</td><td>Filter by date (YYYY-MM-DD). Defaults to today.</td></tr>
           <tr><td><code>date_from</code></td><td class="type">string</td><td class="opt">optional</td><td>Start of date range</td></tr>
           <tr><td><code>date_to</code></td><td class="type">string</td><td class="opt">optional</td><td>End of date range</td></tr>
-          <tr><td><code>subject_id</code></td><td class="type">string</td><td class="opt">optional</td><td>Filter by subject/activity ID</td></tr>
+          <tr><td><code>subject_name</code></td><td class="type">string</td><td class="opt">optional</td><td>Filter by activity name</td></tr>
           <tr><td><code>done</code></td><td class="type">boolean</td><td class="opt">optional</td><td>Filter by completion status</td></tr>
         </table>
-        <h3>Response</h3>
-        <div class="code-block">[{
-  <span class="k">"id"</span>: <span class="s">"blk_abc123"</span>,
-  <span class="k">"subject_id"</span>: <span class="s">"sub_xyz"</span>,
-  <span class="k">"subject_name"</span>: <span class="s">"JavaScript"</span>,
-  <span class="k">"date"</span>: <span class="s">"2026-06-11"</span>,
-  <span class="k">"start"</span>: <span class="s">"09:00"</span>,
-  <span class="k">"end"</span>: <span class="s">"10:00"</span>,
-  <span class="k">"topic"</span>: <span class="s">"Ch. 3 - Arrays"</span>,
-  <span class="k">"done"</span>: <span class="n">false</span>
-}]</div>
       </div>
 
-      <!-- create_block -->
-      <div class="endpoint" id="create_block">
-        <h2><span class="method-badge method-write">write</span> create_block</h2>
-        <p>Create a new study block on the user's schedule.</p>
+      <div class="endpoint" id="get_schedule">
+        <h2><span class="method-badge method-read">read</span> get_schedule</h2>
+        <p>Get the full weekly schedule with all blocks organized by day.</p>
         <h3>Parameters</h3>
         <table class="param-table">
           <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
-          <tr><td><code>subject_id</code></td><td class="type">string</td><td class="req">required</td><td>Activity/subject ID</td></tr>
+          <tr><td><code>week_offset</code></td><td class="type">number</td><td class="opt">optional</td><td>0 = current week, -1 = last, 1 = next</td></tr>
+        </table>
+      </div>
+
+      <div class="endpoint" id="create_block">
+        <h2><span class="method-badge method-write">write</span> create_block</h2>
+        <p>Create a new study block. Automatically checks for time conflicts.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>subject_name</code></td><td class="type">string</td><td class="req">required</td><td>Activity name</td></tr>
           <tr><td><code>date</code></td><td class="type">string</td><td class="req">required</td><td>Date (YYYY-MM-DD)</td></tr>
           <tr><td><code>start</code></td><td class="type">string</td><td class="req">required</td><td>Start time (HH:MM)</td></tr>
           <tr><td><code>end</code></td><td class="type">string</td><td class="req">required</td><td>End time (HH:MM)</td></tr>
-          <tr><td><code>topic</code></td><td class="type">string</td><td class="opt">optional</td><td>Topic or syllabus item</td></tr>
+          <tr><td><code>topic</code></td><td class="type">string</td><td class="opt">optional</td><td>Topic name</td></tr>
         </table>
       </div>
 
-      <!-- update_block -->
       <div class="endpoint" id="update_block">
         <h2><span class="method-badge method-write">write</span> update_block</h2>
-        <p>Update an existing study block. Only pass the fields you want to change.</p>
+        <p>Update an existing block — mark done, reschedule, set syllabus topic, toggle repeat.</p>
         <h3>Parameters</h3>
         <table class="param-table">
           <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
-          <tr><td><code>block_id</code></td><td class="type">string</td><td class="req">required</td><td>Block ID to update</td></tr>
-          <tr><td><code>subject_id</code></td><td class="type">string</td><td class="opt">optional</td><td>New activity ID</td></tr>
-          <tr><td><code>start</code></td><td class="type">string</td><td class="opt">optional</td><td>New start time</td></tr>
-          <tr><td><code>end</code></td><td class="type">string</td><td class="opt">optional</td><td>New end time</td></tr>
+          <tr><td><code>block_id</code></td><td class="type">string</td><td class="req">required</td><td>Block ID</td></tr>
+          <tr><td><code>start</code></td><td class="type">string</td><td class="opt">optional</td><td>New start time (HH:MM)</td></tr>
+          <tr><td><code>end</code></td><td class="type">string</td><td class="opt">optional</td><td>New end time (HH:MM)</td></tr>
+          <tr><td><code>topic</code></td><td class="type">string</td><td class="opt">optional</td><td>New topic text</td></tr>
           <tr><td><code>done</code></td><td class="type">boolean</td><td class="opt">optional</td><td>Mark as done/undone</td></tr>
+          <tr><td><code>selected_syllabus_id</code></td><td class="type">string</td><td class="opt">optional</td><td>Active syllabus topic ID</td></tr>
+          <tr><td><code>repeat_daily</code></td><td class="type">boolean</td><td class="opt">optional</td><td>Toggle daily auto-repeat</td></tr>
         </table>
       </div>
 
-      <!-- delete_block -->
       <div class="endpoint" id="delete_block">
         <h2><span class="method-badge method-delete">delete</span> delete_block</h2>
         <p>Permanently delete a study block.</p>
@@ -200,80 +218,210 @@
         </table>
       </div>
 
-      <!-- list_subjects -->
+      <!-- ACTIVITIES -->
+      <h2 class="section-title">Activities (Subjects)</h2>
+
       <div class="endpoint" id="list_subjects">
         <h2><span class="method-badge method-read">read</span> list_subjects</h2>
-        <p>List all activities/subjects with their type, color, slots, and content (syllabus items, exercises, or habits).</p>
+        <p>List all activities with profiles, slots, content items, and completion counts.</p>
         <h3>Parameters</h3>
         <table class="param-table">
           <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
-          <tr><td><code>type</code></td><td class="type">string</td><td class="opt">optional</td><td>Filter by type: <code>study</code>, <code>training</code>, or <code>inactive</code></td></tr>
+          <tr><td><code>type</code></td><td class="type">string</td><td class="opt">optional</td><td><code>study</code>, <code>training</code>, or <code>inactive</code></td></tr>
+          <tr><td><code>include_items</code></td><td class="type">boolean</td><td class="opt">optional</td><td>Include full item details (default: true)</td></tr>
         </table>
-        <h3>Response</h3>
-        <div class="code-block">[{
-  <span class="k">"id"</span>: <span class="s">"sub_xyz"</span>,
-  <span class="k">"name"</span>: <span class="s">"JavaScript"</span>,
-  <span class="k">"type"</span>: <span class="s">"study"</span>,
-  <span class="k">"color"</span>: <span class="s">"#6366f1"</span>,
-  <span class="k">"slots"</span>: [{ <span class="k">"days"</span>: [<span class="n">1</span>,<span class="n">3</span>,<span class="n">5</span>], <span class="k">"start"</span>: <span class="s">"09:00"</span>, <span class="k">"end"</span>: <span class="s">"10:00"</span> }],
-  <span class="k">"syllabus"</span>: [{ <span class="k">"title"</span>: <span class="s">"Arrays"</span>, <span class="k">"duration"</span>: <span class="n">30</span>, <span class="k">"done"</span>: <span class="n">false</span> }]
-}]</div>
       </div>
 
-      <!-- create_subject -->
       <div class="endpoint" id="create_subject">
         <h2><span class="method-badge method-write">write</span> create_subject</h2>
-        <p>Create a new activity/subject profile.</p>
+        <p>Create a new activity profile (study, training, or routine).</p>
         <h3>Parameters</h3>
         <table class="param-table">
           <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
           <tr><td><code>name</code></td><td class="type">string</td><td class="req">required</td><td>Activity name (max 40 chars)</td></tr>
           <tr><td><code>type</code></td><td class="type">string</td><td class="req">required</td><td><code>study</code>, <code>training</code>, or <code>inactive</code></td></tr>
-          <tr><td><code>color</code></td><td class="type">string</td><td class="opt">optional</td><td>Hex color (default: auto-assigned)</td></tr>
-          <tr><td><code>slots</code></td><td class="type">array</td><td class="opt">optional</td><td>Weekly time slots</td></tr>
+          <tr><td><code>color</code></td><td class="type">string</td><td class="opt">optional</td><td>Hex color (auto-assigned if omitted)</td></tr>
+          <tr><td><code>slots</code></td><td class="type">array</td><td class="opt">optional</td><td>Preferred time slots [{start, end}]</td></tr>
         </table>
       </div>
 
-      <!-- get_stats -->
+      <div class="endpoint" id="update_subject">
+        <h2><span class="method-badge method-write">write</span> update_subject</h2>
+        <p>Update subject properties — rename, change color, reorder slots.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>subject_name</code></td><td class="type">string</td><td class="req">required</td><td>Current activity name</td></tr>
+          <tr><td><code>new_name</code></td><td class="type">string</td><td class="opt">optional</td><td>New name (max 40 chars)</td></tr>
+          <tr><td><code>color</code></td><td class="type">string</td><td class="opt">optional</td><td>New hex color</td></tr>
+          <tr><td><code>slots</code></td><td class="type">array</td><td class="opt">optional</td><td>Replacement time slots</td></tr>
+        </table>
+      </div>
+
+      <!-- CONTENT ITEMS -->
+      <h2 class="section-title">Subject Content Items</h2>
+
+      <div class="endpoint" id="add_subject_item">
+        <h2><span class="method-badge method-write">write</span> add_subject_item</h2>
+        <p>Add a syllabus topic (study), exercise (training), or micro-habit (routine) to a subject.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>subject_name</code></td><td class="type">string</td><td class="req">required</td><td>Activity name</td></tr>
+          <tr><td><code>topic</code></td><td class="type">string</td><td class="opt">study</td><td>Syllabus topic name</td></tr>
+          <tr><td><code>description</code></td><td class="type">string</td><td class="opt">optional</td><td>Topic description</td></tr>
+          <tr><td><code>duration</code></td><td class="type">number</td><td class="opt">optional</td><td>Estimated minutes</td></tr>
+          <tr><td><code>unit</code></td><td class="type">string</td><td class="opt">optional</td><td><code>min</code> or <code>rep</code></td></tr>
+          <tr><td><code>name</code></td><td class="type">string</td><td class="opt">training</td><td>Exercise name</td></tr>
+          <tr><td><code>sets</code></td><td class="type">number</td><td class="opt">optional</td><td>Number of sets</td></tr>
+          <tr><td><code>reps</code></td><td class="type">number</td><td class="opt">optional</td><td>Reps per set</td></tr>
+          <tr><td><code>weight</code></td><td class="type">string</td><td class="opt">optional</td><td>Weight used</td></tr>
+          <tr><td><code>task</code></td><td class="type">string</td><td class="opt">routine</td><td>Micro-habit task</td></tr>
+        </table>
+      </div>
+
+      <div class="endpoint" id="update_subject_item">
+        <h2><span class="method-badge method-write">write</span> update_subject_item</h2>
+        <p>Update a content item — change topic, duration, exercise parameters, or habit task.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>subject_name</code></td><td class="type">string</td><td class="req">required</td><td>Activity name</td></tr>
+          <tr><td><code>item_id</code></td><td class="type">string</td><td class="req">required</td><td>Item ID to update</td></tr>
+          <tr><td><code>topic</code></td><td class="type">string</td><td class="opt">optional</td><td>New topic name</td></tr>
+          <tr><td><code>description</code></td><td class="type">string</td><td class="opt">optional</td><td>New description</td></tr>
+          <tr><td><code>duration</code></td><td class="type">number</td><td class="opt">optional</td><td>New estimated minutes</td></tr>
+          <tr><td><code>status</code></td><td class="type">string</td><td class="opt">optional</td><td><code>pending</code> or <code>completed</code></td></tr>
+          <tr><td><code>name</code></td><td class="type">string</td><td class="opt">optional</td><td>New exercise name</td></tr>
+          <tr><td><code>sets</code></td><td class="type">number</td><td class="opt">optional</td><td>New sets</td></tr>
+          <tr><td><code>reps</code></td><td class="type">number</td><td class="opt">optional</td><td>New reps</td></tr>
+          <tr><td><code>weight</code></td><td class="type">string</td><td class="opt">optional</td><td>New weight</td></tr>
+          <tr><td><code>task</code></td><td class="type">string</td><td class="opt">optional</td><td>New habit task</td></tr>
+        </table>
+      </div>
+
+      <div class="endpoint" id="remove_subject_item">
+        <h2><span class="method-badge method-delete">delete</span> remove_subject_item</h2>
+        <p>Permanently remove a content item from a subject.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>subject_name</code></td><td class="type">string</td><td class="req">required</td><td>Activity name</td></tr>
+          <tr><td><code>item_id</code></td><td class="type">string</td><td class="req">required</td><td>Item ID to remove</td></tr>
+        </table>
+      </div>
+
+      <!-- ATOMIC HABITS -->
+      <h2 class="section-title">Atomic Habits</h2>
+
+      <div class="endpoint" id="toggle_block_item">
+        <h2><span class="method-badge method-write">write</span> toggle_block_item</h2>
+        <p>Mark/unmark a content item as completed within a block. Auto-completes the block when all items are done.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>block_id</code></td><td class="type">string</td><td class="req">required</td><td>Block ID</td></tr>
+          <tr><td><code>item_id</code></td><td class="type">string</td><td class="req">required</td><td>Item ID from subject content</td></tr>
+        </table>
+      </div>
+
+      <!-- STATS -->
+      <h2 class="section-title">Statistics & Reports</h2>
+
       <div class="endpoint" id="get_stats">
         <h2><span class="method-badge method-read">read</span> get_stats</h2>
-        <p>Get completion statistics, streaks, and heatmap data for the user.</p>
+        <p>Get completion statistics, streaks, heatmap data, and top subjects.</p>
         <h3>Parameters</h3>
         <table class="param-table">
           <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
-          <tr><td><code>period</code></td><td class="type">string</td><td class="opt">optional</td><td><code>today</code>, <code>week</code>, <code>month</code>, or <code>all</code> (default: <code>week</code>)</td></tr>
-        </table>
-        <h3>Response</h3>
-        <div class="code-block">{
-  <span class="k">"total_blocks"</span>: <span class="n">42</span>,
-  <span class="k">"completed_blocks"</span>: <span class="n">35</span>,
-  <span class="k">"completion_rate"</span>: <span class="n">0.83</span>,
-  <span class="k">"streak_days"</span>: <span class="n">7</span>,
-  <span class="k">"total_minutes"</span>: <span class="n">2100</span>,
-  <span class="k">"heatmap"</span>: { <span class="s">"2026-06-11"</span>: <span class="n">5</span>, <span class="s">"2026-06-10"</span>: <span class="n">3</span> }
-}</div>
-      </div>
-
-      <!-- get_schedule -->
-      <div class="endpoint" id="get_schedule">
-        <h2><span class="method-badge method-read">read</span> get_schedule</h2>
-        <p>Get the user's full weekly schedule with all configured time slots per subject.</p>
-        <h3>Parameters</h3>
-        <table class="param-table">
-          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
-          <tr><td><code>week_offset</code></td><td class="type">number</td><td class="opt">optional</td><td>0 = current week, -1 = last week, 1 = next week</td></tr>
+          <tr><td><code>period</code></td><td class="type">string</td><td class="opt">optional</td><td><code>today</code>, <code>week</code>, <code>month</code>, or <code>all</code> (default: week)</td></tr>
         </table>
       </div>
 
-      <!-- suggest_schedule -->
-      <div class="endpoint" id="suggest_schedule">
-        <h2><span class="method-badge method-write">write</span> suggest_schedule</h2>
-        <p>Get AI-powered schedule suggestions based on user's completion patterns, available time slots, and study goals.</p>
+      <div class="endpoint" id="get_heatmap">
+        <h2><span class="method-badge method-read">read</span> get_heatmap</h2>
+        <p>90-day consistency heatmap with daily completion counts and intensity levels (0-4).</p>
         <h3>Parameters</h3>
         <table class="param-table">
           <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
-          <tr><td><code>goal</code></td><td class="type">string</td><td class="opt">optional</td><td>Natural language goal (e.g. "study more math")</td></tr>
-          <tr><td><code>available_hours</code></td><td class="type">number</td><td class="opt">optional</td><td>Max hours per day available</td></tr>
+          <tr><td><code>days</code></td><td class="type">number</td><td class="opt">optional</td><td>Number of days (default: 90, max: 365)</td></tr>
+        </table>
+      </div>
+
+      <!-- PRIORITY -->
+      <h2 class="section-title">Priority Circle</h2>
+
+      <div class="endpoint" id="get_priorities">
+        <h2><span class="method-badge method-read">read</span> get_priorities</h2>
+        <p>View all priority zones — Main Focus, Important, Flexible, Unallocated.</p>
+        <h3>Parameters</h3>
+        <p>None</p>
+      </div>
+
+      <div class="endpoint" id="add_priority_item">
+        <h2><span class="method-badge method-write">write</span> add_priority_item</h2>
+        <p>Add an item to a priority zone with pillar and color.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>name</code></td><td class="type">string</td><td class="req">required</td><td>Item name</td></tr>
+          <tr><td><code>pillar</code></td><td class="type">string</td><td class="req">required</td><td><code>pessoal</code>, <code>profissional</code>, <code>relacionamentos</code>, or <code>qualidade</code></td></tr>
+          <tr><td><code>color</code></td><td class="type">string</td><td class="opt">optional</td><td>Hex color (auto by pillar)</td></tr>
+          <tr><td><code>zone</code></td><td class="type">string</td><td class="opt">optional</td><td><code>zone1</code>-<code>zone3</code> or <code>unallocated</code></td></tr>
+        </table>
+      </div>
+
+      <div class="endpoint" id="remove_priority_item">
+        <h2><span class="method-badge method-delete">delete</span> remove_priority_item</h2>
+        <p>Remove an item from the priority circle entirely.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>item_id</code></td><td class="type">string</td><td class="req">required</td><td>Item ID to remove</td></tr>
+        </table>
+      </div>
+
+      <div class="endpoint" id="move_priority_item">
+        <h2><span class="method-badge method-write">write</span> move_priority_item</h2>
+        <p>Move a priority item between zones. Zone1 has a max of 3 items.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>item_id</code></td><td class="type">string</td><td class="req">required</td><td>Item ID to move</td></tr>
+          <tr><td><code>target_zone</code></td><td class="type">string</td><td class="req">required</td><td><code>zone1</code>-<code>zone3</code> or <code>unallocated</code></td></tr>
+        </table>
+      </div>
+
+      <!-- LOGS & SETTINGS -->
+      <h2 class="section-title">Logs & Settings</h2>
+
+      <div class="endpoint" id="get_logs">
+        <h2><span class="method-badge method-read">read</span> get_logs</h2>
+        <p>View the recent activity timeline.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>limit</code></td><td class="type">number</td><td class="opt">optional</td><td>Entries to return (default: 20, max: 50)</td></tr>
+        </table>
+      </div>
+
+      <div class="endpoint" id="get_settings">
+        <h2><span class="method-badge method-read">read</span> get_settings</h2>
+        <p>Get current user settings — notifications, theme, reminder minutes, marquee.</p>
+        <h3>Parameters</h3>
+        <p>None</p>
+      </div>
+
+      <div class="endpoint" id="update_setting">
+        <h2><span class="method-badge method-write">write</span> update_setting</h2>
+        <p>Update a user setting. Only provided fields are changed.</p>
+        <h3>Parameters</h3>
+        <table class="param-table">
+          <tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr><td><code>notifications</code></td><td class="type">boolean</td><td class="opt">optional</td><td>Enable/disable push notifications</td></tr>
+          <tr><td><code>reminder_min</code></td><td class="type">number</td><td class="opt">optional</td><td>Minutes before block reminder</td></tr>
+          <tr><td><code>theme</code></td><td class="type">string</td><td class="opt">optional</td><td><code>light</code>, <code>dark</code>, or <code>auto</code></td></tr>
+          <tr><td><code>show_marquee</code></td><td class="type">boolean</td><td class="opt">optional</td><td>Show/hide motivational marquee</td></tr>
         </table>
       </div>
 
