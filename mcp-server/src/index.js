@@ -11,17 +11,18 @@ import {
 } from './helpers.js';
 
 // --- Auth ---
-const apiKey = process.env.TAKETIME_API_KEY;
+const accessToken = process.env.TAKETIME_ACCESS_TOKEN || process.env.TAKETIME_API_KEY;
+const refreshToken = process.env.TAKETIME_REFRESH_TOKEN;
 const email = process.env.TAKETIME_EMAIL;
 const password = process.env.TAKETIME_PASSWORD;
 
-if (!apiKey && (!email || !password)) {
-  console.error('Error: Set TAKETIME_API_KEY (access token) or TAKETIME_EMAIL + TAKETIME_PASSWORD.');
-  console.error('Email/password is recommended — it auto-refreshes the session.');
+if (!accessToken && !refreshToken && (!email || !password)) {
+  console.error('Error: Set TAKETIME_ACCESS_TOKEN + TAKETIME_REFRESH_TOKEN (recommended, copy from app)');
+  console.error('       or TAKETIME_EMAIL + TAKETIME_PASSWORD');
   process.exit(1);
 }
 
-const db = new SupabaseClient(apiKey || 'pending');
+const db = new SupabaseClient(accessToken || 'pending');
 
 // --- State helpers ---
 async function getState() {
@@ -443,6 +444,9 @@ async function main() {
   try {
     if (email && password) {
       const user = await db.loginWithCredentials(email, password);
+      console.error(`[Take Time MCP] Authenticated as ${user.email} (session auto-refreshes)`);
+    } else if (refreshToken) {
+      const user = await db.loginWithRefreshToken(refreshToken);
       console.error(`[Take Time MCP] Authenticated as ${user.email} (session auto-refreshes)`);
     } else {
       const user = await db.authenticate();

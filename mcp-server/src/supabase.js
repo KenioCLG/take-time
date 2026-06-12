@@ -58,6 +58,22 @@ export class SupabaseClient {
     return data.user;
   }
 
+  // Login using only a refresh token — no password needed
+  async loginWithRefreshToken(token) {
+    const data = await this._fetch('/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      skipAuth: true,
+      body: JSON.stringify({ refresh_token: token }),
+    });
+    this.accessToken = data.access_token;
+    this.refreshToken = data.refresh_token;
+    this.userId = data.user?.id;
+    if (data.expires_in) {
+      this._scheduleRefresh(data.expires_in);
+    }
+    return data.user;
+  }
+
   async refreshSession() {
     if (!this.refreshToken) {
       console.error('[MCP] No refresh token — session will expire. Use email/password auth for auto-refresh.');

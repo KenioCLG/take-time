@@ -414,19 +414,6 @@
           </a>
         </div>
         <button class="ds-btn ds-btn-tinted ds-btn-block" id="btnGenMcpConfig" style="margin-top:12px;" data-i18n="mcp.generate_config">Gerar Configuração MCP</button>
-        <div id="mcpApiKeySection" style="margin-top:12px; background:var(--ds-bg-card); padding:14px; border-radius:var(--ds-radius-md); box-shadow:var(--ds-shadow-sm);">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-            <span style="font-size:13px; font-weight:600; color:var(--ds-text-primary);" data-i18n="mcp.api_key_label">API Key (Access Token)</span>
-            <button class="ds-btn ds-btn-plain" id="btnGenApiKey" style="font-size:12px; padding:4px 10px;" data-i18n="mcp.generate_key">Gerar</button>
-          </div>
-          <div id="mcpApiKeyResult" class="hidden">
-            <div style="position:relative;">
-              <input type="text" id="mcpApiKeyValue" class="ds-input" readonly style="font-family:'SF Mono',Menlo,monospace; font-size:11px; padding-right:60px; background:var(--ds-bg-secondary);">
-              <button class="ds-btn ds-btn-plain" id="btnCopyApiKey" style="position:absolute; top:50%; right:8px; transform:translateY(-50%); font-size:11px; padding:3px 8px;" data-i18n="mcp.copy">Copiar</button>
-            </div>
-            <p style="font-size:11px; color:var(--ds-color-orange, #ff9500); margin-top:6px; line-height:1.3;" data-i18n="mcp.key_warning">Este token expira em ~1h. Para uso permanente, use email/senha na configuração.</p>
-          </div>
-        </div>
       </div>
 
       <!-- ═══ GRUPO: Conta & Dados ═══ -->
@@ -648,7 +635,7 @@
           <pre id="mcpConfigJson" style="background:var(--ds-bg-secondary); padding:14px; border-radius:var(--ds-radius-md); font-size:12px; line-height:1.5; overflow-x:auto; white-space:pre; font-family:'SF Mono',Menlo,monospace; color:var(--ds-text-primary); border:1px solid var(--ds-separator);"></pre>
           <button class="ds-btn ds-btn-plain" id="btnCopyMcpConfig" style="position:absolute; top:8px; right:8px; font-size:11px; padding:4px 8px;" data-i18n="mcp.copy">Copiar</button>
         </div>
-        <p style="font-size:11px; color:var(--ds-text-tertiary); margin-top:8px; line-height:1.4;" data-i18n="mcp.config_note">Substitua /path/to/take-time pelo caminho real do repositório clonado e your-password pela sua senha.</p>
+        <p style="font-size:11px; color:var(--ds-text-tertiary); margin-top:8px; line-height:1.4;" data-i18n="mcp.config_note">Copie e cole no arquivo indicado. Os tokens são gerados automaticamente a partir da sua sessão.</p>
       </div>
     </div>
   </div>

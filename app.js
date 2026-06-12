@@ -1896,14 +1896,13 @@ function initSettings() {
 
     function buildMcpJson(clientId) {
       const client = mcpClients[clientId];
-      const email = Supabase._user?.email || 'your@email.com';
       const inner = {
         taketime: {
-          command: 'node',
-          args: ['/path/to/take-time/mcp-server/src/index.js'],
+          command: 'npx',
+          args: ['-y', '@taketime/mcp-server'],
           env: {
-            TAKETIME_EMAIL: email,
-            TAKETIME_PASSWORD: 'your-password'
+            TAKETIME_ACCESS_TOKEN: Supabase._accessToken || 'TOKEN_NOT_AVAILABLE',
+            TAKETIME_REFRESH_TOKEN: Supabase._refreshToken || 'TOKEN_NOT_AVAILABLE'
           }
         }
       };
@@ -1936,29 +1935,6 @@ function initSettings() {
     }
   }
 
-  // MCP API Key Generator
-  const $btnGenKey = $('#btnGenApiKey');
-  if ($btnGenKey) {
-    $btnGenKey.addEventListener('click', () => {
-      const token = Supabase._accessToken;
-      if (!token) {
-        DS.toast(I18n.t('mcp.key_error'));
-        return;
-      }
-      const $result = $('#mcpApiKeyResult');
-      const $input = $('#mcpApiKeyValue');
-      $input.value = token;
-      $result.classList.remove('hidden');
-    });
-
-    const $btnCopyKey = $('#btnCopyApiKey');
-    if ($btnCopyKey) {
-      $btnCopyKey.addEventListener('click', () => {
-        const val = $('#mcpApiKeyValue').value;
-        if (val) navigator.clipboard.writeText(val).then(() => DS.toast(I18n.t('mcp.copied')));
-      });
-    }
-  }
 
   // Marquee custom texts
   const $marqueeTA = $('#marqueeTextarea');

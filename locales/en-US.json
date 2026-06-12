@@ -280,11 +280,7 @@
   "mcp.config_client": "Client",
   "mcp.copy": "Copy",
   "mcp.copied": "Config copied!",
-  "mcp.config_note": "Replace /path/to/take-time with the actual path where you cloned the repo and your-password with your password.",
-  "mcp.api_key_label": "API Key (Access Token)",
-  "mcp.generate_key": "Generate",
-  "mcp.key_warning": "This token expires in ~1h. For permanent use, use email/password in the config.",
-  "mcp.key_error": "Error: no active session. Please log in first.",
+  "mcp.config_note": "Copy and paste into the file indicated above. Tokens are generated automatically from your session.",
 
   "type.study_short": "Study",
   "type.training_short": "Training",
