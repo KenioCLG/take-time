@@ -1886,77 +1886,130 @@ function initSettings() {
     });
   }
 
-  // MCP Config Generator
+  // MCP Integration Manager
   const $btnGenMcp = $('#btnGenMcpConfig');
   if ($btnGenMcp) {
-    function getMcpTokens() {
-      return {
-        access: Supabase._accessToken || '',
-        refresh: Supabase._refreshToken || ''
-      };
-    }
+    const MCP_CLIENTS = {
+      'claude-code':    { name: 'Claude Code',    icon: '⌨️', wrap: 'mcpServers', path: '~/.claude/settings.json' },
+      'claude-desktop': { name: 'Claude Desktop',  icon: '🖥️', wrap: 'mcpServers', path: '~/Library/Application Support/Claude/claude_desktop_config.json' },
+      'cursor':         { name: 'Cursor',          icon: '📝', wrap: 'mcpServers', path: '.cursor/mcp.json' },
+      'vscode':         { name: 'VS Code',         icon: '💻', wrap: 'servers',    path: '.vscode/mcp.json' },
+      'windsurf':       { name: 'Windsurf',        icon: '🏄', wrap: 'mcpServers', path: '~/.codeium/windsurf/mcp_config.json' },
+      'opencode':       { name: 'OpenCode',        icon: '🔓', wrap: 'mcpServers', path: '~/.opencode/config.json' },
+    };
 
-    function buildServerConfig(tokens) {
-      return {
-        command: 'npx',
-        args: ['-y', '@taketime/mcp-server@latest'],
-        env: {
-          TAKETIME_REFRESH_TOKEN: tokens.refresh
+    function buildConfig(clientId) {
+      const client = MCP_CLIENTS[clientId];
+      if (!client) return '';
+      const refreshToken = Supabase._refreshToken || '';
+      const obj = {
+        [client.wrap]: {
+          taketime: {
+            command: 'npx',
+            args: ['-y', '@taketime/mcp-server@latest'],
+            env: { TAKETIME_REFRESH_TOKEN: refreshToken }
+          }
         }
       };
+      return JSON.stringify(obj, null, 2);
     }
 
-    function buildJsonConfig(wrapKey, tokens) {
-      return JSON.stringify({ [wrapKey]: { taketime: buildServerConfig(tokens) } }, null, 2);
+    function getIntegrations() {
+      return state.mcpIntegrations || [];
     }
 
-    const mcpClients = [
-      { id: 'claude-code', name: 'Claude Code', icon: '⌨️', type: 'json', wrap: 'mcpServers', path: '~/.claude/settings.json' },
-      { id: 'claude-desktop', name: 'Claude Desktop', icon: '🖥️', type: 'json', wrap: 'mcpServers', path: '~/Library/Application Support/Claude/claude_desktop_config.json' },
-      { id: 'cursor', name: 'Cursor', icon: '📝', type: 'json', wrap: 'mcpServers', path: '.cursor/mcp.json' },
-      { id: 'vscode', name: 'VS Code', icon: '💻', type: 'json', wrap: 'servers', path: '.vscode/mcp.json' },
-      { id: 'windsurf', name: 'Windsurf', icon: '🏄', type: 'json', wrap: 'mcpServers', path: '~/.codeium/windsurf/mcp_config.json' },
-    ];
+    function renderIntegrations() {
+      const list = $('#mcpIntegrationsList');
+      if (!list) return;
+      const integrations = getIntegrations();
 
-    function renderMcpCards() {
-      const tokens = getMcpTokens();
-      const container = $('#mcpClientCards');
-      if (!container) return;
-      container.innerHTML = '';
-
-      if (!tokens.refresh) {
-        container.innerHTML = '<p style="font-size:13px; color:var(--ds-text-tertiary); text-align:center; padding:20px 0;" data-i18n="mcp.no_session">Faça login para gerar os comandos.</p>';
+      if (integrations.length === 0) {
+        list.innerHTML = '<p style="font-size:13px; color:var(--ds-text-tertiary); text-align:center; padding:16px 0;" data-i18n="mcp.no_integrations">Nenhuma integração criada. Selecione uma IA abaixo.</p>';
         return;
       }
 
-      mcpClients.forEach(client => {
-        const json = buildJsonConfig(client.wrap, tokens);
-
+      list.innerHTML = '<p class="ds-label" style="margin-bottom:8px;" data-i18n="mcp.active_integrations">Integrações Ativas</p>';
+      integrations.forEach((intg, idx) => {
+        const client = MCP_CLIENTS[intg.client];
+        if (!client) return;
         const card = document.createElement('div');
-        card.style.cssText = 'background:var(--ds-bg-card); border-radius:var(--ds-radius-md); padding:12px; box-shadow:var(--ds-shadow-sm);';
+        card.style.cssText = 'background:var(--ds-bg-card); border-radius:var(--ds-radius-md); padding:10px 12px; box-shadow:var(--ds-shadow-sm); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;';
         card.innerHTML = `
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-            <span style="font-size:14px; font-weight:600; color:var(--ds-text-primary);">${client.icon} ${client.name}</span>
-            <span style="font-size:11px; color:var(--ds-text-tertiary);">${client.path}</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">${client.icon}</span>
+            <div>
+              <span style="font-size:13px; font-weight:600; color:var(--ds-text-primary);">${client.name}</span>
+              <p style="font-size:11px; color:var(--ds-text-tertiary); margin:0;">${new Date(intg.createdAt).toLocaleDateString(I18n.locale)}</p>
+            </div>
           </div>
-          <div style="position:relative;">
-            <pre style="background:var(--ds-bg-secondary); padding:10px; padding-right:60px; border-radius:var(--ds-radius-sm); font-size:11px; line-height:1.4; overflow-x:auto; white-space:pre; font-family:'SF Mono',Menlo,monospace; color:var(--ds-text-primary); border:1px solid var(--ds-separator); max-height:120px;">${json.replace(/</g, '&lt;')}</pre>
-            <button class="ds-btn ds-btn-tinted mcp-copy-btn" style="position:absolute; top:8px; right:8px; font-size:11px; padding:4px 10px;">${I18n.t('mcp.copy')}</button>
+          <div style="display:flex; gap:6px;">
+            <button class="ds-btn ds-btn-plain mcp-recopy-btn" data-client="${intg.client}" style="font-size:11px; padding:4px 8px;">${I18n.t('mcp.copy')}</button>
+            <button class="ds-btn ds-btn-plain mcp-remove-btn" data-idx="${idx}" style="font-size:11px; padding:4px 8px; color:var(--ds-danger);">✕</button>
           </div>`;
+        list.appendChild(card);
+      });
 
-        card.querySelector('.mcp-copy-btn').addEventListener('click', function() {
+      list.querySelectorAll('.mcp-recopy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const json = buildConfig(this.dataset.client);
           navigator.clipboard.writeText(json).then(() => {
             this.textContent = I18n.t('mcp.copied');
             setTimeout(() => { this.textContent = I18n.t('mcp.copy'); }, 2000);
           });
         });
+      });
 
-        container.appendChild(card);
+      list.querySelectorAll('.mcp-remove-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const idx = parseInt(this.dataset.idx);
+          const ok = await DS.confirm(I18n.t('mcp.remove_title'), I18n.t('mcp.remove_msg'), I18n.t('confirm.delete'));
+          if (ok) {
+            state.mcpIntegrations.splice(idx, 1);
+            Store.save(state);
+            renderIntegrations();
+          }
+        });
       });
     }
 
+    // Generate button
+    $('#btnMcpGenerate').addEventListener('click', () => {
+      const clientId = $('#mcpClientSelect').value;
+      const client = MCP_CLIENTS[clientId];
+      if (!Supabase._refreshToken) {
+        DS.toast(I18n.t('mcp.no_session'), 'warning');
+        return;
+      }
+
+      const json = buildConfig(clientId);
+      $('#mcpGenLabel').textContent = `${client.icon} ${client.name}`;
+      $('#mcpGenPath').textContent = client.path;
+      $('#mcpGenJson').textContent = json;
+      $('#mcpGeneratedConfig').classList.remove('hidden');
+
+      // Save integration if not already exists
+      if (!state.mcpIntegrations) state.mcpIntegrations = [];
+      const exists = state.mcpIntegrations.some(i => i.client === clientId);
+      if (!exists) {
+        state.mcpIntegrations.push({ client: clientId, createdAt: new Date().toISOString() });
+        Store.save(state);
+        renderIntegrations();
+      }
+    });
+
+    // Copy config button
+    $('#btnMcpCopyConfig').addEventListener('click', function() {
+      const text = $('#mcpGenJson').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        this.textContent = I18n.t('mcp.copied');
+        setTimeout(() => { this.textContent = I18n.t('mcp.copy'); }, 2000);
+      });
+    });
+
+    // Open modal
     $btnGenMcp.addEventListener('click', () => {
-      renderMcpCards();
+      $('#mcpGeneratedConfig').classList.add('hidden');
+      renderIntegrations();
       DS.sheet.open(document.getElementById('modalMcpConfig'));
     });
   }
