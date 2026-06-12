@@ -1889,14 +1889,13 @@ function initSettings() {
   // MCP Integration Manager
   const $btnGenMcp = $('#btnGenMcpConfig');
   if ($btnGenMcp) {
-    const _svg = (d, color='%23a1a1aa') => `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${color}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E${d}%3C/svg%3E`;
     const MCP_CLIENTS = {
-      'claude-code':    { name: 'Claude Code',    icon: _svg("%3Cpath d='M7 8l-4 4 4 4'/%3E%3Cpath d='M17 8l4 4-4 4'/%3E%3Cpath d='M14 4l-4 16'/%3E", '%23d97706'), wrap: 'mcpServers', path: '~/.claude/settings.json' },
-      'claude-desktop': { name: 'Claude Desktop',  icon: _svg("%3Crect x='2' y='3' width='20' height='14' rx='2'/%3E%3Cpath d='M8 21h8'/%3E%3Cpath d='M12 17v4'/%3E", '%23d97706'), wrap: 'mcpServers', path: '~/Library/Application Support/Claude/claude_desktop_config.json' },
-      'cursor':         { name: 'Cursor',          icon: _svg("%3Cpath d='M4 4l7.07 17 2.51-7.39L21 11.07z'/%3E"), wrap: 'mcpServers', path: '.cursor/mcp.json' },
-      'vscode':         { name: 'VS Code',         icon: _svg("%3Cpath d='M16 3l5 3v12l-5 3L3 14V10l13-7z'/%3E%3Cpath d='M3 10l13 4'/%3E%3Cpath d='M16 3L3 14'/%3E%3Cpath d='M16 21L3 10'/%3E", '%230078d4'), wrap: 'servers',    path: '.vscode/mcp.json' },
-      'windsurf':       { name: 'Windsurf',        icon: _svg("%3Cpath d='M3 17c3-3 6-1 9-4s6-1 9-4'/%3E%3Cpath d='M3 12c3-3 6-1 9-4s6-1 9-4'/%3E"), wrap: 'mcpServers', path: '~/.codeium/windsurf/mcp_config.json' },
-      'opencode':       { name: 'OpenCode',        icon: _svg("%3Cpath d='M12 2a10 10 0 100 20 10 10 0 000-20z'/%3E%3Cpath d='M7 8l-4 4 4 4'/%3E%3Cpath d='M17 8l4 4-4 4'/%3E", '%2322c55e'), wrap: 'mcpServers', path: '~/.opencode/config.json' },
+      'claude-code':    { name: 'Claude Code',    icon: 'https://cdn.simpleicons.org/claude', wrap: 'mcpServers', path: '~/.claude/settings.json' },
+      'claude-desktop': { name: 'Claude Desktop',  icon: 'https://cdn.simpleicons.org/claude', wrap: 'mcpServers', path: '~/Library/Application Support/Claude/claude_desktop_config.json' },
+      'cursor':         { name: 'Cursor',          icon: 'https://cdn.simpleicons.org/cursor', wrap: 'mcpServers', path: '.cursor/mcp.json' },
+      'vscode':         { name: 'VS Code',         icon: 'https://cdn.simpleicons.org/visualstudiocode', wrap: 'servers',    path: '.vscode/mcp.json' },
+      'windsurf':       { name: 'Windsurf',        icon: 'https://cdn.simpleicons.org/codeium', wrap: 'mcpServers', path: '~/.codeium/windsurf/mcp_config.json' },
+      'opencode':       { name: 'OpenCode',        icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 9l-3 3 3 3'/%3E%3Cpath d='M16 9l3 3-3 3'/%3E%3Cpath d='M13.5 6l-3 12'/%3E%3C/svg%3E", wrap: 'mcpServers', path: '~/.opencode/config.json' },
     };
 
     function buildConfig(clientId) {
