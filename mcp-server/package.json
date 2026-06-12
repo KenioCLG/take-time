@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "setup": "node src/index.js setup"
+    "setup": "node src/cli.js setup"
   },
   "keywords": ["mcp", "study-planner", "take-time", "ai", "claude", "chatgpt", "cursor"],
   "license": "MIT",

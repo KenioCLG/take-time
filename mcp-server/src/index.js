@@ -11,13 +11,13 @@ import {
 } from './helpers.js';
 
 // --- Auth ---
-const accessToken = process.env.TAKETIME_ACCESS_TOKEN || process.env.TAKETIME_API_KEY;
 const refreshToken = process.env.TAKETIME_REFRESH_TOKEN;
+const accessToken = process.env.TAKETIME_ACCESS_TOKEN || process.env.TAKETIME_API_KEY;
 const email = process.env.TAKETIME_EMAIL;
 const password = process.env.TAKETIME_PASSWORD;
 
-if (!accessToken && !refreshToken && (!email || !password)) {
-  console.error('Error: Set TAKETIME_ACCESS_TOKEN + TAKETIME_REFRESH_TOKEN (recommended, copy from app)');
+if (!refreshToken && !accessToken && (!email || !password)) {
+  console.error('Error: Set TAKETIME_REFRESH_TOKEN (recommended — copy from app settings)');
   console.error('       or TAKETIME_EMAIL + TAKETIME_PASSWORD');
   process.exit(1);
 }
@@ -442,11 +442,11 @@ server.tool(
 
 async function main() {
   try {
-    if (email && password) {
-      const user = await db.loginWithCredentials(email, password);
-      console.error(`[Take Time MCP] Authenticated as ${user.email} (session auto-refreshes)`);
-    } else if (refreshToken) {
+    if (refreshToken) {
       const user = await db.loginWithRefreshToken(refreshToken);
+      console.error(`[Take Time MCP] Authenticated as ${user.email} (session auto-refreshes)`);
+    } else if (email && password) {
+      const user = await db.loginWithCredentials(email, password);
       console.error(`[Take Time MCP] Authenticated as ${user.email} (session auto-refreshes)`);
     } else {
       const user = await db.authenticate();
