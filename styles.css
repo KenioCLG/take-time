@@ -68,7 +68,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 /* Page transition */
 .page-enter {
-  animation: pageEnter 0.25s ease-out;
+  animation: pageEnter var(--ds-duration-normal) var(--ds-ease-default);
 }
 @keyframes pageEnter {
   from { opacity: 0; transform: translateY(6px); }
@@ -223,14 +223,14 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: background var(--ds-duration-fast) var(--ds-ease-default), transform var(--ds-duration-normal) var(--ds-ease-default);
   color: var(--ds-text-primary);
   font-family: var(--ds-font);
 }
 .week-day:active {
   transform: scale3d(0.93, 0.93, 1);
   background: var(--ds-fill-quaternary);
-  transition: transform 0.06s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform var(--ds-duration-micro) var(--ds-ease-default);
 }
 
 .week-day .day-label {
@@ -306,15 +306,15 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35);
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.2s ease;
+  transition: transform var(--ds-duration-normal) var(--ds-ease-spring),
+              box-shadow var(--ds-duration-fast) var(--ds-ease-default);
   -webkit-tap-highlight-color: transparent;
 }
 .pizza-add-btn:active {
   transform: scale(0.85);
   box-shadow: 0 1px 4px rgba(0, 122, 255, 0.2);
-  transition: transform 0.08s cubic-bezier(0.32, 0.72, 0, 1),
-              box-shadow 0.08s ease;
+  transition: transform 0.08s var(--ds-ease-default),
+              box-shadow 0.08s var(--ds-ease-default);
 }
 
 .pizza-center-label {
@@ -385,8 +385,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   align-items: center;
   gap: var(--ds-space-3);
   cursor: pointer;
-  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
-              box-shadow 0.25s ease;
+  transition: transform var(--ds-duration-normal) var(--ds-ease-default),
+              box-shadow var(--ds-duration-normal) var(--ds-ease-default);
   position: relative;
   overflow: hidden;
   box-shadow: var(--ds-shadow-sm);
@@ -421,8 +421,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .block-card:active {
   transform: scale3d(0.97, 0.97, 1);
   box-shadow: var(--ds-shadow-xs, 0 1px 2px rgba(0,0,0,0.08));
-  transition: transform 0.08s cubic-bezier(0.32, 0.72, 0, 1),
-              box-shadow 0.08s ease;
+  transition: transform 0.08s var(--ds-ease-default),
+              box-shadow 0.08s var(--ds-ease-default);
 }
 .block-card.done { opacity: 0.5; }
 .block-card.done .block-subject,
@@ -489,22 +489,22 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   background: transparent;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s ease,
-              border-color 0.2s ease,
-              color 0.15s ease,
-              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: background var(--ds-duration-fast) var(--ds-ease-default),
+              border-color var(--ds-duration-fast) var(--ds-ease-default),
+              color var(--ds-duration-fast) var(--ds-ease-default),
+              transform var(--ds-duration-normal) var(--ds-ease-spring);
   flex-shrink: 0;
   color: transparent;
 }
 .block-check:active {
   transform: scale(0.85);
-  transition: transform 0.06s ease;
+  transition: transform var(--ds-duration-micro) var(--ds-ease-default);
 }
 .block-check.checked {
   background: var(--ds-success);
   border-color: var(--ds-success);
   color: white;
-  animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: checkPop var(--ds-duration-normal) var(--ds-ease-spring);
 }
 .block-check svg { width: 14px; height: 14px; }
 
@@ -595,13 +595,13 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   align-items: center;
   gap: var(--ds-space-3);
   box-shadow: var(--ds-shadow-sm);
-  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
-              box-shadow 0.25s ease;
+  transition: transform var(--ds-duration-normal) var(--ds-ease-default),
+              box-shadow var(--ds-duration-normal) var(--ds-ease-default);
 }
 .subject-card:active {
   transform: scale3d(0.97, 0.97, 1);
   box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-  transition: transform 0.08s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform 0.08s var(--ds-ease-default);
 }
 
 .subject-dot { width: 12px; height: 12px; border-radius: var(--ds-radius-full); flex-shrink: 0; }
@@ -614,10 +614,10 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   color: var(--ds-text-quaternary); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   border-radius: var(--ds-radius-full);
-  transition: color 0.2s ease, background 0.2s ease, transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: color var(--ds-duration-fast) var(--ds-ease-default), background var(--ds-duration-fast) var(--ds-ease-default), transform var(--ds-duration-fast) var(--ds-ease-default);
 }
 .subject-delete:hover { color: var(--ds-danger); }
-.subject-delete:active { transform: scale(0.85); transition: transform 0.06s ease; }
+.subject-delete:active { transform: scale(0.85); transition: transform var(--ds-duration-micro) var(--ds-ease-default); }
 
 /* Correção de lag na animação de Drag and Drop (SortableJS) */
 .sortable-drag {
@@ -740,11 +740,11 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   border-radius: var(--ds-radius-full);
   border: 3px solid transparent;
   cursor: pointer;
-  transition: border-color 0.2s ease,
-              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-default),
+              transform var(--ds-duration-normal) var(--ds-ease-spring);
 }
 .color-dot.active { border-color: var(--ds-text-primary); transform: scale(1.15); }
-.color-dot:active { transform: scale(0.85); transition: transform 0.06s ease; }
+.color-dot:active { transform: scale(0.85); transition: transform var(--ds-duration-micro) var(--ds-ease-default); }
 
 /* ===== ADD CONTENT FORMS ===== */
 .ds-segmented-control {
@@ -898,8 +898,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   color: var(--ds-text-tertiary);
   background: var(--ds-bg-primary);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease,
-              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: background var(--ds-duration-fast) var(--ds-ease-default), color var(--ds-duration-fast) var(--ds-ease-default),
+              transform var(--ds-duration-normal) var(--ds-ease-spring);
   user-select: none;
 }
 
@@ -918,7 +918,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 .day-chip:active {
   transform: scale(0.85);
-  transition: transform 0.06s ease;
+  transition: transform var(--ds-duration-micro) var(--ds-ease-default);
 }
 
 /* ===== SLOT CARD ===== */
@@ -1156,21 +1156,21 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .block-card:active,
 .subject-card:active {
   transform: scale3d(0.97, 0.97, 1);
-  transition: transform 0.08s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform 0.08s var(--ds-ease-default);
 }
 
 .week-day:active {
   transform: scale3d(0.93, 0.93, 1);
-  transition: transform 0.06s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform var(--ds-duration-micro) var(--ds-ease-default);
 }
 
 .ds-tab:active {
   transform: scale3d(0.88, 0.88, 1);
-  transition: transform 0.06s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform var(--ds-duration-micro) var(--ds-ease-default);
 }
 
 .block-check.checked {
-  animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: checkPop var(--ds-duration-normal) var(--ds-ease-spring);
 }
 @keyframes checkPop {
   0% { transform: scale(0.6); }
@@ -1224,12 +1224,12 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   border-radius: var(--ds-radius-full);
   cursor: pointer;
   flex-shrink: 0;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.2s ease;
+  transition: transform var(--ds-duration-normal) var(--ds-ease-spring),
+              box-shadow var(--ds-duration-fast) var(--ds-ease-default);
 }
 .pwa-install-action:active {
   transform: scale(0.9);
-  transition: transform 0.06s ease;
+  transition: transform var(--ds-duration-micro) var(--ds-ease-default);
 }
 
 /* iOS install steps */
@@ -1639,8 +1639,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   cursor: grab;
   user-select: none;
   border: 1px solid var(--ds-separator);
-  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
-              box-shadow 0.25s ease;
+  transition: transform var(--ds-duration-normal) var(--ds-ease-default),
+              box-shadow var(--ds-duration-normal) var(--ds-ease-default);
 }
 
 .priority-item:active {
