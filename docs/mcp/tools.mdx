@@ -47,7 +47,7 @@ The Take Time MCP Server exposes **22 tools** to your AI assistant, organized in
 </ResponseField>
 
 <ResponseField name="update_block" type="write">
-  Update an existing block. Use to mark as done, reschedule, change topic, set syllabus topic, or toggle repeat daily.
+  Update an existing block. Use to mark as done, reschedule, change topic, or toggle repeat daily.
 
   **Parameters:**
   | Name | Type | Required | Description |
@@ -57,7 +57,6 @@ The Take Time MCP Server exposes **22 tools** to your AI assistant, organized in
   | `end` | string | No | New end time (`HH:MM`) |
   | `topic` | string | No | New topic text |
   | `done` | boolean | No | Mark as done or undone |
-  | `selected_syllabus_id` | string | No | Set the active syllabus topic ID |
   | `repeat_daily` | boolean | No | Toggle daily auto-repeat |
 </ResponseField>
 
@@ -129,29 +128,22 @@ The Take Time MCP Server exposes **22 tools** to your AI assistant, organized in
   |------|------|----------|-------------|
   | `subject_name` | string | Yes | Name of the activity/subject |
   | `topic` | string | Study | Syllabus topic name |
-  | `description` | string | No | Syllabus topic description |
-  | `duration` | number | No | Estimated time in minutes |
-  | `unit` | string | No | `min` or `rep` |
   | `name` | string | Training | Exercise name |
-  | `sets` | number | No | Number of sets (default: 3) |
-  | `reps` | number | No | Repetitions per set (default: 10) |
+  | `sets` | number | No | Number of sets |
+  | `reps` | number | No | Repetitions per set |
   | `weight` | string | No | Weight used |
   | `task` | string | Routine | Micro-habit task description |
 </ResponseField>
 
 <ResponseField name="update_subject_item" type="write">
-  Update a content item — change topic, duration, exercise parameters, or habit task.
+  Update a content item — change name, exercise parameters, or habit task.
 
   **Parameters:**
   | Name | Type | Required | Description |
   |------|------|----------|-------------|
   | `subject_name` | string | Yes | Name of the activity/subject |
   | `item_id` | string | Yes | ID of the item to update |
-  | `topic` | string | No | New syllabus topic name |
-  | `description` | string | No | New description |
-  | `duration` | number | No | New estimated time in minutes |
-  | `unit` | string | No | `min` or `rep` |
-  | `status` | string | No | `pending` or `completed` (syllabus only) |
+  | `topic` | string | No | New item name (syllabus topic) |
   | `name` | string | No | New exercise name |
   | `sets` | number | No | New sets count |
   | `reps` | number | No | New reps count |

@@ -27,52 +27,6 @@ const db = new SupabaseClient(accessToken || 'pending');
 // --- State helpers ---
 let _stateLock = Promise.resolve();
 
-async function getState() {
-  try {
-    const [blocks, subjects, subjectItems, prioritiesArr, logs, profiles] = await Promise.all([
-      db.query('blocks').catch(() => []),
-      db.query('subjects').catch(() => []),
-      db.query('subject_items').catch(() => []),
-      db.query('priorities').catch(() => []),
-      db.query('logs').catch(() => []),
-      db.query('profiles').catch(() => [])
-    ]);
-
-    // Reconstruct subjects with items
-    const subjectsMapped = (subjects || []).map(s => {
-      const items = (subjectItems || []).filter(i => i.subject_id === s.id);
-      const subj = { ...s };
-      if (s.type === 'study') subj.syllabus = items;
-      else if (s.type === 'training') subj.exercises = items;
-      else subj.checklist = items;
-      return subj;
-    });
-
-    // Reconstruct priorities
-    const priorities = { zone1: [], zone2: [], zone3: [], unallocated: [] };
-    (prioritiesArr || []).forEach(p => {
-      if (priorities[p.zone]) priorities[p.zone].push(p);
-    });
-
-    const settings = (profiles && profiles.length > 0) ? profiles[0] : {};
-
-    return {
-      blocks: (blocks || []).map(b => ({ 
-        ...b, 
-        subjectId: b.subject_id, 
-        completedItems: b.completed_items || [],
-        repeatDaily: b.repeat_daily
-      })),
-      subjects: subjectsMapped,
-      priorities,
-      logs: (logs || []).map(l => ({ timestamp: l.created_at, message: l.detail })),
-      settings
-    };
-  } catch (e) {
-    throw new Error('Could not fetch data from database: ' + e.message);
-  }
-}
-
 
 
 // --- MCP Server ---
@@ -396,7 +350,6 @@ server.tool(
     end: z.string().optional().describe('New end time (HH:MM)'),
     topic: z.string().optional().describe('New topic text'),
     done: z.boolean().optional().describe('Mark as done or undone'),
-    selected_syllabus_id: z.string().optional().describe('Set the active syllabus topic ID for this block'),
     repeat_daily: z.boolean().optional().describe('Toggle daily auto-repeat'),
   },
   async ({ block_id, start, end, topic, done, repeat_daily }) => {
@@ -494,17 +447,14 @@ server.tool(
   'Add a content item to a subject — syllabus topic (study), exercise (training), or micro-habit (routine).',
   {
     subject_name: z.string().describe('Name of the activity/subject'),
-    topic: z.string().optional().describe('Syllabus topic name (for study subjects)'),
-    description: z.string().optional().describe('Syllabus topic description (for study subjects)'),
-    duration: z.number().optional().describe('Estimated time in minutes (for study subjects)'),
-    unit: z.enum(['min', 'rep']).optional().describe('Duration unit: min or rep (for study subjects)'),
-    name: z.string().optional().describe('Exercise name (for training subjects)'),
+    topic: z.string().optional().describe('Item name — syllabus topic (study), exercise name (training), or habit (routine)'),
+    name: z.string().optional().describe('Alias for topic — exercise name (for training subjects)'),
     sets: z.number().optional().describe('Number of sets (for training subjects)'),
     reps: z.number().optional().describe('Repetitions per set (for training subjects)'),
     weight: z.string().optional().describe('Weight used (for training subjects)'),
-    task: z.string().optional().describe('Micro-habit task description (for routine subjects)'),
+    task: z.string().optional().describe('Alias for topic — micro-habit description (for routine subjects)'),
   },
-  async ({ subject_name, topic, description, duration, unit, name, sets, reps, weight, task }) => {
+  async ({ subject_name, topic, name, sets, reps, weight, task }) => {
     const existing = await db.query('subjects', { name: subject_name });
     if (!existing || existing.length === 0) throw new Error(`Subject "${subject_name}" not found.`);
     const subject = existing[0];
@@ -515,7 +465,7 @@ server.tool(
       if (!topic) throw new Error('"topic" is required for study subjects.');
       itemName = topic;
     } else if (subject.type === 'training') {
-      if (!name) throw new Error('"name", "sets", "reps" are required for training subjects.');
+      if (!name) throw new Error('"name" is required for training subjects.');
       itemName = name;
     } else {
       if (!task) throw new Error('"task" is required for routine subjects.');
@@ -569,22 +519,19 @@ server.tool(
 
 server.tool(
   'update_subject_item',
-  'Update a content item — change topic, duration, exercise parameters, or habit task.',
+  'Update a content item — change name, exercise parameters, or completion status.',
   {
     subject_name: z.string().describe('Name of the activity/subject'),
     item_id: z.string().describe('ID of the item to update'),
-    topic: z.string().optional().describe('New syllabus topic name'),
-    description: z.string().optional().describe('New description'),
-    duration: z.number().optional().describe('New estimated time in minutes'),
-    unit: z.enum(['min', 'rep']).optional().describe('Duration unit'),
-    status: z.enum(['pending', 'completed']).optional().describe('Syllabus topic status'),
-    name: z.string().optional().describe('New exercise name'),
+    topic: z.string().optional().describe('New item name (syllabus topic, exercise name, or habit)'),
+    name: z.string().optional().describe('Alias for topic — new exercise name'),
+    task: z.string().optional().describe('Alias for topic — new micro-habit task'),
+    status: z.enum(['pending', 'completed']).optional().describe('Mark as pending or completed'),
     sets: z.number().optional().describe('New sets count'),
     reps: z.number().optional().describe('New reps count'),
     weight: z.string().optional().describe('New weight'),
-    task: z.string().optional().describe('New micro-habit task'),
   },
-  async ({ subject_name, item_id, topic, description, duration, unit, status, name, sets, reps, weight, task }) => {
+  async ({ subject_name, item_id, topic, name, task, status, sets, reps, weight }) => {
     const existingItem = await db.query('subject_items', { id: item_id });
     if (!existingItem || existingItem.length === 0) throw new Error(`Item "${item_id}" not found.`);
 
