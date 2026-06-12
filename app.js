@@ -1906,7 +1906,7 @@ function initSettings() {
         [client.wrap]: {
           taketime: {
             command: 'npx',
-            args: ['-y', '@taketime/mcp-server@latest'],
+            args: ['-y', '@taketimemcp/mcp-server@latest'],
             env: { TAKETIME_REFRESH_TOKEN: refreshToken }
           }
         }
