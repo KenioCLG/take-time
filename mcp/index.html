@@ -271,14 +271,19 @@
           <span class="tool-desc" data-lang="pt">Listar blocos de estudo com filtros opcionais de data e status</span>
         </div>
         <div class="tool-item">
+          <span class="tool-name">get_schedule</span>
+          <span class="tool-desc" data-lang="en" class="active">Get the full weekly schedule with all blocks organized by day</span>
+          <span class="tool-desc" data-lang="pt">Obter a agenda semanal completa com todos os blocos por dia</span>
+        </div>
+        <div class="tool-item">
           <span class="tool-name">create_block</span>
           <span class="tool-desc" data-lang="en" class="active">Create a new study block with subject, time, and topic</span>
           <span class="tool-desc" data-lang="pt">Criar novo bloco de estudo com atividade, horário e tópico</span>
         </div>
         <div class="tool-item">
           <span class="tool-name">update_block</span>
-          <span class="tool-desc" data-lang="en" class="active">Update an existing block (time, subject, done status)</span>
-          <span class="tool-desc" data-lang="pt">Atualizar um bloco existente (horário, atividade, status)</span>
+          <span class="tool-desc" data-lang="en" class="active">Update a block — mark done, reschedule, set syllabus topic, toggle repeat</span>
+          <span class="tool-desc" data-lang="pt">Atualizar bloco — marcar feito, reagendar, definir tópico, repetir diário</span>
         </div>
         <div class="tool-item">
           <span class="tool-name">delete_block</span>
@@ -287,28 +292,83 @@
         </div>
         <div class="tool-item">
           <span class="tool-name">list_subjects</span>
-          <span class="tool-desc" data-lang="en" class="active">List all activities/subjects with their profiles and slots</span>
-          <span class="tool-desc" data-lang="pt">Listar todas as atividades/matérias com perfis e horários</span>
+          <span class="tool-desc" data-lang="en" class="active">List all activities with profiles, slots, items, and completion counts</span>
+          <span class="tool-desc" data-lang="pt">Listar atividades com perfis, horários, itens e contagens</span>
         </div>
         <div class="tool-item">
           <span class="tool-name">create_subject</span>
-          <span class="tool-desc" data-lang="en" class="active">Create a new activity (study, training, or routine type)</span>
-          <span class="tool-desc" data-lang="pt">Criar nova atividade (tipo estudo, treino ou rotina)</span>
+          <span class="tool-desc" data-lang="en" class="active">Create a new activity (study, training, or routine)</span>
+          <span class="tool-desc" data-lang="pt">Criar nova atividade (estudo, treino ou rotina)</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">update_subject</span>
+          <span class="tool-desc" data-lang="en" class="active">Rename, change color, or reorder time slots</span>
+          <span class="tool-desc" data-lang="pt">Renomear, mudar cor ou reordenar horários</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">add_subject_item</span>
+          <span class="tool-desc" data-lang="en" class="active">Add syllabus topic, exercise, or micro-habit to a subject</span>
+          <span class="tool-desc" data-lang="pt">Adicionar tópico, exercício ou micro-hábito a uma atividade</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">update_subject_item</span>
+          <span class="tool-desc" data-lang="en" class="active">Update item details — topic, duration, sets, reps, etc.</span>
+          <span class="tool-desc" data-lang="pt">Atualizar item — tópico, duração, séries, repetições, etc.</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">remove_subject_item</span>
+          <span class="tool-desc" data-lang="en" class="active">Remove a content item from a subject</span>
+          <span class="tool-desc" data-lang="pt">Remover um item de conteúdo de uma atividade</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">toggle_block_item</span>
+          <span class="tool-desc" data-lang="en" class="active">Mark/unmark a habit or exercise as done in a block</span>
+          <span class="tool-desc" data-lang="pt">Marcar/desmarcar hábito ou exercício como feito no bloco</span>
         </div>
         <div class="tool-item">
           <span class="tool-name">get_stats</span>
-          <span class="tool-desc" data-lang="en" class="active">Get completion stats, streaks, heatmap data, and weekly summary</span>
-          <span class="tool-desc" data-lang="pt">Obter estatísticas de conclusão, sequências, heatmap e resumo semanal</span>
+          <span class="tool-desc" data-lang="en" class="active">Get completion stats, streaks, heatmap data, and top subjects</span>
+          <span class="tool-desc" data-lang="pt">Obter estatísticas de conclusão, sequências, heatmap e top atividades</span>
         </div>
         <div class="tool-item">
-          <span class="tool-name">get_schedule</span>
-          <span class="tool-desc" data-lang="en" class="active">Get the full weekly schedule with all time slots</span>
-          <span class="tool-desc" data-lang="pt">Obter a agenda semanal completa com todos os horários</span>
+          <span class="tool-name">get_heatmap</span>
+          <span class="tool-desc" data-lang="en" class="active">90-day consistency heatmap with intensity levels (0-4)</span>
+          <span class="tool-desc" data-lang="pt">Heatmap de consistência de 90 dias com níveis de intensidade (0-4)</span>
         </div>
         <div class="tool-item">
-          <span class="tool-name">suggest_schedule</span>
-          <span class="tool-desc" data-lang="en" class="active">AI-powered schedule suggestions based on user patterns and goals</span>
-          <span class="tool-desc" data-lang="pt">Sugestões de horário baseadas em IA usando padrões e metas do usuário</span>
+          <span class="tool-name">get_priorities</span>
+          <span class="tool-desc" data-lang="en" class="active">View priority zones — main focus, important, flexible, unallocated</span>
+          <span class="tool-desc" data-lang="pt">Ver zonas de prioridade — foco principal, importante, flexível, sem zona</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">add_priority_item</span>
+          <span class="tool-desc" data-lang="en" class="active">Add an item to a priority zone with pillar and color</span>
+          <span class="tool-desc" data-lang="pt">Adicionar item a uma zona de prioridade com pilar e cor</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">remove_priority_item</span>
+          <span class="tool-desc" data-lang="en" class="active">Remove an item from the priority circle</span>
+          <span class="tool-desc" data-lang="pt">Remover item do círculo de prioridades</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">move_priority_item</span>
+          <span class="tool-desc" data-lang="en" class="active">Move an item between priority zones (zone1 max 3)</span>
+          <span class="tool-desc" data-lang="pt">Mover item entre zonas de prioridade (zone1 máx 3)</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">get_logs</span>
+          <span class="tool-desc" data-lang="en" class="active">View recent activity timeline</span>
+          <span class="tool-desc" data-lang="pt">Ver linha do tempo de atividades recentes</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">get_settings</span>
+          <span class="tool-desc" data-lang="en" class="active">View user settings (notifications, theme, reminders)</span>
+          <span class="tool-desc" data-lang="pt">Ver configurações (notificações, tema, lembretes)</span>
+        </div>
+        <div class="tool-item">
+          <span class="tool-name">update_setting</span>
+          <span class="tool-desc" data-lang="en" class="active">Update notification, theme, or reminder settings</span>
+          <span class="tool-desc" data-lang="pt">Atualizar notificações, tema ou configurações de lembrete</span>
         </div>
       </div>
     </div>

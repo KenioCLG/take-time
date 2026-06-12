@@ -1,15 +1,17 @@
 ---
 title: MCP Tools
-description: "Complete reference of all tools available through the Take Time MCP Server."
+description: "Complete reference of all 21 tools available through the Take Time MCP Server."
 ---
 
 ## Available Tools
 
-The Take Time MCP Server exposes **8 tools** to your AI assistant — 4 for reading and 4 for writing.
+The Take Time MCP Server exposes **21 tools** to your AI assistant, organized in 7 categories.
 
-### Read Operations
+---
 
-<ResponseField name="list_blocks" type="tool">
+### Schedule (Blocks)
+
+<ResponseField name="list_blocks" type="read">
   List study blocks with optional date range and status filters. Returns today's blocks by default.
 
   **Parameters:**
@@ -22,25 +24,7 @@ The Take Time MCP Server exposes **8 tools** to your AI assistant — 4 for read
   | `done` | boolean | No | Filter by completion status |
 </ResponseField>
 
-<ResponseField name="list_subjects" type="tool">
-  List all activities/subjects with their profiles, slots, and content.
-
-  **Parameters:**
-  | Name | Type | Required | Description |
-  |------|------|----------|-------------|
-  | `type` | string | No | `study`, `training`, or `inactive` |
-</ResponseField>
-
-<ResponseField name="get_stats" type="tool">
-  Get completion statistics, streaks, heatmap data, and top subjects.
-
-  **Parameters:**
-  | Name | Type | Required | Description |
-  |------|------|----------|-------------|
-  | `period` | string | No | `today`, `week`, `month`, or `all` (default: `week`) |
-</ResponseField>
-
-<ResponseField name="get_schedule" type="tool">
+<ResponseField name="get_schedule" type="read">
   Get the full weekly schedule with all blocks organized by day.
 
   **Parameters:**
@@ -49,11 +33,7 @@ The Take Time MCP Server exposes **8 tools** to your AI assistant — 4 for read
   | `week_offset` | number | No | `0` = current week, `-1` = last week, `1` = next week |
 </ResponseField>
 
----
-
-### Write Operations
-
-<ResponseField name="create_block" type="tool">
+<ResponseField name="create_block" type="write">
   Create a new study block on the schedule. Automatically checks for time conflicts.
 
   **Parameters:**
@@ -63,11 +43,11 @@ The Take Time MCP Server exposes **8 tools** to your AI assistant — 4 for read
   | `date` | string | Yes | Date (`YYYY-MM-DD`) |
   | `start` | string | Yes | Start time (`HH:MM`) |
   | `end` | string | Yes | End time (`HH:MM`) |
-  | `topic` | string | No | Topic or syllabus item |
+  | `topic` | string | No | Optional topic name |
 </ResponseField>
 
-<ResponseField name="update_block" type="tool">
-  Update an existing block. Use to mark as done, reschedule, or change topic.
+<ResponseField name="update_block" type="write">
+  Update an existing block. Use to mark as done, reschedule, change topic, set syllabus topic, or toggle repeat daily.
 
   **Parameters:**
   | Name | Type | Required | Description |
@@ -75,11 +55,13 @@ The Take Time MCP Server exposes **8 tools** to your AI assistant — 4 for read
   | `block_id` | string | Yes | Block ID to update |
   | `start` | string | No | New start time (`HH:MM`) |
   | `end` | string | No | New end time (`HH:MM`) |
-  | `topic` | string | No | New topic |
+  | `topic` | string | No | New topic text |
   | `done` | boolean | No | Mark as done or undone |
+  | `selected_syllabus_id` | string | No | Set the active syllabus topic ID |
+  | `repeat_daily` | boolean | No | Toggle daily auto-repeat |
 </ResponseField>
 
-<ResponseField name="delete_block" type="tool">
+<ResponseField name="delete_block" type="write">
   Permanently delete a study block.
 
   **Parameters:**
@@ -88,7 +70,21 @@ The Take Time MCP Server exposes **8 tools** to your AI assistant — 4 for read
   | `block_id` | string | Yes | Block ID to delete |
 </ResponseField>
 
-<ResponseField name="create_subject" type="tool">
+---
+
+### Activities (Subjects)
+
+<ResponseField name="list_subjects" type="read">
+  List all activities with their profiles, slots, content items, and completion counts.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `type` | string | No | `study`, `training`, or `inactive` |
+  | `include_items` | boolean | No | Include full item details (default: true). Set false for compact view. |
+</ResponseField>
+
+<ResponseField name="create_subject" type="write">
   Create a new activity profile (study, training, or routine).
 
   **Parameters:**
@@ -97,4 +93,177 @@ The Take Time MCP Server exposes **8 tools** to your AI assistant — 4 for read
   | `name` | string | Yes | Activity name (max 40 characters) |
   | `type` | string | Yes | `study`, `training`, or `inactive` |
   | `color` | string | No | Hex color (e.g. `#6366f1`). Auto-assigned if omitted. |
+  | `slots` | array | No | Preferred time slots (`[{start, end}]`) |
+</ResponseField>
+
+<ResponseField name="update_subject" type="write">
+  Update subject properties — rename, change color, reorder slots.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `subject_name` | string | Yes | Current name of the activity |
+  | `new_name` | string | No | New name (max 40 chars) |
+  | `color` | string | No | New hex color |
+  | `slots` | array | No | Replacement time slots array |
+</ResponseField>
+
+---
+
+### Subject Content Items
+
+<ResponseField name="add_subject_item" type="write">
+  Add a content item to a subject — syllabus topic (study), exercise (training), or micro-habit (routine).
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `subject_name` | string | Yes | Name of the activity/subject |
+  | `topic` | string | Study | Syllabus topic name |
+  | `description` | string | No | Syllabus topic description |
+  | `duration` | number | No | Estimated time in minutes |
+  | `unit` | string | No | `min` or `rep` |
+  | `name` | string | Training | Exercise name |
+  | `sets` | number | No | Number of sets (default: 3) |
+  | `reps` | number | No | Repetitions per set (default: 10) |
+  | `weight` | string | No | Weight used |
+  | `task` | string | Routine | Micro-habit task description |
+</ResponseField>
+
+<ResponseField name="update_subject_item" type="write">
+  Update a content item — change topic, duration, exercise parameters, or habit task.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `subject_name` | string | Yes | Name of the activity/subject |
+  | `item_id` | string | Yes | ID of the item to update |
+  | `topic` | string | No | New syllabus topic name |
+  | `description` | string | No | New description |
+  | `duration` | number | No | New estimated time in minutes |
+  | `unit` | string | No | `min` or `rep` |
+  | `status` | string | No | `pending` or `completed` (syllabus only) |
+  | `name` | string | No | New exercise name |
+  | `sets` | number | No | New sets count |
+  | `reps` | number | No | New reps count |
+  | `weight` | string | No | New weight |
+  | `task` | string | No | New micro-habit task |
+</ResponseField>
+
+<ResponseField name="remove_subject_item" type="write">
+  Permanently remove a content item (syllabus topic, exercise, or micro-habit) from a subject.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `subject_name` | string | Yes | Name of the activity/subject |
+  | `item_id` | string | Yes | ID of the item to remove |
+</ResponseField>
+
+---
+
+### Atomic Habits
+
+<ResponseField name="toggle_block_item" type="write">
+  Mark or unmark a content item (exercise or micro-habit) as completed within a block. Auto-completes the block when all items are done.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `block_id` | string | Yes | Block ID |
+  | `item_id` | string | Yes | Item ID from the subject's content |
+</ResponseField>
+
+---
+
+### Statistics & Reports
+
+<ResponseField name="get_stats" type="read">
+  Get completion statistics, streaks, heatmap data, and top subjects.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `period` | string | No | `today`, `week`, `month`, or `all` (default: `week`) |
+</ResponseField>
+
+<ResponseField name="get_heatmap" type="read">
+  Get the consistency heatmap — daily task completion counts with intensity levels (0-4).
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `days` | number | No | Number of days to include (default: 90, max: 365) |
+</ResponseField>
+
+---
+
+### Priority Circle
+
+<ResponseField name="get_priorities" type="read">
+  Get the Priority Circle — activities organized by zone (Main Focus, Important, Flexible, Unallocated).
+
+  **Parameters:** None
+</ResponseField>
+
+<ResponseField name="add_priority_item" type="write">
+  Add an item to the priority circle in a specific zone.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `name` | string | Yes | Item name |
+  | `pillar` | string | Yes | `pessoal`, `profissional`, `relacionamentos`, or `qualidade` |
+  | `color` | string | No | Hex color. Auto-assigned by pillar if omitted. |
+  | `zone` | string | No | `zone1`, `zone2`, `zone3`, or `unallocated` (default) |
+</ResponseField>
+
+<ResponseField name="remove_priority_item" type="write">
+  Remove an item from the priority circle entirely.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `item_id` | string | Yes | Item ID to remove |
+</ResponseField>
+
+<ResponseField name="move_priority_item" type="write">
+  Move a priority item between zones. Zone1 has a max of 3 items.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `item_id` | string | Yes | Item ID to move |
+  | `target_zone` | string | Yes | `zone1`, `zone2`, `zone3`, or `unallocated` |
+</ResponseField>
+
+---
+
+### Logs & Settings
+
+<ResponseField name="get_logs" type="read">
+  View the recent activity timeline — shows the latest actions performed in the app.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `limit` | number | No | Number of entries (default: 20, max: 50) |
+</ResponseField>
+
+<ResponseField name="get_settings" type="read">
+  Get current user settings — notifications, theme, reminder minutes, marquee visibility.
+
+  **Parameters:** None
+</ResponseField>
+
+<ResponseField name="update_setting" type="write">
+  Update a user setting. Only the provided fields are changed.
+
+  **Parameters:**
+  | Name | Type | Required | Description |
+  |------|------|----------|-------------|
+  | `notifications` | boolean | No | Enable/disable push notifications |
+  | `reminder_min` | number | No | Minutes before block to send reminder |
+  | `theme` | string | No | `light`, `dark`, or `auto` |
+  | `show_marquee` | boolean | No | Show/hide motivational marquee phrases |
 </ResponseField>
