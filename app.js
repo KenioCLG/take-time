@@ -1419,7 +1419,7 @@ function renderPriorities() {
     listEl.innerHTML = p[zoneId].map(item => `
       <div class="priority-item" data-id="${item.id}" data-pillar="${item.pillar}">
         <div class="priority-item-dot" style="background:${item.color}"></div>
-        ${DS.escapeHtml(__('priorities.' + item.id, null, item.name))}
+        <span data-i18n="priorities.${item.id}">${DS.escapeHtml(__('priorities.' + item.id, null, item.name))}</span>
       </div>
     `).join('');
   });
@@ -2552,7 +2552,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await I18n.init();
-  I18n.onChange(() => { render(); renderSubjects(); renderPriorities(); });
+  I18n.onChange(() => {
+    try { render(); } catch(e) { console.error('[i18n] render error:', e); }
+    try { renderSubjects(); } catch(e) { console.error('[i18n] renderSubjects error:', e); }
+    try { renderPriorities(); } catch(e) { console.error('[i18n] renderPriorities error:', e); }
+  });
 
   initTabs();
   initColorPickers();
