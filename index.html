@@ -634,6 +634,9 @@
             <option value="windsurf">Windsurf</option>
             <option value="opencode">OpenCode</option>
           </select>
+          <label class="ds-label" style="margin-top:4px;" data-i18n="mcp.your_password">Sua senha</label>
+          <input type="password" id="mcpPasswordInput" class="ds-input" placeholder="••••••••" style="margin-bottom:10px;">
+          <p style="font-size:11px; color:var(--ds-text-tertiary); margin:-6px 0 10px; line-height:1.3;" data-i18n="mcp.password_hint">Necessária para gerar o config completo. Não é armazenada.</p>
           <button class="ds-btn ds-btn-tinted ds-btn-block" id="btnMcpGenerate" data-i18n="mcp.generate">Gerar Integração</button>
         </div>
 
@@ -663,7 +666,7 @@
   <script src="i18n.js?v=2"></script>
   <script src="auth.js?v=3"></script>
   <script src="notifications.js?v=3"></script>
-  <script src="app.js?v=36"></script>
+  <script src="app.js?v=37"></script>
   <script type="module">
     // Init 3D logo on auth screen
     import SVG3D from './svg3d.js';

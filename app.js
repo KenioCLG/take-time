@@ -1917,7 +1917,7 @@ function initSettings() {
       'opencode':       { name: 'OpenCode',        icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 9l-3 3 3 3'/%3E%3Cpath d='M16 9l3 3-3 3'/%3E%3Cpath d='M13.5 6l-3 12'/%3E%3C/svg%3E", wrap: 'mcpServers', path: '~/.opencode/config.json' },
     };
 
-    function buildConfig(clientId) {
+    function buildConfig(clientId, password) {
       const client = MCP_CLIENTS[clientId];
       if (!client) return '';
       const email = Supabase._user?.email || '';
@@ -1928,7 +1928,7 @@ function initSettings() {
             args: ['-y', '@taketimemcp/mcp-server@latest'],
             env: {
               TAKETIME_EMAIL: email,
-              TAKETIME_PASSWORD: 'YOUR_PASSWORD'
+              TAKETIME_PASSWORD: password
             }
           }
         }
@@ -1950,38 +1950,62 @@ function initSettings() {
         return;
       }
 
-      list.innerHTML = '<p class="ds-label" style="margin-bottom:8px;" data-i18n="mcp.active_integrations">Integrações Ativas</p>';
+      list.innerHTML = '<p class="ds-label" style="margin-bottom:8px;" data-i18n="mcp.active_integrations">Integrações</p>';
       integrations.forEach((intg, idx) => {
         const client = MCP_CLIENTS[intg.client];
         if (!client) return;
-        const isActive = AuthService.isAuthenticated();
+        const isVerified = intg.verified === true;
+        const statusColor = isVerified ? '#34c759' : '#ff9500';
+        const statusText = isVerified ? __('mcp.status_connected', null, 'Connected') : __('mcp.status_pending', null, 'Pending');
         const card = document.createElement('div');
         card.style.cssText = 'background:var(--ds-bg-card); border-radius:var(--ds-radius-md); padding:10px 12px; box-shadow:var(--ds-shadow-sm); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;';
         card.innerHTML = `
           <div style="display:flex; align-items:center; gap:8px;">
             <div style="position:relative;">
               <img src="${client.icon}" style="height:16px; width:auto;" alt="${client.name}">
-              <span style="position:absolute; bottom:-2px; right:-2px; width:7px; height:7px; border-radius:50%; background:${isActive ? '#34c759' : '#8e8e93'}; border:1.5px solid var(--ds-bg-card);"></span>
+              <span style="position:absolute; bottom:-2px; right:-2px; width:7px; height:7px; border-radius:50%; background:${statusColor}; border:1.5px solid var(--ds-bg-card);"></span>
             </div>
             <div>
               <span style="font-size:13px; font-weight:600; color:var(--ds-text-primary);">${client.name}</span>
-              <p style="font-size:11px; color:${isActive ? '#34c759' : 'var(--ds-text-tertiary)'}; margin:0;">${isActive ? 'Connected' : 'Offline'}</p>
+              <p style="font-size:11px; color:${statusColor}; margin:0;">${statusText}</p>
             </div>
           </div>
           <div style="display:flex; gap:6px;">
-            <button class="ds-btn ds-btn-plain mcp-recopy-btn" data-client="${intg.client}" style="font-size:11px; padding:4px 8px;">${I18n.t('mcp.copy')}</button>
+            ${!isVerified ? `<button class="ds-btn ds-btn-plain mcp-verify-btn" data-idx="${idx}" style="font-size:11px; padding:4px 8px; color:var(--ds-accent);">${__('mcp.verify', null, 'Verificar')}</button>` : ''}
             <button class="ds-btn ds-btn-plain mcp-remove-btn" data-idx="${idx}" style="font-size:11px; padding:4px 8px; color:var(--ds-danger);">✕</button>
           </div>`;
         list.appendChild(card);
       });
 
-      list.querySelectorAll('.mcp-recopy-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const json = buildConfig(this.dataset.client);
-          navigator.clipboard.writeText(json).then(() => {
-            this.textContent = I18n.t('mcp.copied');
-            setTimeout(() => { this.textContent = I18n.t('mcp.copy'); }, 2000);
-          });
+      list.querySelectorAll('.mcp-verify-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const idx = parseInt(this.dataset.idx);
+          const intg = state.mcpIntegrations[idx];
+          if (!intg) return;
+          this.textContent = '...';
+          this.disabled = true;
+          try {
+            const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+              method: 'POST',
+              headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: Supabase._user?.email, password: intg._p || '' })
+            });
+            if (res.ok) {
+              intg.verified = true;
+              delete intg._p;
+              Store.save(state);
+              DS.toast(__('mcp.verified_ok', null, 'Integração verificada!'), 'success');
+              renderIntegrations();
+            } else {
+              DS.toast(__('mcp.verified_fail', null, 'Falha na verificação. Verifique se o config foi aplicado.'), 'error');
+              this.textContent = __('mcp.verify', null, 'Verificar');
+              this.disabled = false;
+            }
+          } catch {
+            DS.toast(__('mcp.verified_fail', null, 'Falha na verificação.'), 'error');
+            this.textContent = __('mcp.verify', null, 'Verificar');
+            this.disabled = false;
+          }
         });
       });
 
@@ -1999,28 +2023,72 @@ function initSettings() {
     }
 
     // Generate button
-    $('#btnMcpGenerate').addEventListener('click', () => {
+    $('#btnMcpGenerate').addEventListener('click', async () => {
       const clientId = $('#mcpClientSelect').value;
       const client = MCP_CLIENTS[clientId];
+      const password = $('#mcpPasswordInput').value.trim();
+
       if (!AuthService.isAuthenticated()) {
         DS.toast(I18n.t('mcp.no_session'), 'warning');
         return;
       }
 
-      const json = buildConfig(clientId);
+      if (!password) {
+        DS.toast(__('mcp.password_required', null, 'Digite sua senha para gerar o config.'), 'warning');
+        $('#mcpPasswordInput').focus();
+        return;
+      }
+
+      // Validate password before generating
+      const btn = $('#btnMcpGenerate');
+      btn.disabled = true;
+      btn.textContent = __('mcp.validating', null, 'Validando...');
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: Supabase._user?.email, password })
+        });
+        if (!res.ok) {
+          DS.toast(__('mcp.wrong_password', null, 'Senha incorreta.'), 'error');
+          btn.disabled = false;
+          btn.textContent = I18n.t('mcp.generate');
+          return;
+        }
+      } catch {
+        DS.toast(__('mcp.verify_error', null, 'Erro ao validar.'), 'error');
+        btn.disabled = false;
+        btn.textContent = I18n.t('mcp.generate');
+        return;
+      }
+
+      // Password is valid — generate complete config
+      const json = buildConfig(clientId, password);
       $('#mcpGenLabel').innerHTML = `<img src="${client.icon}" style="height:16px; width:auto; vertical-align:middle; margin-right:6px;" alt="${client.name}"> ${client.name}`;
       $('#mcpGenPath').textContent = client.path;
       $('#mcpGenJson').textContent = json;
       $('#mcpGeneratedConfig').classList.remove('hidden');
+      $('#mcpPasswordInput').value = '';
 
-      // Save integration if not already exists
+      // Save integration
       if (!state.mcpIntegrations) state.mcpIntegrations = [];
-      const exists = state.mcpIntegrations.some(i => i.client === clientId);
-      if (!exists) {
-        state.mcpIntegrations.push({ client: clientId, createdAt: new Date().toISOString() });
-        Store.save(state);
-        renderIntegrations();
+      const existIdx = state.mcpIntegrations.findIndex(i => i.client === clientId);
+      const intgData = { client: clientId, createdAt: new Date().toISOString(), verified: false, _p: password };
+      if (existIdx >= 0) {
+        state.mcpIntegrations[existIdx] = intgData;
+      } else {
+        state.mcpIntegrations.push(intgData);
       }
+      Store.save(state);
+      renderIntegrations();
+
+      btn.disabled = false;
+      btn.textContent = I18n.t('mcp.generate');
+
+      // Auto-copy to clipboard
+      navigator.clipboard.writeText(json).then(() => {
+        DS.toast(__('mcp.copied_ready', null, 'Config copiada! Cole no arquivo e reinicie a IA.'), 'success');
+      });
     });
 
     // Copy config button
