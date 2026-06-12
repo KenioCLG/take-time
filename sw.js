@@ -40,7 +40,7 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.open(CACHE).then(cache =>
       fetch(e.request).then(response => {
-        if (response.ok) {
+        if (response.ok && e.request.url.startsWith('http')) {
           cache.put(e.request, response.clone());
         }
         return response;
