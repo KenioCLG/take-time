@@ -3,7 +3,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { SupabaseClient } from './supabase.js';
+import { SupabaseClient, loadPersistedRefreshToken } from './supabase.js';
 import {
   uid, getBlocksForDate, getBlocksInRange, getSubjectById, getSubjectByName,
   getCurrentWeekDates, computeStats, formatBlock, formatSubject,
@@ -872,8 +872,20 @@ server.tool(
 async function main() {
   try {
     if (refreshToken) {
-      const user = await db.loginWithRefreshToken(refreshToken);
-      console.error(`[Take Time MCP] Authenticated as ${user.email} (session auto-refreshes)`);
+      try {
+        const user = await db.loginWithRefreshToken(refreshToken);
+        console.error(`[Take Time MCP] Authenticated as ${user.email} (session auto-refreshes)`);
+      } catch (e) {
+        // Token from env may be already used — try persisted token
+        const persisted = loadPersistedRefreshToken();
+        if (persisted && persisted !== refreshToken) {
+          console.error('[Take Time MCP] Env token expired, trying persisted token...');
+          const user = await db.loginWithRefreshToken(persisted);
+          console.error(`[Take Time MCP] Authenticated as ${user.email} (using persisted token)`);
+        } else {
+          throw e;
+        }
+      }
     } else if (email && password) {
       const user = await db.loginWithCredentials(email, password);
       console.error(`[Take Time MCP] Authenticated as ${user.email} (session auto-refreshes)`);

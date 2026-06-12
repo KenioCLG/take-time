@@ -1,7 +1,29 @@
 // Minimal Supabase client for MCP Server — reads/writes user_data JSON blob
 
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
+import { homedir } from 'os';
+
 const SUPABASE_URL = 'https://gwujukwvufmfecqgzvrs.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Ewz6w7rlPFbfJy9DQMiuRA_58FSrWJZ';
+const TOKEN_FILE = join(homedir(), '.taketime', 'refresh-token');
+
+function persistRefreshToken(token) {
+  try {
+    mkdirSync(join(homedir(), '.taketime'), { recursive: true });
+    writeFileSync(TOKEN_FILE, token, 'utf8');
+  } catch (e) {
+    console.error('[MCP] Could not persist refresh token:', e.message);
+  }
+}
+
+export function loadPersistedRefreshToken() {
+  try {
+    return readFileSync(TOKEN_FILE, 'utf8').trim();
+  } catch {
+    return null;
+  }
+}
 
 export class SupabaseClient {
   constructor(accessToken) {
@@ -67,6 +89,7 @@ export class SupabaseClient {
     });
     this.accessToken = data.access_token;
     this.refreshToken = data.refresh_token;
+    persistRefreshToken(data.refresh_token);
     this.userId = data.user?.id;
     if (data.expires_in) {
       this._scheduleRefresh(data.expires_in);
@@ -87,6 +110,7 @@ export class SupabaseClient {
       });
       this.accessToken = data.access_token;
       this.refreshToken = data.refresh_token;
+      persistRefreshToken(data.refresh_token);
       if (data.expires_in) {
         this._scheduleRefresh(data.expires_in);
       }
