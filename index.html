@@ -413,6 +413,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ds-text-tertiary)" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </a>
         </div>
+        <button class="ds-btn ds-btn-tinted ds-btn-block" id="btnGenMcpConfig" style="margin-top:12px;" data-i18n="mcp.generate_config">Gerar Configuração MCP</button>
       </div>
 
       <!-- ═══ GRUPO: Conta & Dados ═══ -->
@@ -606,6 +607,35 @@
         <div style="width: 60px;"></div>
       </div>
       <div class="ds-sheet-body" id="modalInfoBody" style="font-size: 14px; line-height: 1.5; color: var(--ds-text-secondary); padding-bottom: 24px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: MCP Config Generator -->
+  <div class="ds-overlay hidden" id="modalMcpConfig">
+    <div class="ds-sheet">
+      <div class="ds-sheet-handle-area"><div class="ds-sheet-handle"></div></div>
+      <div class="ds-sheet-header">
+        <button class="ds-btn ds-btn-plain" onclick="DS.sheet.close(document.getElementById('modalMcpConfig'))" data-i18n="common.close">Fechar</button>
+        <h3 class="ds-headline" data-i18n="mcp.config_title">Configuração MCP</h3>
+        <div style="width: 60px;"></div>
+      </div>
+      <div class="ds-sheet-body" style="padding-bottom: 24px;">
+        <p style="font-size:13px; color:var(--ds-text-secondary); margin-bottom:12px; line-height:1.4;" data-i18n="mcp.config_description">Copie o JSON abaixo e cole no arquivo de configuração do seu cliente AI.</p>
+        <label class="ds-label" data-i18n="mcp.config_client">Cliente</label>
+        <select id="mcpClientSelect" class="ds-select" style="margin-bottom:12px;">
+          <option value="claude-code">Claude Code</option>
+          <option value="claude-desktop">Claude Desktop</option>
+          <option value="cursor">Cursor</option>
+          <option value="vscode">VS Code (Copilot)</option>
+          <option value="windsurf">Windsurf</option>
+        </select>
+        <p id="mcpConfigPath" style="font-size:11px; color:var(--ds-text-tertiary); margin-bottom:8px; font-family:monospace;"></p>
+        <div style="position:relative;">
+          <pre id="mcpConfigJson" style="background:var(--ds-bg-secondary); padding:14px; border-radius:var(--ds-radius-md); font-size:12px; line-height:1.5; overflow-x:auto; white-space:pre; font-family:'SF Mono',Menlo,monospace; color:var(--ds-text-primary); border:1px solid var(--ds-separator);"></pre>
+          <button class="ds-btn ds-btn-plain" id="btnCopyMcpConfig" style="position:absolute; top:8px; right:8px; font-size:11px; padding:4px 8px;" data-i18n="mcp.copy">Copiar</button>
+        </div>
+        <p style="font-size:11px; color:var(--ds-text-tertiary); margin-top:8px; line-height:1.4;" data-i18n="mcp.config_note">Substitua /path/to/take-time pelo caminho real do repositório clonado e your-password pela sua senha.</p>
       </div>
     </div>
   </div>

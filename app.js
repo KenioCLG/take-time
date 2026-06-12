@@ -1883,6 +1883,59 @@ function initSettings() {
     });
   }
 
+  // MCP Config Generator
+  const $btnGenMcp = $('#btnGenMcpConfig');
+  if ($btnGenMcp) {
+    const mcpClients = {
+      'claude-code': { path: '~/.claude/settings.json', wrap: 'mcpServers' },
+      'claude-desktop': { path: '~/Library/Application Support/Claude/claude_desktop_config.json', wrap: 'mcpServers' },
+      'cursor': { path: '.cursor/mcp.json', wrap: 'mcpServers' },
+      'vscode': { path: '.vscode/mcp.json', wrap: 'servers' },
+      'windsurf': { path: '~/.codeium/windsurf/mcp_config.json', wrap: 'mcpServers' },
+    };
+
+    function buildMcpJson(clientId) {
+      const client = mcpClients[clientId];
+      const email = Supabase._user?.email || 'your@email.com';
+      const inner = {
+        taketime: {
+          command: 'node',
+          args: ['/path/to/take-time/mcp-server/src/index.js'],
+          env: {
+            TAKETIME_EMAIL: email,
+            TAKETIME_PASSWORD: 'your-password'
+          }
+        }
+      };
+      return { json: JSON.stringify({ [client.wrap]: inner }, null, 2), path: client.path };
+    }
+
+    function updateMcpConfig() {
+      const sel = $('#mcpClientSelect');
+      const { json, path } = buildMcpJson(sel.value);
+      $('#mcpConfigJson').textContent = json;
+      $('#mcpConfigPath').textContent = path;
+    }
+
+    $btnGenMcp.addEventListener('click', () => {
+      updateMcpConfig();
+      DS.sheet.open(document.getElementById('modalMcpConfig'));
+    });
+
+    const $mcpSel = $('#mcpClientSelect');
+    if ($mcpSel) $mcpSel.addEventListener('change', updateMcpConfig);
+
+    const $btnCopy = $('#btnCopyMcpConfig');
+    if ($btnCopy) {
+      $btnCopy.addEventListener('click', () => {
+        const text = $('#mcpConfigJson').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          DS.toast(I18n.t('mcp.copied'));
+        });
+      });
+    }
+  }
+
   // Marquee custom texts
   const $marqueeTA = $('#marqueeTextarea');
   const $btnSaveMarquee = $('#btnSaveMarquee');

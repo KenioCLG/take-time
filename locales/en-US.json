@@ -274,6 +274,13 @@
   "mcp.install_link": "Installation",
   "mcp.tools_link": "8 Available Tools",
   "mcp.examples_link": "Usage Examples",
+  "mcp.generate_config": "Generate MCP Config",
+  "mcp.config_title": "MCP Configuration",
+  "mcp.config_description": "Copy the JSON below and paste it into your AI client's config file.",
+  "mcp.config_client": "Client",
+  "mcp.copy": "Copy",
+  "mcp.copied": "Config copied!",
+  "mcp.config_note": "Replace /path/to/take-time with the actual path where you cloned the repo and your-password with your password.",
 
   "type.study_short": "Study",
   "type.training_short": "Training",
