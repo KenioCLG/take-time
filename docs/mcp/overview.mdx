@@ -41,20 +41,22 @@ The Take Time MCP Server gives your AI assistant direct access to your study dat
 | **Cursor** | Supported | `.cursor/mcp.json` |
 | **Windsurf** | Supported | `~/.codeium/windsurf/mcp_config.json` |
 | **VS Code (Copilot)** | Supported | `.vscode/mcp.json` |
+| **Antigravity (Google)** | Supported | `~/.gemini/antigravity/mcp.json` |
+| **OpenCode** | Supported | `~/.opencode/config.json` |
 
 ## Architecture
 
 ```
 ┌─────────────────┐     stdio      ┌──────────────────┐     HTTPS     ┌─────────────────┐
-│   AI Assistant   │ ◄──────────► │  MCP Server      │ ◄───────────► │  Take Time API  │
-│  (Claude, etc.)  │               │  (@taketimemcp)  │               │  (Supabase)     │
-└─────────────────┘               └──────────────────┘               └─────────────────┘
+│   AI Assistant  │ ◄──────────► │  MCP Server      │ ◄───────────► │  Take Time API  │
+│  (Claude, etc.) │              │  (@taketimemcp)  │    (REST)     │  (Supabase)     │
+└─────────────────┘              └──────────────────┘               └─────────────────┘
 ```
 
-The MCP Server runs as a **local process** on your machine. It communicates with the AI client via `stdio` and authenticates to the Take Time API using your API key.
+The MCP Server runs as a **local process** on your machine. It communicates with the AI client via `stdio` and connects directly to your secure Take Time database using Supabase's PostgREST API.
 
 <Info>
-  Your data never passes through third-party servers. The MCP Server talks directly to the Take Time API.
+  **Atomic & Secure:** All operations (CRUD) are executed atomically directly in the PostgreSQL relational tables using Row Level Security (RLS). Your data is isolated, and the MCP Server acts seamlessly as a bridge between the AI and your exact database rows.
 </Info>
 
 ## Next Steps

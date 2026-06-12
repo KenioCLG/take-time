@@ -330,5 +330,20 @@
   "timezone.america_buenos_aires": "Buenos Aires",
   "timezone.america_new_york": "Nova York (EST)",
   "timezone.europe_lisbon": "Lisboa (WET)",
-  "timezone.europe_london": "Londres (GMT)"
+  "timezone.europe_london": "Londres (GMT)",
+
+  "seed.workout_name": "Full Body Metabólico",
+  "seed.ex1": "Agachamento + Elevação de Gêmeos",
+  "seed.ex2": "Abdominal Infra (Reverse Crunch)",
+  "seed.ex3": "Stiff (Romanian Deadlift)",
+  "seed.ex4": "Remada Curvada Alternada",
+  "seed.ex5": "Passada Reversa + Elevação de Joelho",
+  "seed.ex6": "Desenvolvimento Arnold",
+  "seed.ex7": "Elevação Pélvica Unilateral",
+  "seed.ex8": "Remada em 4 Apoios (Bird Dog Row)",
+  "seed.ex9": "Thruster (Agachamento + Desenv.)",
+  "seed.ex10": "Dead Bug Weighted",
+  "seed.weight_dumbbells": "Halteres",
+  "seed.weight_ankles": "Caneleiras",
+  "seed.weight_light": "Halteres leves"
 }

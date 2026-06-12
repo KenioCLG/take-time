@@ -288,25 +288,25 @@
           <div class="ds-list-item">
             <span data-i18n="settings.language">Idioma</span>
             <select id="langSelect" class="ds-select">
-              <option value="pt-BR">Português (BR)</option>
-              <option value="en-US">English (US)</option>
+              <option value="pt-BR" data-i18n="language.pt_br">Português (BR)</option>
+              <option value="en-US" data-i18n="language.en_us">English (US)</option>
             </select>
           </div>
           <div class="ds-list-item">
             <span data-i18n="settings.timezone">Fuso horário</span>
             <select id="timezoneSelect" class="ds-select">
-              <option value="America/Sao_Paulo">Brasília (SP/RJ/MG)</option>
-              <option value="America/Recife">Recife (PE/PB/AL)</option>
-              <option value="America/Fortaleza">Fortaleza (CE/PI/MA)</option>
-              <option value="America/Belem">Belém (PA/AP)</option>
-              <option value="America/Manaus">Manaus (AM/RR)</option>
-              <option value="America/Cuiaba">Cuiabá (MT/MS)</option>
-              <option value="America/Rio_Branco">Rio Branco (AC)</option>
-              <option value="America/Noronha">Fernando de Noronha</option>
-              <option value="America/Buenos_Aires">Buenos Aires</option>
-              <option value="America/New_York">Nova York (EST)</option>
-              <option value="Europe/Lisbon">Lisboa (WET)</option>
-              <option value="Europe/London">Londres (GMT)</option>
+              <option value="America/Sao_Paulo" data-i18n="timezone.america_sao_paulo">Brasília (SP/RJ/MG)</option>
+              <option value="America/Recife" data-i18n="timezone.america_recife">Recife (PE/PB/AL)</option>
+              <option value="America/Fortaleza" data-i18n="timezone.america_fortaleza">Fortaleza (CE/PI/MA)</option>
+              <option value="America/Belem" data-i18n="timezone.america_belem">Belém (PA/AP)</option>
+              <option value="America/Manaus" data-i18n="timezone.america_manaus">Manaus (AM/RR)</option>
+              <option value="America/Cuiaba" data-i18n="timezone.america_cuiaba">Cuiabá (MT/MS)</option>
+              <option value="America/Rio_Branco" data-i18n="timezone.america_rio_branco">Rio Branco (AC)</option>
+              <option value="America/Noronha" data-i18n="timezone.america_noronha">Fernando de Noronha</option>
+              <option value="America/Buenos_Aires" data-i18n="timezone.america_buenos_aires">Buenos Aires</option>
+              <option value="America/New_York" data-i18n="timezone.america_new_york">Nova York (EST)</option>
+              <option value="Europe/Lisbon" data-i18n="timezone.europe_lisbon">Lisboa (WET)</option>
+              <option value="Europe/London" data-i18n="timezone.europe_london">Londres (GMT)</option>
             </select>
           </div>
           <div class="ds-list-item">
@@ -633,6 +633,7 @@
             <option value="vscode">VS Code (Copilot)</option>
             <option value="windsurf">Windsurf</option>
             <option value="opencode">OpenCode</option>
+            <option value="antigravity">Antigravity</option>
           </select>
           <label class="ds-label" style="margin-top:4px;" data-i18n="mcp.your_password">Sua senha</label>
           <input type="password" id="mcpPasswordInput" class="ds-input" placeholder="••••••••" style="margin-bottom:10px;">
@@ -666,7 +667,7 @@
   <script src="i18n.js?v=2"></script>
   <script src="auth.js?v=3"></script>
   <script src="notifications.js?v=3"></script>
-  <script src="app.js?v=37"></script>
+  <script src="app.js?v=38"></script>
   <script type="module">
     // Init 3D logo on auth screen
     import SVG3D from './svg3d.js';

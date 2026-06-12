@@ -157,4 +157,49 @@ export class SupabaseClient {
       body: JSON.stringify({ id: this.userId, state }),
     });
   }
+
+  // --- NEW RELATIONAL METHODS ---
+
+  async query(table, filters = {}) {
+    if (!this.userId) await this.authenticate();
+    const userField = table === 'profiles' ? 'id' : 'user_id';
+    let queryParams = [`${userField}=eq.${this.userId}`];
+    for (const [k, v] of Object.entries(filters)) {
+      if (v !== undefined && v !== null) {
+        queryParams.push(`${k}=eq.${encodeURIComponent(v)}`);
+      }
+    }
+    return this._fetch(`/rest/v1/${table}?${queryParams.join('&')}`, { headers: { 'Accept': 'application/json' } });
+  }
+
+  async insert(table, data) {
+    if (!this.userId) await this.authenticate();
+    const userField = table === 'profiles' ? 'id' : 'user_id';
+    const body = Array.isArray(data) 
+      ? data.map(d => ({...d, [userField]: this.userId})) 
+      : { ...data, [userField]: this.userId };
+    return this._fetch(`/rest/v1/${table}`, {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(body),
+    });
+  }
+
+  async update(table, id, data) {
+    if (!this.userId) await this.authenticate();
+    const userField = table === 'profiles' ? 'id' : 'user_id';
+    return this._fetch(`/rest/v1/${table}?id=eq.${id}&${userField}=eq.${this.userId}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async remove(table, id) {
+    if (!this.userId) await this.authenticate();
+    const userField = table === 'profiles' ? 'id' : 'user_id';
+    return this._fetch(`/rest/v1/${table}?id=eq.${id}&${userField}=eq.${this.userId}`, {
+      method: 'DELETE'
+    });
+  }
 }

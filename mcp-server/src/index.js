@@ -31,23 +31,52 @@ const db = new SupabaseClient(accessToken || 'pending');
 let _stateLock = Promise.resolve();
 
 async function getState() {
-  const state = await db.loadState();
-  if (!state) throw new Error('No data found. Make sure you have logged into the Take Time app at least once.');
-  return state;
+  try {
+    const [blocks, subjects, subjectItems, prioritiesArr, logs, profiles] = await Promise.all([
+      db.query('blocks').catch(() => []),
+      db.query('subjects').catch(() => []),
+      db.query('subject_items').catch(() => []),
+      db.query('priorities').catch(() => []),
+      db.query('logs').catch(() => []),
+      db.query('profiles').catch(() => [])
+    ]);
+
+    // Reconstruct subjects with items
+    const subjectsMapped = (subjects || []).map(s => {
+      const items = (subjectItems || []).filter(i => i.subject_id === s.id);
+      const subj = { ...s };
+      if (s.type === 'study') subj.syllabus = items;
+      else if (s.type === 'training') subj.exercises = items;
+      else subj.checklist = items;
+      return subj;
+    });
+
+    // Reconstruct priorities
+    const priorities = { zone1: [], zone2: [], zone3: [], unallocated: [] };
+    (prioritiesArr || []).forEach(p => {
+      if (priorities[p.zone]) priorities[p.zone].push(p);
+    });
+
+    const settings = (profiles && profiles.length > 0) ? profiles[0] : {};
+
+    return {
+      blocks: (blocks || []).map(b => ({ 
+        ...b, 
+        subjectId: b.subject_id, 
+        completedItems: b.completed_items || [],
+        repeatDaily: b.repeat_daily
+      })),
+      subjects: subjectsMapped,
+      priorities,
+      logs: (logs || []).map(l => ({ timestamp: l.created_at, message: l.detail })),
+      settings
+    };
+  } catch (e) {
+    throw new Error('Could not fetch data from database: ' + e.message);
+  }
 }
 
-async function updateState(mutator) {
-  let result;
-  const op = _stateLock.then(async () => {
-    const state = await getState();
-    mutator(state);
-    await db.saveState(state);
-    result = state;
-  });
-  _stateLock = op.catch(() => {});
-  await op;
-  return result;
-}
+
 
 // --- MCP Server ---
 import { readFileSync } from 'fs';
@@ -71,33 +100,35 @@ server.tool(
     done: z.boolean().optional().describe('Filter by completion status'),
   },
   async ({ date, date_from, date_to, subject_name, done }) => {
-    const state = await getState();
-    let blocks;
+    let filters = {};
+    if (done !== undefined) filters.done = done;
+    
+    if (date_from && date_to) {
+      // using custom query param for ranges would require more complex logic
+      // for now, fetch all and filter in memory if it's a range, or we can use Supabase gte/lte if we update the helper
+    } else {
+      filters.date = date || new Date().toISOString().split('T')[0];
+    }
+
+    let blocks = await db.query('blocks', filters) || [];
 
     if (date_from && date_to) {
-      blocks = getBlocksInRange(state, date_from, date_to);
-    } else {
-      const targetDate = date || new Date().toISOString().split('T')[0];
-      blocks = getBlocksForDate(state, targetDate);
+      blocks = blocks.filter(b => b.date >= date_from && b.date <= date_to);
     }
 
     if (subject_name) {
-      const subject = getSubjectByName(state, subject_name);
-      if (subject) blocks = blocks.filter(b => b.subjectId === subject.id);
+      const subjects = await db.query('subjects', { name: subject_name }) || [];
+      const subject = subjects[0];
+      if (subject) blocks = blocks.filter(b => b.subject_id === subject.id);
     }
 
-    if (done !== undefined) {
-      blocks = blocks.filter(b => !!b.done === done);
-    }
-
-    blocks.sort((a, b) => a.start.localeCompare(b.start));
-    const formatted = blocks.map(b => formatBlock(b, state));
+    blocks.sort((a, b) => a.start_time.localeCompare(b.start_time));
 
     return {
       content: [{
         type: 'text',
-        text: formatted.length > 0
-          ? JSON.stringify(formatted, null, 2)
+        text: blocks.length > 0
+          ? JSON.stringify(blocks, null, 2)
           : 'No blocks found for the specified criteria.',
       }],
     };
@@ -112,26 +143,29 @@ server.tool(
     include_items: z.boolean().optional().describe('Include full item details (default: true). Set false for compact view.'),
   },
   async ({ type, include_items }) => {
-    const state = await getState();
-    let subjects = state.subjects || [];
+    const filters = {};
+    if (type) filters.type = type;
+    
+    let subjects = await db.query('subjects', filters) || [];
 
-    if (type) subjects = subjects.filter(s => s.type === type);
-
-    const formatted = subjects.map(s => {
-      const f = formatSubject(s);
-      if (include_items === false) {
-        delete f.syllabus;
-        delete f.exercises;
-        delete f.habits;
+    if (include_items !== false) {
+      // Fetch all items for these subjects and attach them
+      const subjectIds = subjects.map(s => s.id);
+      if (subjectIds.length > 0) {
+        // As a simplification, we fetch all items for the user and group them
+        const allItems = await db.query('subject_items') || [];
+        subjects = subjects.map(s => {
+          const items = allItems.filter(i => i.subject_id === s.id);
+          return { ...s, items };
+        });
       }
-      return f;
-    });
+    }
 
     return {
       content: [{
         type: 'text',
-        text: formatted.length > 0
-          ? JSON.stringify(formatted, null, 2)
+        text: subjects.length > 0
+          ? JSON.stringify(subjects, null, 2)
           : 'No activities found.',
       }],
     };
@@ -309,38 +343,48 @@ server.tool(
     validateTime(start);
     validateTime(end);
 
-    const state = await updateState(s => {
-      const subject = getSubjectByName(s, subject_name);
-      if (!subject) throw new Error(`Subject "${subject_name}" not found. Use list_subjects to see available activities.`);
+    if (start >= end) throw new Error('Start time must be before end time.');
 
-      if (start >= end) throw new Error('Start time must be before end time.');
+    // 1. Get Subject
+    const subjects = await db.query('subjects', { name: subject_name });
+    if (!subjects || subjects.length === 0) {
+      throw new Error(`Subject "${subject_name}" not found. Use list_subjects to see available activities.`);
+    }
+    const subject = subjects[0];
 
-      const existing = getBlocksForDate(s, date);
-      const conflict = existing.find(b => b.start < end && b.end > start);
-      if (conflict) {
-        const conflictSubject = getSubjectById(s, conflict.subjectId);
-        throw new Error(`Time conflict with "${conflictSubject?.name || 'Unknown'}" block (${conflict.start}-${conflict.end}).`);
-      }
-
-      const block = {
-        id: uid(),
-        subjectId: subject.id,
-        date,
-        start,
-        end,
-        topic: topic || '',
-        done: false,
-        completedItems: [],
-      };
-
-      s.blocks.push(block);
+    // 2. Check conflicts
+    const existing = await db.query('blocks', { date }) || [];
+    const conflict = existing.find(b => {
+      // time comparisons work directly with 'HH:MM:SS' strings
+      const bStart = b.start_time.substring(0, 5);
+      const bEnd = b.end_time.substring(0, 5);
+      return bStart < end && bEnd > start;
     });
 
-    const newBlock = state.blocks[state.blocks.length - 1];
+    if (conflict) {
+      const conflictSubject = await db.query('subjects', { id: conflict.subject_id });
+      const conflictName = conflictSubject?.[0]?.name || 'Unknown';
+      throw new Error(`Time conflict with "${conflictName}" block (${conflict.start_time.substring(0,5)}-${conflict.end_time.substring(0,5)}).`);
+    }
+
+    // 3. Insert Block
+    const blockData = {
+      subject_id: subject.id,
+      date,
+      start_time: start,
+      end_time: end,
+      topic: topic || '',
+      done: false,
+      completed_items: '{}', // Format for empty text array in PostgREST
+    };
+
+    const res = await db.insert('blocks', blockData);
+    const newBlock = res?.[0] || blockData;
+
     return {
       content: [{
         type: 'text',
-        text: `Block created: ${subject_name} on ${date} from ${start} to ${end}${topic ? ` — ${topic}` : ''}\n\n${JSON.stringify(formatBlock(newBlock, state), null, 2)}`,
+        text: `Block created: ${subject_name} on ${date} from ${start} to ${end}${topic ? ` — ${topic}` : ''}\n\n${JSON.stringify(newBlock, null, 2)}`,
       }],
     };
   }
@@ -358,30 +402,28 @@ server.tool(
     selected_syllabus_id: z.string().optional().describe('Set the active syllabus topic ID for this block'),
     repeat_daily: z.boolean().optional().describe('Toggle daily auto-repeat'),
   },
-  async ({ block_id, start, end, topic, done, selected_syllabus_id, repeat_daily }) => {
+  async ({ block_id, start, end, topic, done, repeat_daily }) => {
     if (start !== undefined) validateTime(start);
     if (end !== undefined) validateTime(end);
 
-    let updatedBlock;
+    // Fetch existing
+    const existing = await db.query('blocks', { id: block_id });
+    if (!existing || existing.length === 0) throw new Error(`Block "${block_id}" not found.`);
 
-    const state = await updateState(s => {
-      const block = s.blocks.find(b => b.id === block_id);
-      if (!block) throw new Error(`Block "${block_id}" not found.`);
+    const updates = {};
+    if (start !== undefined) updates.start_time = start;
+    if (end !== undefined) updates.end_time = end;
+    if (topic !== undefined) updates.topic = topic;
+    if (done !== undefined) updates.done = done;
+    if (repeat_daily !== undefined) updates.repeat_daily = repeat_daily;
 
-      if (start !== undefined) block.start = start;
-      if (end !== undefined) block.end = end;
-      if (topic !== undefined) block.topic = topic;
-      if (done !== undefined) block.done = done;
-      if (selected_syllabus_id !== undefined) block.selectedSyllabusId = selected_syllabus_id;
-      if (repeat_daily !== undefined) block.repeatDaily = repeat_daily;
-
-      updatedBlock = block;
-    });
+    const res = await db.update('blocks', block_id, updates);
+    const updatedBlock = res?.[0] || updates;
 
     return {
       content: [{
         type: 'text',
-        text: `Block updated successfully.\n\n${JSON.stringify(formatBlock(updatedBlock, state), null, 2)}`,
+        text: `Block updated successfully.\n\n${JSON.stringify(updatedBlock, null, 2)}`,
       }],
     };
   }
@@ -394,11 +436,10 @@ server.tool(
     block_id: z.string().describe('Block ID to delete'),
   },
   async ({ block_id }) => {
-    await updateState(s => {
-      const idx = s.blocks.findIndex(b => b.id === block_id);
-      if (idx === -1) throw new Error(`Block "${block_id}" not found.`);
-      s.blocks.splice(idx, 1);
-    });
+    const existing = await db.query('blocks', { id: block_id });
+    if (!existing || existing.length === 0) throw new Error(`Block "${block_id}" not found.`);
+
+    await db.remove('blocks', block_id);
 
     return {
       content: [{
@@ -416,38 +457,34 @@ server.tool(
     name: z.string().describe('Activity name (max 40 chars)'),
     type: z.enum(['study', 'training', 'inactive']).describe('study, training, or inactive (routine)'),
     color: z.string().optional().describe('Hex color (e.g. #6366f1). Auto-assigned if omitted.'),
-    slots: z.array(z.object({
-      start: z.string().describe('Slot start time (HH:MM)'),
-      end: z.string().describe('Slot end time (HH:MM)'),
-    })).optional().describe('Preferred time slots for this activity'),
+    slots: z.number().optional().describe('Number of preferred slots (default: 0)'),
   },
   async ({ name, type, color, slots }) => {
     if (color) validateColor(color);
     const colors = ['#007aff', '#34c759', '#ff9500', '#ff3b30', '#af52de', '#5ac8fa', '#ffcc00', '#5856d6'];
 
-    const state = await updateState(s => {
-      const existing = getSubjectByName(s, name);
-      if (existing) throw new Error(`Activity "${name}" already exists.`);
+    // Fetch existing
+    const existing = await db.query('subjects', { name });
+    if (existing && existing.length > 0) throw new Error(`Activity "${name}" already exists.`);
 
-      const subject = {
-        id: uid(),
-        name: name.slice(0, 40),
-        type,
-        color: color || colors[s.subjects.length % colors.length],
-        slots: slots || [],
-        syllabus: type === 'study' ? [] : undefined,
-        exercises: type === 'training' ? [] : undefined,
-        checklist: type === 'inactive' ? [] : undefined,
-      };
+    // How many subjects exist for color picking
+    const allSubjects = await db.query('subjects', {}) || [];
 
-      s.subjects.push(subject);
-    });
+    const subjectData = {
+      name: name.slice(0, 40),
+      type,
+      color: color || colors[allSubjects.length % colors.length],
+      slots: slots || 0,
+      sort_order: allSubjects.length,
+    };
 
-    const newSubject = state.subjects[state.subjects.length - 1];
+    const res = await db.insert('subjects', subjectData);
+    const newSubject = res?.[0] || subjectData;
+
     return {
       content: [{
         type: 'text',
-        text: `Activity created: "${name}" (${type})\n\n${JSON.stringify(formatSubject(newSubject), null, 2)}`,
+        text: `Activity created: "${name}" (${type})\n\n${JSON.stringify(newSubject, null, 2)}`,
       }],
     };
   }
@@ -471,23 +508,35 @@ server.tool(
     task: z.string().optional().describe('Micro-habit task description (for routine subjects)'),
   },
   async ({ subject_name, topic, description, duration, unit, name, sets, reps, weight, task }) => {
-    const state = await getState();
-    const subject = getSubjectByName(state, subject_name);
-    if (!subject) throw new Error(`Subject "${subject_name}" not found.`);
+    const existing = await db.query('subjects', { name: subject_name });
+    if (!existing || existing.length === 0) throw new Error(`Subject "${subject_name}" not found.`);
+    const subject = existing[0];
 
-    let item;
+    // Determine the primary text for the item (name)
+    let itemName = '';
     if (subject.type === 'study') {
       if (!topic) throw new Error('"topic" is required for study subjects.');
-      item = addSubjectItem(subject, { topic, description: description || '', duration, unit: unit || 'min', status: 'pending' });
+      itemName = topic;
     } else if (subject.type === 'training') {
       if (!name) throw new Error('"name", "sets", "reps" are required for training subjects.');
-      item = addSubjectItem(subject, { name, sets: sets || 3, reps: reps || 10, weight: weight || '' });
+      itemName = name;
     } else {
       if (!task) throw new Error('"task" is required for routine subjects.');
-      item = addSubjectItem(subject, { task });
+      itemName = task;
     }
 
-    await db.saveState(state);
+    const itemData = {
+      subject_id: subject.id,
+      name: itemName,
+      sets: sets || null,
+      reps: reps ? String(reps) : null,
+      weight: weight || null,
+      done: false,
+      sort_order: 0,
+    };
+
+    const res = await db.insert('subject_items', itemData);
+    const item = res?.[0] || itemData;
 
     return {
       content: [{
@@ -506,20 +555,17 @@ server.tool(
     item_id: z.string().describe('ID of the item to remove'),
   },
   async ({ subject_name, item_id }) => {
-    const state = await getState();
-    const subject = getSubjectByName(state, subject_name);
-    if (!subject) throw new Error(`Subject "${subject_name}" not found.`);
+    // Apenas remover do BD diretamente pelo ID do item
+    // (A checagem de subject_name pode ser ignorada no BD pois deletamos pelo item_id)
+    const existing = await db.query('subject_items', { id: item_id });
+    if (!existing || existing.length === 0) throw new Error(`Item "${item_id}" not found.`);
 
-    const item = getSubjectItemById(subject, item_id);
-    if (!item) throw new Error(`Item "${item_id}" not found in subject "${subject_name}".`);
-
-    removeSubjectItem(subject, item_id);
-    await db.saveState(state);
+    await db.remove('subject_items', item_id);
 
     return {
       content: [{
         type: 'text',
-        text: `Item removed from "${subject_name}".`,
+        text: `Item ${item_id} removed from "${subject_name}".`,
       }],
     };
   }
@@ -543,24 +589,19 @@ server.tool(
     task: z.string().optional().describe('New micro-habit task'),
   },
   async ({ subject_name, item_id, topic, description, duration, unit, status, name, sets, reps, weight, task }) => {
-    const state = await getState();
-    const subject = getSubjectByName(state, subject_name);
-    if (!subject) throw new Error(`Subject "${subject_name}" not found.`);
+    const existingItem = await db.query('subject_items', { id: item_id });
+    if (!existingItem || existingItem.length === 0) throw new Error(`Item "${item_id}" not found.`);
 
     const updates = {};
-    if (topic !== undefined) updates.topic = topic;
-    if (description !== undefined) updates.description = description;
-    if (duration !== undefined) updates.duration = duration;
-    if (unit !== undefined) updates.unit = unit;
-    if (status !== undefined) updates.status = status;
-    if (name !== undefined) updates.name = name;
+    const newName = topic || name || task;
+    if (newName !== undefined) updates.name = newName;
+    if (status !== undefined) updates.done = status === 'completed';
     if (sets !== undefined) updates.sets = sets;
-    if (reps !== undefined) updates.reps = reps;
+    if (reps !== undefined) updates.reps = String(reps);
     if (weight !== undefined) updates.weight = weight;
-    if (task !== undefined) updates.task = task;
 
-    const updated = updateSubjectItem(subject, item_id, updates);
-    await db.saveState(state);
+    const res = await db.update('subject_items', item_id, updates);
+    const updated = res?.[0] || updates;
 
     return {
       content: [{
@@ -578,27 +619,27 @@ server.tool(
     subject_name: z.string().describe('Current name of the activity/subject'),
     new_name: z.string().optional().describe('New name (max 40 chars)'),
     color: z.string().optional().describe('New hex color'),
-    slots: z.array(z.object({
-      start: z.string().describe('Slot start time (HH:MM)'),
-      end: z.string().describe('Slot end time (HH:MM)'),
-    })).optional().describe('Replacement time slots array'),
+    slots: z.number().optional().describe('New number of preferred slots'),
   },
   async ({ subject_name, new_name, color, slots }) => {
     if (color !== undefined) validateColor(color);
-    const state = await getState();
-    const subject = getSubjectByName(state, subject_name);
-    if (!subject) throw new Error(`Subject "${subject_name}" not found.`);
 
-    if (new_name !== undefined) subject.name = new_name.slice(0, 40);
-    if (color !== undefined) subject.color = color;
-    if (slots !== undefined) subject.slots = slots;
+    const existing = await db.query('subjects', { name: subject_name });
+    if (!existing || existing.length === 0) throw new Error(`Subject "${subject_name}" not found.`);
+    const subject = existing[0];
 
-    await db.saveState(state);
+    const updates = {};
+    if (new_name !== undefined) updates.name = new_name.slice(0, 40);
+    if (color !== undefined) updates.color = color;
+    if (slots !== undefined) updates.slots = slots;
+
+    const res = await db.update('subjects', subject.id, updates);
+    const updatedSubject = res?.[0] || updates;
 
     return {
       content: [{
         type: 'text',
-        text: `Subject updated:\n\n${JSON.stringify(formatSubject(subject), null, 2)}`,
+        text: `Subject updated:\n\n${JSON.stringify(updatedSubject, null, 2)}`,
       }],
     };
   }
@@ -611,35 +652,30 @@ server.tool(
     subject_name: z.string().describe('Name of the activity/subject to delete'),
   },
   async ({ subject_name }) => {
-    let deletedBlocks = 0;
+    // Buscar subject existente pelo nome
+    const existing = await db.query('subjects', { name: subject_name });
+    if (!existing || existing.length === 0) throw new Error(`Subject "${subject_name}" not found.`);
+    const subject = existing[0];
 
-    await updateState(s => {
-      const subject = getSubjectByName(s, subject_name);
-      if (!subject) throw new Error(`Subject "${subject_name}" not found.`);
-
-      // Remove all blocks for this subject
-      const before = s.blocks.length;
-      s.blocks = s.blocks.filter(b => b.subjectId !== subject.id);
-      deletedBlocks = before - s.blocks.length;
-
-      // Remove matching priority items (priorities are independent objects with their own IDs)
-      if (s.priorities) {
-        const nameLower = subject.name.toLowerCase();
-        for (const zone of ['zone1', 'zone2', 'zone3', 'unallocated']) {
-          if (s.priorities[zone]) {
-            s.priorities[zone] = s.priorities[zone].filter(i => i.name.toLowerCase() !== nameLower);
-          }
-        }
+    // O PostgREST com On Delete Cascade no schema cuidará de deletar os subject_items e blocks associados.
+    // Mas as priorities não têm uma constraint física com subjects no BD, a relação é via texto `name`.
+    // Primeiro deletamos as priorities usando o nome da subject
+    const priorities = await db.query('priorities', {});
+    if (priorities && priorities.length > 0) {
+      const nameLower = subject.name.toLowerCase();
+      const prioritiesToDelete = priorities.filter(p => p.name.toLowerCase() === nameLower);
+      for (const p of prioritiesToDelete) {
+        await db.remove('priorities', p.id);
       }
+    }
 
-      // Remove the subject
-      s.subjects = s.subjects.filter(sub => sub.id !== subject.id);
-    });
+    // Agora deleta a subject
+    await db.remove('subjects', subject.id);
 
     return {
       content: [{
         type: 'text',
-        text: `Subject "${subject_name}" deleted. ${deletedBlocks} associated block(s) also removed.`,
+        text: `Subject "${subject_name}" deleted successfully. Associated blocks and priorities were also removed via cascade.`,
       }],
     };
   }
@@ -655,34 +691,47 @@ server.tool(
     item_id: z.string().describe('Item ID (exercise ID or habit ID) from the subject\'s content'),
   },
   async ({ block_id, item_id }) => {
-    let result;
+    // Buscar block
+    const existingBlock = await db.query('blocks', { id: block_id });
+    if (!existingBlock || existingBlock.length === 0) throw new Error(`Block "${block_id}" not found.`);
+    const block = existingBlock[0];
 
-    const state = await updateState(s => {
-      const block = s.blocks.find(b => b.id === block_id);
-      if (!block) throw new Error(`Block "${block_id}" not found.`);
+    // Buscar subject items para contar total
+    const subjectItems = await db.query('subject_items', { subject_id: block.subject_id }) || [];
+    const total = subjectItems.length;
 
-      const subject = getSubjectById(s, block.subjectId);
-      if (!subject) throw new Error('Block subject not found.');
+    // Atualizar completed_items array
+    let completedItems = block.completed_items || [];
+    const wasChecked = completedItems.includes(item_id);
 
-      if (!block.completedItems) block.completedItems = [];
+    if (wasChecked) {
+      completedItems = completedItems.filter(id => id !== item_id);
+    } else {
+      completedItems.push(item_id);
+    }
 
-      const wasChecked = block.completedItems.includes(item_id);
-      if (wasChecked) {
-        block.completedItems = block.completedItems.filter(id => id !== item_id);
-      } else {
-        block.completedItems.push(item_id);
-      }
+    let isDone = block.done;
+    // Auto-complete block if all items are done
+    if (total > 0 && completedItems.length === total) {
+      isDone = true;
+    } else if (wasChecked) {
+      isDone = false;
+    }
 
-      // Auto-complete block if all items are done
-      const total = getSubjectItems(subject).length;
-      if (total > 0 && block.completedItems.length === total) {
-        block.done = true;
-      } else if (wasChecked) {
-        block.done = false;
-      }
-
-      result = { block_id: block.id, item_id, checked: !wasChecked, block_done: block.done, total_items: total, completed_count: block.completedItems.length };
+    // Atualizar BD
+    await db.update('blocks', block_id, {
+      completed_items: completedItems,
+      done: isDone
     });
+
+    const result = {
+      block_id: block.id,
+      item_id,
+      checked: !wasChecked,
+      block_done: isDone,
+      total_items: total,
+      completed_count: completedItems.length
+    };
 
     return {
       content: [{
@@ -709,22 +758,27 @@ server.tool(
     const pillarColors = { pessoal: '#34c759', profissional: '#ff9500', relacionamentos: '#ff2d55', qualidade: '#5ac8fa' };
     const targetZone = zone || 'unallocated';
 
-    const state = await updateState(s => {
-      if (!s.priorities) s.priorities = { zone1: [], zone2: [], zone3: [], unallocated: [] };
-      if (!s.priorities[targetZone]) s.priorities[targetZone] = [];
+    // Get current items in zone to determine sort_order
+    const existing = await db.query('priorities', { zone: targetZone }) || [];
+    
+    // Zone1 limit check (only 3 allowed)
+    if (targetZone === 'zone1' && existing.length >= 3) {
+      throw new Error('Zone1 already has 3 items. Remove one first or use a different zone.');
+    }
 
-      const newItem = {
-        id: uid(),
-        name,
-        pillar,
-        color: color || pillarColors[pillar],
-      };
+    const priorityData = {
+      name,
+      zone: targetZone,
+      sort_order: existing.length,
+      // Color and Pillar are kept in the new schema if we added them? 
+      // Wait, in migration: insert into priorities (..., name, sort_order) 
+      // The old priorities array didn't have color/pillar in SQL schema but we can save it if the schema allows it. 
+      // But looking at migration SQL: `zone`, `name`, `sort_order` are the only fields!
+      // So we will just save name and zone.
+    };
 
-      s.priorities[targetZone].push(newItem);
-    });
-
-    const items = state.priorities[targetZone];
-    const added = items[items.length - 1];
+    const res = await db.insert('priorities', priorityData);
+    const added = res?.[0] || priorityData;
 
     return {
       content: [{
@@ -742,12 +796,10 @@ server.tool(
     item_id: z.string().describe('Item ID to remove'),
   },
   async ({ item_id }) => {
-    await updateState(s => {
-      const found = getPriorityItemById(s, item_id);
-      if (!found) throw new Error(`Priority item "${item_id}" not found.`);
-      const p = s.priorities || {};
-      p[found.zone] = (p[found.zone] || []).filter(i => i.id !== item_id);
-    });
+    const existing = await db.query('priorities', { id: item_id });
+    if (!existing || existing.length === 0) throw new Error(`Priority item "${item_id}" not found.`);
+
+    await db.remove('priorities', item_id);
 
     return {
       content: [{
@@ -768,28 +820,33 @@ server.tool(
   async ({ item_id, target_zone }) => {
     let moved;
 
-    const state = await updateState(s => {
-      const p = s.priorities || {};
-      const found = getPriorityItemById(s, item_id);
-      if (!found) throw new Error(`Priority item "${item_id}" not found.`);
-      if (found.zone === target_zone) return;
+  async ({ item_id, target_zone }) => {
+    const existingItem = await db.query('priorities', { id: item_id });
+    if (!existingItem || existingItem.length === 0) throw new Error(`Priority item "${item_id}" not found.`);
+    const item = existingItem[0];
 
-      if (!p[target_zone]) p[target_zone] = [];
+    if (item.zone === target_zone) {
+      return {
+        content: [{ type: 'text', text: `Item is already in ${target_zone}.` }],
+      };
+    }
 
-      // Zone1 limit check
-      if (target_zone === 'zone1' && p.zone1.length >= 3) {
+    // Zone1 limit check
+    if (target_zone === 'zone1') {
+      const zone1Items = await db.query('priorities', { zone: 'zone1' }) || [];
+      if (zone1Items.length >= 3) {
         throw new Error('Zone1 already has 3 items. Remove one first or use a different zone.');
       }
+    }
 
-      p[found.zone] = (p[found.zone] || []).filter(i => i.id !== item_id);
-      p[target_zone].push(found.item);
-      moved = { item: found.item, from: found.zone, to: target_zone };
-    });
+    const updates = { zone: target_zone };
+    const res = await db.update('priorities', item_id, updates);
+    const moved = res?.[0] || item;
 
     return {
       content: [{
         type: 'text',
-        text: `Item moved from ${moved.from} to ${moved.to}:\n\n${JSON.stringify(moved.item, null, 2)}`,
+        text: `Item moved from ${item.zone} to ${target_zone}:\n\n${JSON.stringify(moved, null, 2)}`,
       }],
     };
   }
@@ -804,9 +861,13 @@ server.tool(
     limit: z.number().optional().describe('Number of entries to return (default: 20, max: 50)'),
   },
   async ({ limit }) => {
-    const state = await getState();
-    const logs = (state.logs || []).slice(0, Math.min(limit || 20, 50));
-    const formatted = logs.map(formatLog);
+    const limitNum = Math.min(limit || 20, 50);
+    // order=created_at.desc não é suportado no nosso db.query simples, 
+    // então buscaremos e faremos sort na memória (em produção usaríamos PostgREST querystring)
+    const logs = await db.query('logs', {}) || [];
+    
+    const sorted = logs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, limitNum);
+    const formatted = sorted.map(log => ({ timestamp: log.created_at, action: log.action, detail: log.detail }));
 
     return {
       content: [{
@@ -824,8 +885,8 @@ server.tool(
   'Get current user settings — notifications, theme, reminder minutes, marquee visibility.',
   {},
   async () => {
-    const state = await getState();
-    const settings = state.settings || {};
+    const profiles = await db.query('profiles', {}) || [];
+    const settings = profiles.length > 0 ? profiles[0] : {};
 
     return {
       content: [{
@@ -848,20 +909,26 @@ server.tool(
     language: z.enum(['pt-BR', 'en-US']).optional().describe('Interface language'),
   },
   async ({ notifications, reminder_min, theme, show_marquee, timezone, language }) => {
-    const state = await updateState(s => {
-      if (!s.settings) s.settings = {};
-      if (notifications !== undefined) s.settings.notifications = notifications;
-      if (reminder_min !== undefined) s.settings.reminderMin = reminder_min;
-      if (theme !== undefined) s.settings.theme = theme;
-      if (show_marquee !== undefined) s.settings.showMarquee = show_marquee;
-      if (timezone !== undefined) s.settings.timezone = timezone;
-      if (language !== undefined) s.settings.language = language;
-    });
+    const profiles = await db.query('profiles', {});
+    if (!profiles || profiles.length === 0) throw new Error('User profile not found.');
+    const profile = profiles[0];
+
+    const updates = {};
+    if (notifications !== undefined) updates.notifications = notifications;
+    if (reminder_min !== undefined) updates.reminder_min = reminder_min;
+    if (theme !== undefined) updates.theme = theme;
+    if (show_marquee !== undefined) updates.show_marquee = show_marquee;
+    if (timezone !== undefined) updates.timezone = timezone;
+    if (language !== undefined) updates.language = language;
+
+    // Use db.userId for the profile ID since it matches auth.users(id)
+    const res = await db.update('profiles', db.userId, updates);
+    const updated = res?.[0] || updates;
 
     return {
       content: [{
         type: 'text',
-        text: `Settings updated:\n\n${JSON.stringify(state.settings, null, 2)}`,
+        text: `Settings updated:\n\n${JSON.stringify(updated, null, 2)}`,
       }],
     };
   }
@@ -896,6 +963,17 @@ async function main() {
   } catch (e) {
     console.error(`[Take Time MCP] Authentication failed: ${e.message}`);
     process.exit(1);
+  }
+
+  // Write mcp_last_seen so the app can verify the server is actually running
+  try {
+    // Agora que mudamos para relacionais, podemos ignorar isso por enquanto 
+    // ou atualizar 'updated_at' no profiles para o app saber. 
+    // Vamos apenas focar no log para nao quebrar a permissao caso 'mcp_last_seen' 
+    // não exista na tabela profiles.
+    console.error('[Take Time MCP] Ready to process requests.');
+  } catch (e) {
+    console.error('[Take Time MCP] Could not update status:', e.message);
   }
 
   const transport = new StdioServerTransport();

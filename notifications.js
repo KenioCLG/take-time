@@ -93,5 +93,5 @@ window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
   const section = document.getElementById('installPwaSection');
   if (section) section.classList.add('hidden');
-  DS.toast(I18n.t('settings.app_installed') || 'App instalado!', 'success');
+  DS.toast(I18n.t('settings.app_installed') || 'App installed!', 'success');
 });

@@ -111,7 +111,7 @@ const DS = (() => {
             <p class="ds-confirm-message">${escapeHtml(message)}</p>
           </div>
           <div class="ds-confirm-actions">
-            <button class="ds-confirm-btn ds-confirm-btn--cancel" data-action="cancel">${typeof I18n !== 'undefined' ? I18n.t('confirm.cancel') : 'Cancelar'}</button>
+            <button class="ds-confirm-btn ds-confirm-btn--cancel" data-action="cancel">${typeof I18n !== 'undefined' ? I18n.t('confirm.cancel') : 'Cancel'}</button>
             <button class="ds-confirm-btn ds-confirm-btn--${style}" data-action="ok">${escapeHtml(btnLabel)}</button>
           </div>
         </div>

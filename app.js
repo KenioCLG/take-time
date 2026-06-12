@@ -46,27 +46,27 @@ if (_linkLogin) _linkLogin.addEventListener('click', (e) => {
   $('#authTitle').textContent = __('auth.login', null, 'Login');
 });
 
-function seedKenioWorkout() {
-  const workoutName = 'Full Body Metabólico';
-  const hasWorkout = state.subjects.find(s => s.name === workoutName);
+function seedDefaultWorkout() {
+  const workoutName = __('seed.workout_name', null, 'Full Body Metabolic');
+  const hasWorkout = state.subjects.find(s => s.type === 'training');
   if (hasWorkout) return;
-  
+
   const workout = {
     id: uid(),
     name: workoutName,
     color: '#ff2d55',
     type: 'training',
     exercises: [
-      { id: uid(), name: 'Agachamento + Elevação de Gêmeos', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
-      { id: uid(), name: 'Abdominal Infra (Reverse Crunch)', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
-      { id: uid(), name: 'Stiff (Romanian Deadlift)', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
-      { id: uid(), name: 'Remada Curvada Alternada', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
-      { id: uid(), name: 'Passada Reversa + Elevação de Joelho', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
-      { id: uid(), name: 'Desenvolvimento Arnold', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
-      { id: uid(), name: 'Elevação Pélvica Unilateral', sets: 5, reps: '40s AMRAP', weight: 'Caneleiras' },
-      { id: uid(), name: 'Remada em 4 Apoios (Bird Dog Row)', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
-      { id: uid(), name: 'Thruster (Agachamento + Desenv.)', sets: 5, reps: '40s AMRAP', weight: 'Halteres' },
-      { id: uid(), name: 'Dead Bug Weighted', sets: 5, reps: '40s AMRAP', weight: 'Halteres leves' }
+      { id: uid(), name: __('seed.ex1', null, 'Squat + Calf Raise'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_dumbbells', null, 'Dumbbells') },
+      { id: uid(), name: __('seed.ex2', null, 'Lower Abs (Reverse Crunch)'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_dumbbells', null, 'Dumbbells') },
+      { id: uid(), name: __('seed.ex3', null, 'Stiff (Romanian Deadlift)'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_dumbbells', null, 'Dumbbells') },
+      { id: uid(), name: __('seed.ex4', null, 'Alternating Bent Row'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_dumbbells', null, 'Dumbbells') },
+      { id: uid(), name: __('seed.ex5', null, 'Reverse Lunge + Knee Drive'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_dumbbells', null, 'Dumbbells') },
+      { id: uid(), name: __('seed.ex6', null, 'Arnold Press'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_dumbbells', null, 'Dumbbells') },
+      { id: uid(), name: __('seed.ex7', null, 'Single-Leg Hip Thrust'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_ankles', null, 'Ankle Weights') },
+      { id: uid(), name: __('seed.ex8', null, 'Bird Dog Row'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_dumbbells', null, 'Dumbbells') },
+      { id: uid(), name: __('seed.ex9', null, 'Thruster (Squat + Press)'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_dumbbells', null, 'Dumbbells') },
+      { id: uid(), name: __('seed.ex10', null, 'Dead Bug Weighted'), sets: 5, reps: '40s AMRAP', weight: __('seed.weight_light', null, 'Light Dumbbells') }
     ]
   };
   
@@ -119,6 +119,13 @@ async function loginUser() {
   if (typeof renderSubjects === 'function') renderSubjects();
   if (typeof initPriorities === 'function') initPriorities();
   if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
+
+  // Onboarding automático
+  if (state.subjects && state.subjects.length === 0) {
+    seedDefaultWorkout();
+    if (typeof render === 'function') render();
+    if (typeof renderSubjects === 'function') renderSubjects();
+  }
 }
 
 function setAuthLoading(loading) {
@@ -149,7 +156,6 @@ async function handleLoginSubmit() {
   setAuthLoading(false);
   
   if (result.success) {
-    if (email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
     loginUser();
   } else {
     const msg = result.error === AuthError.INVALID_EMAIL ? __('auth.invalid_email', null, 'E-mail inválido')
@@ -177,7 +183,6 @@ async function handleSignupSubmit() {
   
   if (result.success) {
     DS.toast(__('auth.account_created', null, 'Conta criada com sucesso!'), 'success');
-    if (email === 'kenioclaudino0013@gmail.com') seedKenioWorkout();
     loginUser();
   } else {
     const msg = result.error === AuthError.PASSWORD_MISMATCH ? __('auth.password_mismatch', null, 'As senhas não coincidem')
@@ -1883,7 +1888,7 @@ function initSettings() {
         $('#authScreen').style.display = 'flex';
         $('#inputAuthEmail').value = '';
         $('#inputAuthPassword').value = '';
-        DS.toast(I18n.t('auth.logged_out') || 'Sessão encerrada', 'info');
+        DS.toast(__('auth.logged_out', null, 'Session closed'), 'info');
       }
     });
   }
@@ -1915,6 +1920,7 @@ function initSettings() {
       'windsurf':       { name: 'Windsurf',        icon: 'https://cdn.simpleicons.org/windsurf', wrap: 'mcpServers', path: '~/.codeium/windsurf/mcp_config.json' },
       'chatgpt':        { name: 'ChatGPT',         icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M22.28 9.37a6.2 6.2 0 00-.54-5.11A6.27 6.27 0 0015 1.26a6.2 6.2 0 00-4.71.05A6.27 6.27 0 005.56 3.4a6.2 6.2 0 00-3.24 3.01 6.27 6.27 0 00.78 7.22 6.2 6.2 0 00.54 5.11A6.27 6.27 0 009 21.74a6.2 6.2 0 004.71-.05 6.27 6.27 0 004.73-2.09 6.2 6.2 0 003.24-3.01 6.27 6.27 0 00-.78-7.22zM13.72 20.6a4.7 4.7 0 01-3.02-.39l.15-.08 5.02-2.9a.82.82 0 00.41-.71v-7.07l2.12 1.22a.08.08 0 01.04.06v5.88a4.73 4.73 0 01-4.72 4z' fill='%2310a37f'/%3E%3Cpath d='M3.52 16.86a4.7 4.7 0 01-.56-3.16l.15.09 5.02 2.9a.82.82 0 00.82 0l6.13-3.54v2.45a.08.08 0 01-.03.07l-5.07 2.93a4.73 4.73 0 01-6.46-1.74z' fill='%2310a37f'/%3E%3Cpath d='M2.27 7.93a4.7 4.7 0 012.46-2.07v5.97a.82.82 0 00.41.71l6.13 3.54-2.12 1.22a.08.08 0 01-.07 0L4.01 14.38a4.73 4.73 0 01-1.74-6.45z' fill='%2310a37f'/%3E%3Cpath d='M17.63 11.46l-6.13-3.54 2.12-1.22a.08.08 0 01.07 0l5.07 2.93a4.73 4.73 0 01-.73 8.52v-5.97a.82.82 0 00-.4-.72z' fill='%2310a37f'/%3E%3Cpath d='M19.75 10.3l-.15-.09-5.02-2.9a.82.82 0 00-.82 0L7.63 10.85V8.4a.08.08 0 01.03-.07l5.07-2.93a4.73 4.73 0 017.02 4.9z' fill='%2310a37f'/%3E%3Cpath d='M7.2 13.15L5.08 11.93a.08.08 0 01-.04-.06V5.99a4.73 4.73 0 017.74-3.62l-.15.08-5.02 2.9a.82.82 0 00-.41.71z' fill='%2310a37f'/%3E%3C/svg%3E", wrap: 'mcpServers', path: 'chatgpt_desktop_config.json' },
       'opencode':       { name: 'OpenCode',        icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 9l-3 3 3 3'/%3E%3Cpath d='M16 9l3 3-3 3'/%3E%3Cpath d='M13.5 6l-3 12'/%3E%3C/svg%3E", wrap: 'mcpServers', path: '~/.opencode/config.json' },
+      'antigravity':    { name: 'Antigravity',     icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234285F4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2l10 6.5v7L12 22 2 15.5v-7L12 2z'/%3E%3Cpath d='M12 22v-6.5'/%3E%3Cpath d='M22 8.5l-10 7-10-7'/%3E%3Cpath d='M2 15.5l10-7 10 7'/%3E%3C/svg%3E", wrap: 'mcpServers', path: '~/.gemini/antigravity/mcp.json' },
     };
 
     function buildConfig(clientId, password) {
@@ -1956,7 +1962,7 @@ function initSettings() {
         if (!client) return;
         const isVerified = intg.verified === true;
         const statusColor = isVerified ? '#34c759' : '#ff9500';
-        const statusText = isVerified ? __('mcp.status_connected', null, 'Connected') : __('mcp.status_pending', null, 'Pending');
+        const statusText = isVerified ? __('mcp.status_connected') : __('mcp.status_pending');
         const card = document.createElement('div');
         card.style.cssText = 'background:var(--ds-bg-card); border-radius:var(--ds-radius-md); padding:10px 12px; box-shadow:var(--ds-shadow-sm); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;';
         card.innerHTML = `
@@ -1971,7 +1977,7 @@ function initSettings() {
             </div>
           </div>
           <div style="display:flex; gap:6px;">
-            ${!isVerified ? `<button class="ds-btn ds-btn-plain mcp-verify-btn" data-idx="${idx}" style="font-size:11px; padding:4px 8px; color:var(--ds-accent);">${__('mcp.verify', null, 'Verificar')}</button>` : ''}
+            ${!isVerified ? `<button class="ds-btn ds-btn-plain mcp-verify-btn" data-idx="${idx}" style="font-size:11px; padding:4px 8px; color:var(--ds-accent);">${__('mcp.verify')}</button>` : ''}
             <button class="ds-btn ds-btn-plain mcp-remove-btn" data-idx="${idx}" style="font-size:11px; padding:4px 8px; color:var(--ds-danger);">✕</button>
           </div>`;
         list.appendChild(card);
@@ -1982,28 +1988,29 @@ function initSettings() {
           const idx = parseInt(this.dataset.idx);
           const intg = state.mcpIntegrations[idx];
           if (!intg) return;
-          this.textContent = '...';
+          this.textContent = __('mcp.validating');
           this.disabled = true;
           try {
-            const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-              method: 'POST',
-              headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: Supabase._user?.email, password: intg._p || '' })
-            });
-            if (res.ok) {
-              intg.verified = true;
-              delete intg._p;
-              Store.save(state);
-              DS.toast(__('mcp.verified_ok', null, 'Integração verificada!'), 'success');
-              renderIntegrations();
-            } else {
-              DS.toast(__('mcp.verified_fail', null, 'Falha na verificação. Verifique se o config foi aplicado.'), 'error');
-              this.textContent = __('mcp.verify', null, 'Verificar');
-              this.disabled = false;
+            // Check if MCP server wrote mcp_last_seen recently (within 5 min)
+            const remoteState = await Supabase.loadState();
+            const lastSeen = remoteState?.mcp_last_seen;
+            if (lastSeen) {
+              const diff = Date.now() - new Date(lastSeen).getTime();
+              if (diff < 5 * 60 * 1000) {
+                intg.verified = true;
+                delete intg._p;
+                Store.save(state);
+                DS.toast(__('mcp.verified_ok'), 'success');
+                renderIntegrations();
+                return;
+              }
             }
+            DS.toast(__('mcp.verified_fail'), 'error');
+            this.textContent = __('mcp.verify');
+            this.disabled = false;
           } catch {
-            DS.toast(__('mcp.verified_fail', null, 'Falha na verificação.'), 'error');
-            this.textContent = __('mcp.verify', null, 'Verificar');
+            DS.toast(__('mcp.verified_fail'), 'error');
+            this.textContent = __('mcp.verify');
             this.disabled = false;
           }
         });
@@ -2034,7 +2041,7 @@ function initSettings() {
       }
 
       if (!password) {
-        DS.toast(__('mcp.password_required', null, 'Digite sua senha para gerar o config.'), 'warning');
+        DS.toast(__('mcp.password_required'), 'warning');
         $('#mcpPasswordInput').focus();
         return;
       }
@@ -2042,7 +2049,7 @@ function initSettings() {
       // Validate password before generating
       const btn = $('#btnMcpGenerate');
       btn.disabled = true;
-      btn.textContent = __('mcp.validating', null, 'Validando...');
+      btn.textContent = __('mcp.validating');
       try {
         const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
           method: 'POST',
@@ -2050,13 +2057,13 @@ function initSettings() {
           body: JSON.stringify({ email: Supabase._user?.email, password })
         });
         if (!res.ok) {
-          DS.toast(__('mcp.wrong_password', null, 'Senha incorreta.'), 'error');
+          DS.toast(__('mcp.wrong_password'), 'error');
           btn.disabled = false;
           btn.textContent = I18n.t('mcp.generate');
           return;
         }
       } catch {
-        DS.toast(__('mcp.verify_error', null, 'Erro ao validar.'), 'error');
+        DS.toast(__('mcp.verify_error'), 'error');
         btn.disabled = false;
         btn.textContent = I18n.t('mcp.generate');
         return;
@@ -2087,7 +2094,7 @@ function initSettings() {
 
       // Auto-copy to clipboard
       navigator.clipboard.writeText(json).then(() => {
-        DS.toast(__('mcp.copied_ready', null, 'Config copiada! Cole no arquivo e reinicie a IA.'), 'success');
+        DS.toast(__('mcp.copied_ready'), 'success');
       });
     });
 
@@ -2545,7 +2552,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await I18n.init();
-  I18n.onChange(() => { render(); renderSubjects(); });
+  I18n.onChange(() => { render(); renderSubjects(); renderPriorities(); });
 
   initTabs();
   initColorPickers();

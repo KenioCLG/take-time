@@ -330,5 +330,20 @@
   "timezone.america_buenos_aires": "Buenos Aires",
   "timezone.america_new_york": "New York (EST)",
   "timezone.europe_lisbon": "Lisbon (WET)",
-  "timezone.europe_london": "London (GMT)"
+  "timezone.europe_london": "London (GMT)",
+
+  "seed.workout_name": "Full Body Metabolic",
+  "seed.ex1": "Squat + Calf Raise",
+  "seed.ex2": "Lower Abs (Reverse Crunch)",
+  "seed.ex3": "Stiff (Romanian Deadlift)",
+  "seed.ex4": "Alternating Bent Row",
+  "seed.ex5": "Reverse Lunge + Knee Drive",
+  "seed.ex6": "Arnold Press",
+  "seed.ex7": "Single-Leg Hip Thrust",
+  "seed.ex8": "Bird Dog Row",
+  "seed.ex9": "Thruster (Squat + Press)",
+  "seed.ex10": "Dead Bug Weighted",
+  "seed.weight_dumbbells": "Dumbbells",
+  "seed.weight_ankles": "Ankle Weights",
+  "seed.weight_light": "Light Dumbbells"
 }

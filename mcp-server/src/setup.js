@@ -38,6 +38,11 @@ const CLIENTS = {
     key: 'mcpServers',
     configPath() { return join(homedir(), '.codeium', 'windsurf', 'mcp_config.json'); },
   },
+  6: {
+    name: 'Antigravity (Google)',
+    key: 'mcpServers',
+    configPath() { return join(homedir(), '.gemini', 'antigravity', 'mcp.json'); },
+  },
 };
 
 async function main() {
@@ -111,7 +116,7 @@ async function main() {
   });
   console.log();
 
-  const choice = await ask('  Choice (1-5): ');
+  const choice = await ask('  Choice (1-6): ');
   const client = CLIENTS[choice];
   if (!client) {
     console.log('\n  Invalid choice.\n');
