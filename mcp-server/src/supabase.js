@@ -5,7 +5,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 
 const SUPABASE_URL = 'https://zkzhqgbhxhkwpgevddot.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpremhxZ2JoeGhrd3BnZXZkZG90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzg4NTcsImV4cCI6MjA5Njg1NDg1N30.9D2QgcT8XZ0PB9x4BRxRfJbnCC8kVkPedSpgG6DUXH0';
+const SUPABASE_KEY = 'sb_publishable_fiIs6h7zRNlZgi4y-vTY2w_t2iZLY2R';
 const TOKEN_FILE = join(homedir(), '.taketime', 'refresh-token');
 
 function persistRefreshToken(token) {
