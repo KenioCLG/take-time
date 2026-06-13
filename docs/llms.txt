@@ -37,8 +37,12 @@
 - [Tools](https://docs.taketime.space/mcp/tools): Available MCP tools reference
 - [Examples](https://docs.taketime.space/mcp/examples): Real-world usage examples
 
+## CLI
+
+- [CLI Overview](https://docs.taketime.space/cli/overview): Manage schedule from the terminal
+- [Installation](https://docs.taketime.space/cli/installation): Install and authenticate the CLI
+- [Commands](https://docs.taketime.space/cli/commands): Full command reference (today, schedule, blocks, subjects, items, priorities, stats, heatmap, settings, logs)
+
 ## Guides
 
-- [Webhooks](https://docs.taketime.space/guides/webhooks): Real-time event notifications
-- [Development Mode](https://docs.taketime.space/guides/dev-mode): Sandbox testing environment
 - [Production](https://docs.taketime.space/guides/production): Go-live checklist

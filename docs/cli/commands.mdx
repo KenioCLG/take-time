@@ -1,0 +1,321 @@
+---
+title: Command Reference
+description: "Full reference of all Take Time CLI commands."
+---
+
+## Auth
+
+### `taketime login`
+
+Authenticate with your Take Time account.
+
+```bash
+taketime login
+taketime login --email="you@email.com" --password="your-password"
+```
+
+### `taketime logout`
+
+Clear the local session.
+
+### `taketime status`
+
+Show connection status, account info, and quick overview of your data.
+
+---
+
+## Daily
+
+### `taketime today`
+
+Show today's timeline with a live "NOW" indicator for the current block, daily progress bar, and your main focus priorities.
+
+```bash
+taketime today
+```
+
+**Aliases:** `taketime td`
+
+### `taketime quick`
+
+Create a block in one line — no interactive prompts.
+
+```bash
+taketime quick "Treino" 07:00 07:40
+taketime quick "Concurso" 08:00 10:00 --date=2026-06-16 --topic="Português"
+```
+
+**Aliases:** `taketime q`
+
+---
+
+## Schedule
+
+### `taketime schedule`
+
+Show the full weekly schedule with blocks per day, completion progress, and time distribution per activity.
+
+```bash
+taketime schedule              # This week
+taketime schedule --week=1     # Next week
+taketime schedule --week=-1    # Last week
+```
+
+**Aliases:** `taketime sched`, `taketime week`
+
+### `taketime blocks`
+
+List all blocks for a specific date (defaults to today).
+
+```bash
+taketime blocks
+taketime blocks --date=2026-06-16
+```
+
+**Aliases:** `taketime block`, `taketime b`
+
+### `taketime blocks create`
+
+Create a new block interactively or with flags.
+
+```bash
+taketime blocks create
+taketime blocks create --subject="Concurso" --date=2026-06-16 --start=08:00 --end=10:00 --topic="Matemática"
+```
+
+### `taketime blocks done`
+
+Toggle a block as completed/uncompleted. Supports partial ID matching.
+
+```bash
+taketime blocks done --id=a1b2c3d4
+```
+
+### `taketime blocks update`
+
+Update block fields.
+
+```bash
+taketime blocks update --id=<block-id> --start=09:00 --end=11:00
+taketime blocks update --id=<block-id> --topic="New topic" --done=true
+taketime blocks update --id=<block-id> --date=2026-06-17 --repeat=true
+```
+
+| Flag | Description |
+|------|-------------|
+| `--start` | New start time (HH:MM) |
+| `--end` | New end time (HH:MM) |
+| `--topic` | New topic text |
+| `--date` | Move to a different date |
+| `--done` | Set completion (true/false) |
+| `--repeat` | Toggle daily repeat (true/false) |
+
+### `taketime blocks delete`
+
+Delete a block. Asks for confirmation unless `--force` is used.
+
+```bash
+taketime blocks delete --id=<block-id>
+taketime blocks delete --id=<block-id> --force
+```
+
+---
+
+## Activities
+
+### `taketime subjects`
+
+List all activities with type, color, item count, and progress bar.
+
+**Aliases:** `taketime sub`, `taketime activities`
+
+### `taketime subjects show`
+
+Show detailed view of an activity including all its items.
+
+```bash
+taketime subjects show --name="Rotina"
+```
+
+### `taketime subjects create`
+
+Create a new activity. Types: `study` (📚), `training` (💪), `inactive` (🌙 routine).
+
+```bash
+taketime subjects create
+taketime subjects create --name="Matemática" --type=study --color=#ff3b30
+```
+
+### `taketime subjects update`
+
+Update an activity's name, color, or slots.
+
+```bash
+taketime subjects update --name="Treino" --new-name="Treino Manhã" --color=#34c759
+```
+
+### `taketime subjects delete`
+
+Delete an activity and all associated blocks (cascade).
+
+```bash
+taketime subjects delete --name="Treino"
+```
+
+---
+
+## Items
+
+Items are the content within each activity: **syllabus topics** (study), **exercises** (training), or **micro-habits** (routine).
+
+### `taketime items`
+
+List all items grouped by activity.
+
+### `taketime items add`
+
+Add an item to an activity.
+
+```bash
+taketime items add --subject="Treino" --name="Flexão" --sets=3 --reps=15
+taketime items add --subject="Concurso" --name="Português - Interpretação"
+taketime items add --subject="Rotina" --name="Tomar 1L de água"
+```
+
+### `taketime items update`
+
+Update an item's properties.
+
+```bash
+taketime items update --id=<item-id> --name="Flexão Diamante" --sets=4 --reps=12 --weight="10kg"
+taketime items update --id=<item-id> --status=completed
+```
+
+### `taketime items toggle`
+
+Toggle an item's completion status.
+
+```bash
+taketime items toggle --id=<item-id>
+```
+
+### `taketime items remove`
+
+Remove an item permanently.
+
+```bash
+taketime items remove --id=<item-id>
+```
+
+---
+
+## Priorities
+
+The Priority Circle organizes your focus areas into zones:
+- **Zone 1** (🎯 Main Focus) — max 3 items
+- **Zone 2** (⭐ Important)
+- **Zone 3** (🔄 Flexible)
+- **Unallocated** (📦)
+
+### `taketime priorities`
+
+Show the full priority circle.
+
+**Aliases:** `taketime prio`
+
+### `taketime priorities add`
+
+Add an item to a zone.
+
+```bash
+taketime priorities add --name="Saúde" --zone=zone2
+```
+
+### `taketime priorities move`
+
+Move an item between zones.
+
+```bash
+taketime priorities move --id=<item-id> --zone=zone1
+```
+
+### `taketime priorities remove`
+
+Remove a priority item.
+
+```bash
+taketime priorities remove --id=<item-id>
+```
+
+---
+
+## Analytics
+
+### `taketime stats`
+
+Show completion statistics with progress bars for the given period.
+
+```bash
+taketime stats            # This week (default)
+taketime stats today
+taketime stats month
+taketime stats all
+```
+
+Shows: completion rate, total time, streak, and top activities.
+
+### `taketime heatmap`
+
+Show a GitHub-style consistency heatmap in the terminal.
+
+```bash
+taketime heatmap              # Last 90 days
+taketime heatmap --days=30    # Last 30 days
+taketime heatmap --days=365   # Full year
+```
+
+---
+
+## Config
+
+### `taketime settings`
+
+Show current settings (theme, language, timezone, notifications, etc.).
+
+### `taketime settings set`
+
+Update one or more settings.
+
+```bash
+taketime settings set --theme=dark
+taketime settings set --language=en-US --timezone="America/New_York"
+taketime settings set --notifications=true --reminder=15
+taketime settings set --marquee=false
+```
+
+| Flag | Values |
+|------|--------|
+| `--theme` | `light`, `dark`, `auto` |
+| `--language` | `pt-BR`, `en-US` |
+| `--timezone` | IANA timezone |
+| `--notifications` | `true`, `false` |
+| `--reminder` | Minutes before block |
+| `--marquee` | `true`, `false` |
+
+### `taketime logs`
+
+View recent activity log.
+
+```bash
+taketime logs
+taketime logs --limit=50
+```
+
+---
+
+## Tips
+
+- **Partial IDs** work for `blocks done` — use the first 8 characters shown in listings
+- **Aliases** let you type faster: `b` for blocks, `sub` for subjects, `td` for today, `q` for quick
+- Add `--force` to skip confirmation prompts on delete operations
+- Set `DEBUG=1` for verbose error output: `DEBUG=1 taketime blocks`

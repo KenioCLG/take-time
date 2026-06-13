@@ -1,0 +1,85 @@
+---
+title: Installation
+description: "Install the Take Time CLI and authenticate."
+---
+
+## Install
+
+<Tabs>
+  <Tab title="npx (no install)">
+    Run any command directly without installing:
+
+    ```bash
+    npx @taketime/cli today
+    npx @taketime/cli schedule
+    npx @taketime/cli stats
+    ```
+  </Tab>
+  <Tab title="Global install">
+    Install globally for the `taketime` command:
+
+    ```bash
+    npm install -g @taketime/cli
+    ```
+
+    Then run:
+
+    ```bash
+    taketime today
+    ```
+  </Tab>
+  <Tab title="From source">
+    Clone and link locally:
+
+    ```bash
+    git clone https://github.com/KenioCLG/take-time.git
+    cd take-time/cli
+    npm link
+    ```
+  </Tab>
+</Tabs>
+
+## Authentication
+
+Login with your Take Time account:
+
+```bash
+taketime login
+```
+
+You'll be prompted for email and password. The session is persisted at `~/.taketime/` so you only need to login once.
+
+You can also pass credentials as flags:
+
+```bash
+taketime login --email="you@email.com" --password="your-password"
+```
+
+### Verify connection
+
+```bash
+taketime status
+```
+
+```
+  ✓ Authenticated as you@email.com
+  ℹ User ID: e9ac34de-...
+  ℹ Activities: 7
+  ℹ Today's blocks: 2/6 completed
+  ℹ Priority items: 7
+```
+
+### Logout
+
+```bash
+taketime logout
+```
+
+<Info>
+  The CLI shares the same session token as the MCP Server (stored at `~/.taketime/refresh-token`). If you're already authenticated via the MCP Server, the CLI will use that session automatically.
+</Info>
+
+## Requirements
+
+- **Node.js 18+** (uses native `fetch`)
+- A Take Time account at [taketime.space](https://taketime.space)

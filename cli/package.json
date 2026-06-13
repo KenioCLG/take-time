@@ -1,0 +1,23 @@
+{
+  "name": "@taketime/cli",
+  "version": "1.0.0",
+  "description": "Take Time CLI — manage your study schedule, activities, blocks, and priorities from the terminal",
+  "type": "module",
+  "bin": {
+    "taketime": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": ["cli", "study-planner", "take-time", "productivity", "schedule"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KenioCLG/take-time.git",
+    "directory": "cli"
+  },
+  "homepage": "https://docs.taketime.space",
+  "engines": {
+    "node": ">=18"
+  }
+}

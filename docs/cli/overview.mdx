@@ -1,0 +1,77 @@
+---
+title: CLI Overview
+description: "Manage your Take Time schedule directly from the terminal."
+---
+
+## What is the Take Time CLI?
+
+The Take Time CLI (`@taketime/cli`) gives you full control over your study schedule, activities, blocks, priorities, and settings — all from the terminal. It connects to the same Supabase database as the web app and MCP server.
+
+```bash
+taketime today
+```
+
+```
+  Today — 2026-06-13
+  ─────────────────────
+
+  Timeline
+    ○ 06:30-07:00 Rotina — Ritual da manhã
+    ✓ 07:00-07:40 Treino
+    ○ 08:00-10:00 Concurso — Português
+    ○ 14:00-16:00 Concurso — Matemática
+    ○ 18:00-19:00 Inglês
+    ○ 21:00-21:30 Rotina — Ritual do sono
+
+  ℹ Progress: ██░░░░░░░░░░░░░░░░░░ 17% (1/6)
+
+  🎯 Main Focus
+    • Espiritualidade
+    • Concurso
+    • Trabalho
+```
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Daily Timeline" icon="sun">
+    See today's blocks with live "NOW" indicator and progress
+  </Card>
+  <Card title="Weekly Schedule" icon="calendar">
+    Full week view with time distribution per activity
+  </Card>
+  <Card title="Quick Blocks" icon="bolt">
+    Create blocks in one line: `taketime quick "Treino" 07:00 07:40`
+  </Card>
+  <Card title="Activity Manager" icon="book-open">
+    CRUD subjects, items, exercises, and habits
+  </Card>
+  <Card title="Priority Circle" icon="bullseye">
+    View and manage your priority zones (1-3 + unallocated)
+  </Card>
+  <Card title="Heatmap & Stats" icon="chart-line">
+    GitHub-style heatmap, streaks, completion rates
+  </Card>
+</CardGroup>
+
+## How it works
+
+```
+┌─────────────────┐     HTTPS      ┌─────────────────┐
+│   Take Time     │ ◄────────────► │  Take Time API  │
+│   CLI           │    (REST)      │  (Supabase)     │
+└─────────────────┘                └─────────────────┘
+```
+
+The CLI authenticates once with your email/password and persists a refresh token at `~/.taketime/`. All commands talk directly to the Supabase PostgREST API — the same relational tables used by the web app and MCP server.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/cli/installation">
+    Install and authenticate the CLI
+  </Card>
+  <Card title="Commands" icon="terminal" href="/cli/commands">
+    Full command reference
+  </Card>
+</CardGroup>

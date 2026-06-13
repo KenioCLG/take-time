@@ -70,6 +70,19 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "CLI",
+            "groups": [
+              {
+                "group": "CLI",
+                "pages": [
+                  "cli/overview",
+                  "cli/installation",
+                  "cli/commands"
+                ]
+              }
+            ]
           }
         ]
       },
