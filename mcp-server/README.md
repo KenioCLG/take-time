@@ -150,6 +150,50 @@ Edit `~/.codeium/windsurf/mcp_config.json`:
 
 </details>
 
+<details>
+<summary><strong>Antigravity (Google)</strong></summary>
+
+Edit `~/.gemini/antigravity/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "taketime": {
+      "command": "npx",
+      "args": ["-y", "@taketimemcp/mcp-server"],
+      "env": {
+        "TAKETIME_EMAIL": "your@email.com",
+        "TAKETIME_PASSWORD": "your-password"
+      }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>OpenCode</strong></summary>
+
+Edit `~/.opencode/config.json`:
+
+```json
+{
+  "mcpServers": {
+    "taketime": {
+      "command": "npx",
+      "args": ["-y", "@taketimemcp/mcp-server"],
+      "env": {
+        "TAKETIME_EMAIL": "your@email.com",
+        "TAKETIME_PASSWORD": "your-password"
+      }
+    }
+  }
+}
+```
+
+</details>
+
 ### 2. Restart your AI client
 
 The Take Time tools should now appear. Try: *"List my study subjects"*

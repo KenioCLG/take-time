@@ -141,6 +141,42 @@ The MCP Server supports three authentication methods:
     }
     ```
   </Tab>
+  <Tab title="Antigravity (Google)">
+    Edit `~/.gemini/antigravity/mcp.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "taketime": {
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
+          "env": {
+            "TAKETIME_EMAIL": "your@email.com",
+            "TAKETIME_PASSWORD": "your-password"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="OpenCode">
+    Edit `~/.opencode/config.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "taketime": {
+          "command": "npx",
+          "args": ["-y", "@taketimemcp/mcp-server"],
+          "env": {
+            "TAKETIME_EMAIL": "your@email.com",
+            "TAKETIME_PASSWORD": "your-password"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
 </Tabs>
 
 ## Verify Installation

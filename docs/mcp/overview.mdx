@@ -53,7 +53,7 @@ The Take Time MCP Server gives your AI assistant direct access to your study dat
 └─────────────────┘              └──────────────────┘               └─────────────────┘
 ```
 
-The MCP Server runs as a **local process** on your machine. It communicates with the AI client via `stdio` and connects directly to your secure Take Time database using Supabase's PostgREST API.
+The MCP Server (v1.6.0) runs as a **local process** on your machine. It communicates with the AI client via `stdio` and connects directly to your secure Take Time database using Supabase's PostgREST API. All 22 tools operate on **relational tables** (subjects, blocks, priorities, logs, profiles, subject_items) — no JSON blob indirection.
 
 <Info>
   **Atomic & Secure:** All operations (CRUD) are executed atomically directly in the PostgreSQL relational tables using Row Level Security (RLS). Your data is isolated, and the MCP Server acts seamlessly as a bridge between the AI and your exact database rows.
