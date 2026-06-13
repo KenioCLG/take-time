@@ -1,48 +1,123 @@
-# Take Time - AI Study Planner
+# Take Time — AI Study Planner
 
-> Take Time is a personal study planner with an API and MCP Server for AI-powered schedule management.
+> Take Time is a personal study planner with an MCP Server (22 tools), CLI, and PWA. All interfaces share the same Supabase relational database.
 
-## Documentation
+## Architecture
 
-- [Introduction](https://docs.taketime.space/introduction): Overview of Take Time and its capabilities
-- [Quickstart](https://docs.taketime.space/quickstart): Get started in 5 minutes
-- [Authentication](https://docs.taketime.space/authentication): API keys and authentication
+```
+App (PWA)  ←→  Supabase (PostgreSQL + PostgREST + RLS)  ←→  MCP Server (stdio)
+                          ↑                                       ↑
+                     CLI (terminal)                     AI Assistants (Claude, etc.)
+```
+
+All data lives in relational tables: subjects, subject_items, blocks, profiles, priorities, logs.
+Row Level Security ensures each user only sees their own data.
 
 ## Core Concepts
 
-- [Study Blocks](https://docs.taketime.space/concepts/blocks): Time-boxed study sessions
-- [Activities & Subjects](https://docs.taketime.space/concepts/subjects): Study, training, and routine profiles
-- [Schedule](https://docs.taketime.space/concepts/schedule): Weekly time management with pizza chart
-- [Stats & Progress](https://docs.taketime.space/concepts/stats): Heatmaps, streaks, and metrics
+### Subjects (Activities)
+Three types:
+- **study** — has syllabus (topics with pending/completed status)
+- **training** — has exercises (name, sets, reps, weight)
+- **inactive** (routine) — has checklist (micro-habits with done status)
 
-## API Reference
+Each subject has: id, name, type, color, slots, sort_order.
 
-- [API Introduction](https://docs.taketime.space/api-reference/introduction): Base URL, auth, error codes, pagination
-- [List Blocks](https://docs.taketime.space/api-reference/blocks/list): GET /blocks - List study blocks
-- [Create Block](https://docs.taketime.space/api-reference/blocks/create): POST /blocks - Create study block
-- [Update Block](https://docs.taketime.space/api-reference/blocks/update): PATCH /blocks/:id - Update block
-- [Delete Block](https://docs.taketime.space/api-reference/blocks/delete): DELETE /blocks/:id - Delete block
-- [List Subjects](https://docs.taketime.space/api-reference/subjects/list): GET /subjects - List activities
-- [Create Subject](https://docs.taketime.space/api-reference/subjects/create): POST /subjects - Create activity
-- [Update Subject](https://docs.taketime.space/api-reference/subjects/update): PATCH /subjects/:id - Update activity
-- [Delete Subject](https://docs.taketime.space/api-reference/subjects/delete): DELETE /subjects/:id - Delete activity
-- [Get Stats](https://docs.taketime.space/api-reference/stats/get): GET /stats - Completion stats and heatmap
-- [Get Schedule](https://docs.taketime.space/api-reference/schedule/get): GET /schedule - Weekly schedule
-- [Suggest Schedule](https://docs.taketime.space/api-reference/schedule/suggest): POST /schedule/suggest - AI suggestions
+### Blocks (Schedule)
+Time-boxed sessions linked to a subject:
+- id, subject_id, date (YYYY-MM-DD), start_time (HH:MM), end_time (HH:MM)
+- topic (optional label), done (boolean), repeat_daily (boolean)
+- completed_items (array of item IDs checked off during this block)
 
-## MCP Server
+### Priority Circle
+Focus areas organized into zones:
+- **zone1** (Main Focus) — max 3 items
+- **zone2** (Important)
+- **zone3** (Flexible)
+- **unallocated**
 
-- [Overview](https://docs.taketime.space/mcp/overview): Connect AI assistants via Model Context Protocol
-- [Installation](https://docs.taketime.space/mcp/installation): Setup for Claude Desktop, Cursor, VS Code
-- [Tools](https://docs.taketime.space/mcp/tools): Available MCP tools reference
-- [Examples](https://docs.taketime.space/mcp/examples): Real-world usage examples
+### Subject Items
+Content within subjects:
+- Study → syllabus topics (name, done status)
+- Training → exercises (name, sets, reps, weight)
+- Routine → micro-habits (name, done status)
 
-## CLI
+## MCP Server — 22 Tools
 
-- [CLI Overview](https://docs.taketime.space/cli/overview): Manage schedule from the terminal
-- [Installation](https://docs.taketime.space/cli/installation): Install and authenticate the CLI
-- [Commands](https://docs.taketime.space/cli/commands): Full command reference (today, schedule, blocks, subjects, items, priorities, stats, heatmap, settings, logs)
+Package: `@taketimemcp/mcp-server` (v1.6.0)
+Auth: TAKETIME_REFRESH_TOKEN or TAKETIME_EMAIL + TAKETIME_PASSWORD
 
-## Guides
+### Read Tools (7)
+- **list_blocks** — List blocks by date/range/subject/status. Default: today.
+- **list_subjects** — List activities with items, completion counts.
+- **get_schedule** — Full weekly schedule organized by day. week_offset param.
+- **get_stats** — Completion rate, streak, top subjects. period: today/week/month/all.
+- **get_heatmap** — Daily completion counts with intensity levels 0-4. days param (default 90).
+- **get_priorities** — Priority circle by zone.
+- **get_logs** — Recent activity log (limit param, default 20).
+- **get_settings** — User profile settings (theme, language, timezone, etc.).
 
-- [Production](https://docs.taketime.space/guides/production): Go-live checklist
+### Write Tools — Blocks (3)
+- **create_block** — Create block (subject_name, date, start, end, topic). Checks conflicts.
+- **update_block** — Update block fields (block_id, start, end, topic, done, repeat_daily).
+- **delete_block** — Delete a block (block_id).
+
+### Write Tools — Subjects (3)
+- **create_subject** — Create activity (name, type, color, slots).
+- **update_subject** — Update activity (subject_name, new_name, color, slots).
+- **delete_subject** — Delete activity + cascade blocks + remove matching priorities.
+
+### Write Tools — Items (3)
+- **add_subject_item** — Add item (subject_name + topic/name/task based on type, sets, reps, weight).
+- **update_subject_item** — Update item (item_id, topic/name/task, status, sets, reps, weight).
+- **remove_subject_item** — Remove item (subject_name, item_id).
+
+### Write Tools — Atomic Habits (1)
+- **toggle_block_item** — Check/uncheck an item within a block. Auto-completes block when all items done.
+
+### Write Tools — Priorities (3)
+- **add_priority_item** — Add to a zone (name, zone). Zone1 max 3.
+- **remove_priority_item** — Remove (item_id).
+- **move_priority_item** — Move between zones (item_id, target_zone).
+
+### Write Tools — Settings (1)
+- **update_setting** — Update profile (notifications, reminder_min, theme, show_marquee, timezone, language).
+
+## CLI — @taketime/cli
+
+Install: `npm install -g @taketime/cli`
+
+### Commands
+- `taketime login` — Authenticate
+- `taketime today` — Today's timeline + progress + main focus
+- `taketime quick "Name" HH:MM HH:MM` — Quick block creation
+- `taketime schedule [--week=0]` — Weekly view with time distribution
+- `taketime blocks [--date=YYYY-MM-DD]` — List blocks
+- `taketime blocks create/done/update/delete` — Block CRUD
+- `taketime subjects` — List activities with progress bars
+- `taketime subjects show/create/update/delete` — Activity CRUD
+- `taketime items add/update/toggle/remove` — Item management
+- `taketime priorities` — Priority circle view
+- `taketime priorities add/move/remove` — Priority management
+- `taketime stats [today|week|month|all]` — Completion stats
+- `taketime heatmap [--days=90]` — GitHub-style heatmap
+- `taketime settings [set]` — View/update settings
+- `taketime logs` — Activity log
+
+## Documentation Links
+
+- [Introduction](https://docs.taketime.space/introduction)
+- [Quickstart](https://docs.taketime.space/quickstart)
+- [Authentication](https://docs.taketime.space/authentication)
+- [Study Blocks](https://docs.taketime.space/concepts/blocks)
+- [Activities & Subjects](https://docs.taketime.space/concepts/subjects)
+- [Schedule](https://docs.taketime.space/concepts/schedule)
+- [Stats & Progress](https://docs.taketime.space/concepts/stats)
+- [MCP Overview](https://docs.taketime.space/mcp/overview)
+- [MCP Installation](https://docs.taketime.space/mcp/installation)
+- [MCP Tools Reference](https://docs.taketime.space/mcp/tools)
+- [MCP Examples](https://docs.taketime.space/mcp/examples)
+- [CLI Overview](https://docs.taketime.space/cli/overview)
+- [CLI Installation](https://docs.taketime.space/cli/installation)
+- [CLI Commands](https://docs.taketime.space/cli/commands)
+- [Production Guide](https://docs.taketime.space/guides/production)
