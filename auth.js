@@ -183,7 +183,7 @@ const Supabase = {
 
       const mappedSubjects = subjects.map(s => {
         const sItems = items.filter(i => i.subject_id === s.id);
-        const base = { id: s.id, name: s.name, color: s.color, type: s.type, slots: s.slots || 0 };
+        const base = { id: s.id, name: s.name, color: s.color, type: s.type, slots: s.slots || [] };
         if (s.type === 'study') {
           base.syllabus = sItems.map(i => ({ id: i.id, topic: i.name, status: i.done ? 'completed' : 'pending' }));
         } else if (s.type === 'training') {
@@ -241,7 +241,7 @@ const Supabase = {
     try {
       // 1. Subjects
       const dbSubjects = (state.subjects || []).map((s, i) => ({
-        id: s.id, user_id: userId, name: s.name, color: s.color, type: s.type, slots: s.slots || 0, sort_order: i,
+        id: s.id, user_id: userId, name: s.name, color: s.color, type: s.type, slots: s.slots || [], sort_order: i,
       }));
       await this._restUpsert('subjects', dbSubjects);
       await this._restDeleteOrphans('subjects', dbSubjects.map(s => s.id));

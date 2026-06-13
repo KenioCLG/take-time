@@ -2292,6 +2292,7 @@ function initDailyBlocksFromProfiles(date) {
   if (newBlocks.length > 0) {
     newBlocks.sort((a, b) => a.start.localeCompare(b.start));
     state.blocks.push(...newBlocks);
+    Store.save(state);
   }
 }
 

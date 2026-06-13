@@ -64,6 +64,20 @@ For routines, micro-habits track daily consistency:
 - Add habits with `add_subject_item` (use `task` parameter)
 - During a block, check off habits with `toggle_block_item`
 
+### Weekly Slots (Recurring Schedules)
+
+Slots are weekly schedule templates attached to a subject. They define which days and times an activity should recur. The app auto-generates blocks from slots each day.
+
+- `list_subject_slots` → see current slot config for a subject
+- `add_subject_slot` → add a recurring schedule (days_of_week + start/end time)
+- `remove_subject_slot` → remove a slot by index
+
+Example: "Train Mon/Wed/Fri 07:00-07:40" → `add_subject_slot({ subject_name: "Treino", days_of_week: [1,3,5], start: "07:00", end: "07:40" })`
+
+Days of week: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat.
+
+A subject can have multiple slots (e.g., different times on different days). When suggesting schedules, prefer slots over individual blocks — they auto-repeat weekly.
+
 ### Atomic Habit Tracking
 
 `toggle_block_item` is the core tracking tool. It checks/unchecks an item within a specific block. When ALL items in a block are checked, the block auto-completes (`done: true`). This mirrors the app's behavior exactly.

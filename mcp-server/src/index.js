@@ -508,6 +508,106 @@ server.tool(
   }
 );
 
+// ==================== SLOT TOOLS ====================
+
+server.tool(
+  'list_subject_slots',
+  'List the weekly schedule slots for a subject. Slots define recurring time blocks per day of week.',
+  {
+    subject_name: z.string().describe('Name of the activity/subject'),
+  },
+  async ({ subject_name }) => {
+    const existing = await db.query('subjects', { name: subject_name });
+    if (!existing || existing.length === 0) throw new Error(`Subject "${subject_name}" not found.`);
+    const subject = existing[0];
+    const slots = subject.slots || [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const formatted = slots.map((slot, i) => {
+      const days = (slot.daysOfWeek || []).map(d => dayNames[d]).join(', ');
+      return { index: i, days, start: slot.start, end: slot.end, daysOfWeek: slot.daysOfWeek };
+    });
+
+    return {
+      content: [{
+        type: 'text',
+        text: formatted.length > 0
+          ? JSON.stringify(formatted, null, 2)
+          : `No slots configured for "${subject_name}". Use add_subject_slot to create weekly schedules.`,
+      }],
+    };
+  }
+);
+
+server.tool(
+  'add_subject_slot',
+  'Add a weekly schedule slot to a subject. Slots auto-generate blocks on matching days. Example: training Mon/Wed/Fri 07:00-07:40.',
+  {
+    subject_name: z.string().describe('Name of the activity/subject'),
+    days_of_week: z.array(z.number().min(0).max(6)).describe('Days of week (0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat)'),
+    start: z.string().describe('Start time (HH:MM)'),
+    end: z.string().describe('End time (HH:MM)'),
+  },
+  async ({ subject_name, days_of_week, start, end }) => {
+    validateTime(start);
+    validateTime(end);
+    if (start >= end) throw new Error('Start time must be before end time.');
+    if (days_of_week.length === 0) throw new Error('At least one day is required.');
+
+    const existing = await db.query('subjects', { name: subject_name });
+    if (!existing || existing.length === 0) throw new Error(`Subject "${subject_name}" not found.`);
+    const subject = existing[0];
+
+    const slots = subject.slots || [];
+    const newSlot = { daysOfWeek: days_of_week, start, end };
+    slots.push(newSlot);
+
+    await db.update('subjects', subject.id, { slots });
+
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayLabels = days_of_week.map(d => dayNames[d]).join(', ');
+
+    return {
+      content: [{
+        type: 'text',
+        text: `Slot added to "${subject_name}": ${dayLabels} ${start}-${end}\nTotal slots: ${slots.length}`,
+      }],
+    };
+  }
+);
+
+server.tool(
+  'remove_subject_slot',
+  'Remove a weekly schedule slot from a subject by index. Use list_subject_slots to see indexes.',
+  {
+    subject_name: z.string().describe('Name of the activity/subject'),
+    slot_index: z.number().describe('Slot index to remove (from list_subject_slots)'),
+  },
+  async ({ subject_name, slot_index }) => {
+    const existing = await db.query('subjects', { name: subject_name });
+    if (!existing || existing.length === 0) throw new Error(`Subject "${subject_name}" not found.`);
+    const subject = existing[0];
+
+    const slots = subject.slots || [];
+    if (slot_index < 0 || slot_index >= slots.length) {
+      throw new Error(`Invalid slot index ${slot_index}. Subject has ${slots.length} slots (0-${slots.length - 1}).`);
+    }
+
+    const removed = slots.splice(slot_index, 1)[0];
+    await db.update('subjects', subject.id, { slots });
+
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayLabels = (removed.daysOfWeek || []).map(d => dayNames[d]).join(', ');
+
+    return {
+      content: [{
+        type: 'text',
+        text: `Slot removed from "${subject_name}": ${dayLabels} ${removed.start}-${removed.end}\nRemaining slots: ${slots.length}`,
+      }],
+    };
+  }
+);
+
 // ==================== SUBJECT CONTENT TOOLS ====================
 
 server.tool(
