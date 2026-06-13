@@ -26,10 +26,13 @@ const db = new SupabaseClient(accessToken || 'pending');
 // --- MCP Server ---
 import { readFileSync } from 'fs';
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+const instructions = readFileSync(new URL('../INSTRUCTIONS.md', import.meta.url), 'utf8');
 
 const server = new McpServer({
   name: 'taketime',
   version: pkg.version,
+}, {
+  instructions,
 });
 
 // ==================== READ TOOLS ====================
