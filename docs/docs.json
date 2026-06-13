@@ -5,11 +5,7 @@
   "colors": {
     "primary": "#007AFF",
     "light": "#5AC8FA",
-    "dark": "#0056CC",
-    "background": {
-      "light": "#f2f2f7",
-      "dark": "#1c1c1e"
-    }
+    "dark": "#0056CC"
   },
   "font": {
     "headings": {
