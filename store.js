@@ -33,19 +33,13 @@ const Store = {
 
   async pushToCloud(data) {
     if (!window.Supabase || !Supabase._user) return;
-    const ok = await Supabase.saveUserData(data);
-    if (ok) {
-      console.log('[Sync] Pushed to cloud');
-    }
+    const ok = await Supabase.saveRelationalData(data);
+    if (ok) console.log('[Sync] Pushed to relational tables');
   },
 
   async pullFromCloud() {
     if (!window.Supabase || !Supabase._user) return null;
-    const remote = await Supabase.loadUserData();
-    if (remote && remote.state) {
-      return remote.state;
-    }
-    return null;
+    return await Supabase.loadRelationalData();
   },
 
   async syncOnLogin() {
@@ -88,18 +82,18 @@ const Store = {
         zone2: [],
         zone3: [],
         unallocated: [
-          { id: 'p1', name: 'Saúde e disposição', pillar: 'pessoal', color: '#34c759' },
-          { id: 'p2', name: 'Desenvolvimento pessoal', pillar: 'pessoal', color: '#34c759' },
-          { id: 'p3', name: 'Equilíbrio emocional', pillar: 'pessoal', color: '#34c759' },
-          { id: 'pr1', name: 'Finanças', pillar: 'profissional', color: '#ff9500' },
-          { id: 'pr2', name: 'Carreira e propósito', pillar: 'profissional', color: '#ff9500' },
-          { id: 'pr3', name: 'Impacto social', pillar: 'profissional', color: '#ff9500' },
-          { id: 'r1', name: 'Família', pillar: 'relacionamentos', color: '#ff2d55' },
-          { id: 'r2', name: 'Relacionamentos amorosos', pillar: 'relacionamentos', color: '#ff2d55' },
-          { id: 'r3', name: 'Amizades e social', pillar: 'relacionamentos', color: '#ff2d55' },
-          { id: 'q1', name: 'Hobbies / Lazer', pillar: 'qualidade', color: '#5ac8fa' },
-          { id: 'q2', name: 'Espiritualidade', pillar: 'qualidade', color: '#5ac8fa' },
-          { id: 'q3', name: 'Plenitude / Felicidade', pillar: 'qualidade', color: '#5ac8fa' }
+          { id: crypto.randomUUID(), name: 'Saúde e disposição' },
+          { id: crypto.randomUUID(), name: 'Desenvolvimento pessoal' },
+          { id: crypto.randomUUID(), name: 'Equilíbrio emocional' },
+          { id: crypto.randomUUID(), name: 'Finanças' },
+          { id: crypto.randomUUID(), name: 'Carreira e propósito' },
+          { id: crypto.randomUUID(), name: 'Impacto social' },
+          { id: crypto.randomUUID(), name: 'Família' },
+          { id: crypto.randomUUID(), name: 'Relacionamentos amorosos' },
+          { id: crypto.randomUUID(), name: 'Amizades e social' },
+          { id: crypto.randomUUID(), name: 'Hobbies / Lazer' },
+          { id: crypto.randomUUID(), name: 'Espiritualidade' },
+          { id: crypto.randomUUID(), name: 'Plenitude / Felicidade' }
         ]
       }
     };
@@ -125,7 +119,7 @@ const MAX_SUBJECT_NAME_LENGTH = 40;
 // ===== UTILS =====
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const uid = () => crypto.randomUUID();
 
 // Export to global scope for other scripts
 window.Store = Store;

@@ -130,6 +130,182 @@ const Supabase = {
       return false;
     }
   },
+
+  // --- Relational Data API (Phase 2) ---
+
+  async _restGet(table, params = '') {
+    try {
+      return await this._fetch(`/rest/v1/${table}?select=*${params}`, {
+        headers: { 'Accept': 'application/json' },
+      }) || [];
+    } catch (e) {
+      console.warn(`[Sync] GET ${table} failed:`, e);
+      return [];
+    }
+  },
+
+  async _restUpsert(table, rows) {
+    if (!rows || rows.length === 0) return;
+    try {
+      await this._fetch(`/rest/v1/${table}`, {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify(rows),
+      });
+    } catch (e) {
+      console.warn(`[Sync] UPSERT ${table} failed:`, e);
+    }
+  },
+
+  async _restDeleteOrphans(table, keepIds) {
+    try {
+      if (keepIds.length === 0) {
+        await this._fetch(`/rest/v1/${table}?id=not.is.null`, { method: 'DELETE' });
+      } else {
+        await this._fetch(`/rest/v1/${table}?id=not.in.(${keepIds.join(',')})`, { method: 'DELETE' });
+      }
+    } catch (e) {
+      console.warn(`[Sync] DELETE orphans ${table} failed:`, e);
+    }
+  },
+
+  async loadRelationalData() {
+    if (!this._user) return null;
+    try {
+      const [subjects, items, blocks, profiles, priorities, logs] = await Promise.all([
+        this._restGet('subjects', '&order=sort_order'),
+        this._restGet('subject_items', '&order=sort_order'),
+        this._restGet('blocks'),
+        this._restGet('profiles', `&id=eq.${this._user.id}`),
+        this._restGet('priorities', '&order=sort_order'),
+        this._restGet('logs', '&order=created_at.desc&limit=50'),
+      ]);
+
+      const mappedSubjects = subjects.map(s => {
+        const sItems = items.filter(i => i.subject_id === s.id);
+        const base = { id: s.id, name: s.name, color: s.color, type: s.type, slots: s.slots || 0 };
+        if (s.type === 'study') {
+          base.syllabus = sItems.map(i => ({ id: i.id, topic: i.name, status: i.done ? 'completed' : 'pending' }));
+        } else if (s.type === 'training') {
+          base.exercises = sItems.map(i => ({ id: i.id, name: i.name, sets: i.sets || 0, reps: i.reps || '', weight: i.weight || '' }));
+        } else {
+          base.checklist = sItems.map(i => ({ id: i.id, task: i.name, done: !!i.done }));
+        }
+        return base;
+      });
+
+      const mappedBlocks = blocks.map(b => ({
+        id: b.id,
+        subjectId: b.subject_id,
+        date: b.date,
+        start: b.start_time?.substring(0, 5),
+        end: b.end_time?.substring(0, 5),
+        topic: b.topic || '',
+        done: !!b.done,
+        repeatDaily: !!b.repeat_daily,
+        completedItems: b.completed_items || [],
+      }));
+
+      const profile = profiles[0] || {};
+      const mappedSettings = {
+        notifications: profile.notifications ?? false,
+        reminderMin: profile.reminder_min ?? 10,
+        theme: profile.theme || 'auto',
+        showMarquee: profile.show_marquee ?? true,
+        timezone: profile.timezone || 'America/Sao_Paulo',
+        language: profile.language || 'pt-BR',
+      };
+      if (profile.marquee_texts?.length > 0) mappedSettings.marqueeTexts = profile.marquee_texts;
+
+      const mappedPriorities = { zone1: [], zone2: [], zone3: [], unallocated: [] };
+      priorities.forEach(p => {
+        if (mappedPriorities[p.zone]) mappedPriorities[p.zone].push({ id: p.id, name: p.name });
+      });
+
+      const mappedLogs = logs.map(l => ({
+        id: l.id,
+        timestamp: new Date(l.created_at).toLocaleString(),
+        message: l.action + (l.detail ? ': ' + l.detail : ''),
+      }));
+
+      return { subjects: mappedSubjects, blocks: mappedBlocks, logs: mappedLogs, settings: mappedSettings, priorities: mappedPriorities };
+    } catch (e) {
+      console.warn('[Sync] loadRelationalData failed:', e);
+      return null;
+    }
+  },
+
+  async saveRelationalData(state) {
+    if (!this._user) return false;
+    const userId = this._user.id;
+    try {
+      // 1. Subjects
+      const dbSubjects = (state.subjects || []).map((s, i) => ({
+        id: s.id, user_id: userId, name: s.name, color: s.color, type: s.type, slots: s.slots || 0, sort_order: i,
+      }));
+      await this._restUpsert('subjects', dbSubjects);
+      await this._restDeleteOrphans('subjects', dbSubjects.map(s => s.id));
+
+      // 2. Subject items
+      const dbItems = [];
+      (state.subjects || []).forEach(s => {
+        const list = s.type === 'study' ? s.syllabus : s.type === 'training' ? s.exercises : s.checklist;
+        (list || []).forEach((item, i) => {
+          dbItems.push({
+            id: item.id, user_id: userId, subject_id: s.id,
+            name: item.topic || item.name || item.task || '',
+            sets: item.sets || null, reps: item.reps ? String(item.reps) : null, weight: item.weight || null,
+            done: s.type === 'study' ? item.status === 'completed' : !!item.done,
+            sort_order: i,
+          });
+        });
+      });
+      await this._restUpsert('subject_items', dbItems);
+      await this._restDeleteOrphans('subject_items', dbItems.map(i => i.id));
+
+      // 3. Blocks
+      const dbBlocks = (state.blocks || []).map(b => ({
+        id: b.id, user_id: userId, subject_id: b.subjectId,
+        date: b.date, start_time: b.start, end_time: b.end,
+        topic: b.topic || '', done: !!b.done, repeat_daily: !!b.repeatDaily,
+        completed_items: b.completedItems || [],
+      }));
+      await this._restUpsert('blocks', dbBlocks);
+      await this._restDeleteOrphans('blocks', dbBlocks.map(b => b.id));
+
+      // 4. Settings (profile)
+      const st = state.settings || {};
+      try {
+        await this._fetch(`/rest/v1/profiles?id=eq.${userId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            notifications: st.notifications ?? false,
+            reminder_min: st.reminderMin ?? 10,
+            theme: st.theme || 'auto',
+            show_marquee: st.showMarquee ?? true,
+            timezone: st.timezone || 'America/Sao_Paulo',
+            language: st.language || 'pt-BR',
+            marquee_texts: st.marqueeTexts || [],
+          }),
+        });
+      } catch (e) { console.warn('[Sync] PATCH profiles failed:', e); }
+
+      // 5. Priorities
+      const dbPriorities = [];
+      ['zone1', 'zone2', 'zone3', 'unallocated'].forEach(zone => {
+        (state.priorities?.[zone] || []).forEach((item, i) => {
+          dbPriorities.push({ id: item.id, user_id: userId, name: item.name, zone, sort_order: i });
+        });
+      });
+      await this._restUpsert('priorities', dbPriorities);
+      await this._restDeleteOrphans('priorities', dbPriorities.map(p => p.id));
+
+      return true;
+    } catch (e) {
+      console.warn('[Sync] saveRelationalData failed:', e);
+      return false;
+    }
+  },
 };
 
 // ===== AUTH SERVICE (wraps Supabase) =====
