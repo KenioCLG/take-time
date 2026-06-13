@@ -5,8 +5,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { SupabaseClient, loadPersistedRefreshToken } from './supabase.js';
 import {
-  uid, getBlocksInRange, getSubjectById,
-  getCurrentWeekDates, computeStats, formatBlock,
+  uid, getCurrentWeekDates,
   validateDate, validateTime, validateColor,
 } from './helpers.js';
 
@@ -23,11 +22,6 @@ if (!refreshToken && !accessToken && (!email || !password)) {
 }
 
 const db = new SupabaseClient(accessToken || 'pending');
-
-// --- State helpers ---
-let _stateLock = Promise.resolve();
-
-
 
 // --- MCP Server ---
 import { readFileSync } from 'fs';
@@ -130,13 +124,70 @@ server.tool(
     period: z.enum(['today', 'week', 'month', 'all']).optional().describe('Time period (default: week)'),
   },
   async ({ period }) => {
-    const state = await getState();
-    const stats = computeStats(state, period || 'week');
+    let blocks = await db.query('blocks') || [];
+    const subjects = await db.query('subjects') || [];
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const p = period || 'week';
+
+    if (p === 'today') {
+      blocks = blocks.filter(b => b.date === today);
+    } else if (p === 'week') {
+      const { start, end } = getCurrentWeekDates();
+      blocks = blocks.filter(b => b.date >= start && b.date <= end);
+    } else if (p === 'month') {
+      const monthStart = today.slice(0, 7) + '-01';
+      blocks = blocks.filter(b => b.date >= monthStart && b.date <= today);
+    }
+
+    const total = blocks.length;
+    const completed = blocks.filter(b => b.done).length;
+    const rate = total > 0 ? Math.round((completed / total) * 100) / 100 : 0;
+
+    let totalMinutes = 0;
+    blocks.forEach(b => {
+      if (b.start_time && b.end_time) {
+        const [sh, sm] = b.start_time.split(':').map(Number);
+        const [eh, em] = b.end_time.split(':').map(Number);
+        totalMinutes += (eh * 60 + em) - (sh * 60 + sm);
+      }
+    });
+
+    // Streak
+    let streak = 0;
+    const dateSet = new Set(blocks.filter(b => b.done).map(b => b.date));
+    const checkDate = new Date(now);
+    while (dateSet.has(checkDate.toISOString().split('T')[0])) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    // Top subjects
+    const subjectMap = {};
+    blocks.forEach(b => {
+      const subject = subjects.find(s => s.id === b.subject_id);
+      const name = subject?.name || 'Unknown';
+      if (!subjectMap[name]) subjectMap[name] = { name, blocks: 0, minutes: 0 };
+      subjectMap[name].blocks++;
+      if (b.start_time && b.end_time) {
+        const [sh, sm] = b.start_time.split(':').map(Number);
+        const [eh, em] = b.end_time.split(':').map(Number);
+        subjectMap[name].minutes += (eh * 60 + em) - (sh * 60 + sm);
+      }
+    });
+    const topSubjects = Object.values(subjectMap).sort((a, b) => b.blocks - a.blocks).slice(0, 5);
 
     return {
       content: [{
         type: 'text',
-        text: JSON.stringify(stats, null, 2),
+        text: JSON.stringify({
+          total_blocks: total,
+          completed_blocks: completed,
+          completion_rate: rate,
+          streak_days: streak,
+          total_minutes: totalMinutes,
+          top_subjects: topSubjects,
+        }, null, 2),
       }],
     };
   }
@@ -149,15 +200,28 @@ server.tool(
     week_offset: z.number().optional().describe('0 = current week, -1 = last week, 1 = next week'),
   },
   async ({ week_offset }) => {
-    const state = await getState();
     const { start, end, dates } = getCurrentWeekDates(week_offset || 0);
-    const blocks = getBlocksInRange(state, start, end);
+    const allBlocks = await db.query('blocks') || [];
+    const subjects = await db.query('subjects') || [];
+    const blocks = allBlocks.filter(b => b.date >= start && b.date <= end);
 
     const days = {};
     dates.forEach(d => { days[d] = []; });
     blocks.forEach(b => {
       if (days[b.date]) {
-        days[b.date].push(formatBlock(b, state));
+        const subject = subjects.find(s => s.id === b.subject_id);
+        days[b.date].push({
+          id: b.id,
+          subject_id: b.subject_id,
+          subject_name: subject?.name || 'Unknown',
+          date: b.date,
+          start: b.start_time?.substring(0, 5),
+          end: b.end_time?.substring(0, 5),
+          topic: b.topic || null,
+          done: !!b.done,
+          completed_items: b.completed_items || [],
+          repeat_daily: !!b.repeat_daily,
+        });
       }
     });
 
@@ -189,16 +253,16 @@ server.tool(
     days: z.number().optional().describe('Number of days to include (default: 90, max: 365)'),
   },
   async ({ days }) => {
-    const state = await getState();
+    const allBlocks = await db.query('blocks') || [];
     const numDays = Math.min(days || 90, 365);
     const now = new Date();
     const heatmap = {};
 
     // Build daily counts from all blocks
-    (state.blocks || []).forEach(b => {
+    allBlocks.forEach(b => {
       if (!b.date) return;
       let count = b.done ? 1 : 0;
-      count += (b.completedItems || []).length;
+      count += (b.completed_items || []).length;
       if (count > 0) heatmap[b.date] = (heatmap[b.date] || 0) + count;
     });
 
@@ -260,18 +324,19 @@ server.tool(
   'Get the Priority Circle — activities organized by priority zone (Main Focus, Important, Flexible, Unallocated).',
   {},
   async () => {
-    const state = await getState();
-    const priorities = state.priorities || {};
+    const allPriorities = await db.query('priorities') || [];
+
+    const grouped = {
+      zone1_main_focus: allPriorities.filter(p => p.zone === 'zone1'),
+      zone2_important: allPriorities.filter(p => p.zone === 'zone2'),
+      zone3_flexible: allPriorities.filter(p => p.zone === 'zone3'),
+      unallocated: allPriorities.filter(p => p.zone === 'unallocated'),
+    };
 
     return {
       content: [{
         type: 'text',
-        text: JSON.stringify({
-          zone1_main_focus: priorities.zone1 || [],
-          zone2_important: priorities.zone2 || [],
-          zone3_flexible: priorities.zone3 || [],
-          unallocated: priorities.unallocated || [],
-        }, null, 2),
+        text: JSON.stringify(grouped, null, 2),
       }],
     };
   }
