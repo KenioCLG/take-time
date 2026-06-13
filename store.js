@@ -81,20 +81,7 @@ const Store = {
         zone1: [],
         zone2: [],
         zone3: [],
-        unallocated: [
-          { id: crypto.randomUUID(), name: 'Saúde e disposição' },
-          { id: crypto.randomUUID(), name: 'Desenvolvimento pessoal' },
-          { id: crypto.randomUUID(), name: 'Equilíbrio emocional' },
-          { id: crypto.randomUUID(), name: 'Finanças' },
-          { id: crypto.randomUUID(), name: 'Carreira e propósito' },
-          { id: crypto.randomUUID(), name: 'Impacto social' },
-          { id: crypto.randomUUID(), name: 'Família' },
-          { id: crypto.randomUUID(), name: 'Relacionamentos amorosos' },
-          { id: crypto.randomUUID(), name: 'Amizades e social' },
-          { id: crypto.randomUUID(), name: 'Hobbies / Lazer' },
-          { id: crypto.randomUUID(), name: 'Espiritualidade' },
-          { id: crypto.randomUUID(), name: 'Plenitude / Felicidade' }
-        ]
+        unallocated: []
       }
     };
   },

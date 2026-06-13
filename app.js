@@ -1431,9 +1431,11 @@ function renderPriorities() {
     if (!listEl) return;
 
     listEl.innerHTML = p[zoneId].map(item => `
-      <div class="priority-item" data-id="${item.id}" data-pillar="${item.pillar}">
-        <div class="priority-item-dot" style="background:${item.color}"></div>
-        <span data-i18n="priorities.${item.id}">${DS.escapeHtml(__('priorities.' + item.id, null, item.name))}</span>
+      <div class="priority-item" data-id="${item.id}">
+        <span>${DS.escapeHtml(item.name)}</span>
+        <button class="priority-delete-btn" onclick="deletePriorityItem('${item.id}')" style="background:none; border:none; cursor:pointer; color:var(--ds-text-tertiary); padding:0 2px; margin-left:auto; display:flex; align-items:center; opacity:0.5;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
     `).join('');
   });
@@ -1501,6 +1503,26 @@ function initPriorities() {
       }
     });
   });
+}
+
+function promptAddPriority() {
+  const name = prompt(__('priorities.add_prompt', null, 'Nome da área de vida:'));
+  if (!name || !name.trim()) return;
+  if (!state.priorities) state.priorities = { zone1: [], zone2: [], zone3: [], unallocated: [] };
+  state.priorities.unallocated.push({ id: uid(), name: name.trim() });
+  Store.save(state);
+  renderPriorities();
+  initPriorities();
+}
+
+function deletePriorityItem(itemId) {
+  if (!state.priorities) return;
+  ['zone1', 'zone2', 'zone3', 'unallocated'].forEach(zone => {
+    state.priorities[zone] = (state.priorities[zone] || []).filter(i => i.id !== itemId);
+  });
+  Store.save(state);
+  renderPriorities();
+  initPriorities();
 }
 
 // Color picker
