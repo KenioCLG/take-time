@@ -293,6 +293,10 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   filter: drop-shadow(0 4px 16px rgba(0,0,0,0.05));
 }
 
+.pizza-ring-fill {
+  transition: stroke-dashoffset 0.6s var(--ds-ease-default);
+}
+
 .pizza-center {
   position: absolute;
   top: 50%; left: 50%;
@@ -332,10 +336,20 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
               box-shadow 0.08s var(--ds-ease-default);
 }
 
+.pizza-center-pct {
+  display: block;
+  font-size: 22px;
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-accent);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 2px;
+}
+
 .pizza-center-label {
   display: block;
-  font-size: 11px;
-  color: var(--ds-text-secondary);
+  font-size: 10px;
+  color: var(--ds-text-tertiary);
   margin-top: 6px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -363,17 +377,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .pizza-now-dot  { fill: var(--ds-danger); }
 
 
-.pizza-progress {
-  width: 48px; height: 3px;
-  background: var(--ds-fill-tertiary);
-  border-radius: var(--ds-radius-full);
-  margin: var(--ds-space-2) auto 0;
-  overflow: hidden;
-}
-.pizza-progress-fill {
-  height: 100%; width: 0%;
-  background: var(--ds-success);
-  border-radius: var(--ds-radius-full);
+.pizza-progress-legacy-removed {
+  display: none;
   transition: width var(--ds-duration-slow) var(--ds-ease-spring);
 }
 
@@ -390,6 +395,39 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 /* ===== BLOCK LIST ===== */
 .block-list { display: flex; flex-direction: column; gap: var(--ds-space-2); }
+
+.day-summary-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+}
+.day-summary-text {
+  font-size: 12px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-secondary);
+  white-space: nowrap;
+}
+.day-summary-track {
+  flex: 1;
+  height: 4px;
+  background: var(--ds-fill-tertiary);
+  border-radius: var(--ds-radius-full);
+  overflow: hidden;
+}
+.day-summary-fill {
+  height: 100%;
+  border-radius: var(--ds-radius-full);
+  transition: width 0.4s var(--ds-ease-default);
+}
+.day-summary-pct {
+  font-size: 12px;
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-accent);
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+  text-align: right;
+}
 
 /* ===== BLOCK CARD — Redesigned ===== */
 .block-card {
@@ -1296,8 +1334,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 /* ===== MOBILE PIZZA RESPONSIVE ===== */
 @media (max-width: 450px) {
-  .pizza-center-label { font-size: 10px !important; }
-  .pizza-progress { width: 60px !important; }
+  .pizza-center-label { font-size: 9px !important; }
+  .pizza-center-pct { font-size: 18px !important; }
 }
 
 /* ===== SLICE ICONS ===== */

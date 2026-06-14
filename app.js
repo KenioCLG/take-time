@@ -380,6 +380,43 @@ function renderPizza() {
   innerCircle.setAttribute('fill', 'var(--ds-bg-primary)');
   svg.appendChild(innerCircle);
 
+  // Progress ring (inside inner circle)
+  const RING_R = R_INNER - 8;
+  const ringBg = document.createElementNS(SVG_NS, 'circle');
+  ringBg.setAttribute('cx', CX);
+  ringBg.setAttribute('cy', CY);
+  ringBg.setAttribute('r', RING_R);
+  ringBg.setAttribute('fill', 'none');
+  ringBg.setAttribute('stroke', 'var(--ds-fill-tertiary)');
+  ringBg.setAttribute('stroke-width', '4');
+  ringBg.setAttribute('class', 'pizza-ring-bg');
+  svg.appendChild(ringBg);
+
+  // Calculate progress for ring
+  const activeForRing = dayBlocks.filter(b => {
+    const s = state.subjects.find(s => s.id === b.subjectId);
+    return s?.type !== 'inactive';
+  });
+  const doneForRing = activeForRing.filter(b => b.done).length;
+  const pctForRing = activeForRing.length > 0 ? doneForRing / activeForRing.length : 0;
+  const circumference = 2 * Math.PI * RING_R;
+
+  if (dayBlocks.length > 0) {
+    const ringFill = document.createElementNS(SVG_NS, 'circle');
+    ringFill.setAttribute('cx', CX);
+    ringFill.setAttribute('cy', CY);
+    ringFill.setAttribute('r', RING_R);
+    ringFill.setAttribute('fill', 'none');
+    ringFill.setAttribute('stroke', pctForRing >= 1 ? 'var(--ds-success)' : 'var(--ds-accent)');
+    ringFill.setAttribute('stroke-width', '4');
+    ringFill.setAttribute('stroke-linecap', 'round');
+    ringFill.setAttribute('stroke-dasharray', `${circumference}`);
+    ringFill.setAttribute('stroke-dashoffset', `${circumference * (1 - pctForRing)}`);
+    ringFill.setAttribute('transform', `rotate(-90 ${CX} ${CY})`);
+    ringFill.setAttribute('class', 'pizza-ring-fill');
+    svg.appendChild(ringFill);
+  }
+
   // Hour ticks and labels
   const totalHours = dayEnd - dayStart;
   for (let h = dayStart; h <= dayEnd; h++) {
@@ -549,25 +586,16 @@ function renderPizza() {
   });
   const done = activeBlocks.filter(b => b.done).length;
   const pct = activeBlocks.length > 0 ? Math.round((done / activeBlocks.length) * 100) : 0;
-  $('#pizzaCenterLabel').textContent = activeBlocks.length > 0
-    ? I18n.t('pizza.completed', { done, total: activeBlocks.length })
-    : '';
 
-  // Progress bar
-  const centerEl = $('#pizzaCenter');
-  const progressEl = $('#pizzaProgress');
-  const fillEl = $('#pizzaProgressFill');
-  
-  // Sempre mostra o centro (0h / PLANEJADO)
-  centerEl.style.display = '';
-
-  if (dayBlocks.length > 0) {
-    progressEl.style.display = '';
-    fillEl.style.width = `${pct}%`;
-    if (pct === 100) fillEl.style.background = 'var(--ds-success)';
-    else fillEl.style.background = 'var(--ds-accent)';
+  const centerLabel = $('#pizzaCenterLabel');
+  const centerPct = $('#pizzaCenterPct');
+  if (activeBlocks.length > 0) {
+    centerPct.textContent = `${pct}%`;
+    centerPct.style.color = pct >= 100 ? 'var(--ds-success)' : 'var(--ds-accent)';
+    centerLabel.textContent = I18n.t('pizza.completed', { done, total: activeBlocks.length });
   } else {
-    progressEl.style.display = 'none';
+    centerPct.textContent = '';
+    centerLabel.textContent = '';
   }
 }
 
@@ -585,7 +613,21 @@ function renderBlockList() {
     return;
   }
 
-  container.innerHTML = dayBlocks.map(block => {
+  // Day summary bar
+  const totalBlocks = dayBlocks.length;
+  const doneBlocks = dayBlocks.filter(b => b.done).length;
+  const dayPct = totalBlocks > 0 ? Math.round((doneBlocks / totalBlocks) * 100) : 0;
+  const summaryHtml = `
+    <div class="day-summary-bar">
+      <span class="day-summary-text">${doneBlocks}/${totalBlocks} ${I18n.t('pizza.done_label', null, 'concluídas')}</span>
+      <div class="day-summary-track">
+        <div class="day-summary-fill" style="width:${dayPct}%; background:${dayPct >= 100 ? 'var(--ds-success)' : 'var(--ds-accent)'}"></div>
+      </div>
+      <span class="day-summary-pct">${dayPct}%</span>
+    </div>
+  `;
+
+  container.innerHTML = summaryHtml + dayBlocks.map(block => {
     const subj = state.subjects.find(s => s.id === block.subjectId);
     const color = subj?.color || '#8e8e93';
     const dur = durationLabel(block.start, block.end);
