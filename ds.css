@@ -1164,6 +1164,32 @@ html {
   transform-origin: top center;
 }
 
+/* --- Animation: Write (lines being written, notes) --- */
+@keyframes ds-icon-write {
+  0%   { stroke-dashoffset: 8; }
+  50%  { stroke-dashoffset: 0; }
+  90%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 8; }
+}
+.active .ds-icon--write line,
+.ds-icon-animate .ds-icon--write line {
+  stroke-dasharray: 8;
+  stroke-dashoffset: 8;
+  animation: ds-icon-write 2.4s ease-in-out infinite;
+}
+.active .ds-icon--write line:nth-child(3),
+.ds-icon-animate .ds-icon--write line:nth-child(3) {
+  animation-delay: 0s;
+}
+.active .ds-icon--write line:nth-child(4),
+.ds-icon-animate .ds-icon--write line:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.active .ds-icon--write line:nth-child(5),
+.ds-icon-animate .ds-icon--write line:nth-child(5) {
+  animation-delay: 0.6s;
+}
+
 /* --- Ray pulse (child elements, staggered) --- */
 @keyframes ds-icon-ray-pulse {
   0%, 100% { opacity: 0.35; }
@@ -1189,7 +1215,8 @@ html {
 .ds-icon--rock,
 .ds-icon--bounce,
 .ds-icon--shake,
-.ds-icon--wobble {
+.ds-icon--wobble,
+.ds-icon--write {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   will-change: transform;

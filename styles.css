@@ -1654,6 +1654,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   .ds-icon--spin,
   .ds-icon--spin-slow,
   .ds-icon--rock,
+  .ds-icon--write line,
   .ds-icon-ray {
     animation: none !important;
   }

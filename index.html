@@ -15,14 +15,14 @@
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="ds.css?v=3">
-  <link rel="stylesheet" href="styles.css?v=34">
+  <link rel="stylesheet" href="ds.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=35">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <script>
     // Force SW update + cache nuke on version change
     (function(){
-      var key = 'tt_cache_v35';
+      var key = 'tt_cache_v36';
       // Always try to update SW when online
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(function(reg) {
@@ -194,7 +194,7 @@
         <span data-i18n="tab.schedule">Agenda</span>
       </button>
       <button class="ds-tab" data-tab="notes">
-        <svg class="ds-icon" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        <svg class="ds-icon ds-icon--write" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="9" x2="10" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
         <span data-i18n="tab.notes">Notas</span>
       </button>
       <button class="ds-tab" data-tab="subjects">
