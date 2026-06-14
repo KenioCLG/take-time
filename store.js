@@ -76,6 +76,16 @@ const Store = {
       remote.notes = local.notes;
     }
 
+    // Merge settings: local wins for keys that remote doesn't have explicitly
+    // This prevents a missing profile row from resetting local toggles
+    if (local.settings && remote.settings) {
+      for (const key of Object.keys(local.settings)) {
+        if (remote.settings[key] === undefined || remote.settings[key] === null) {
+          remote.settings[key] = local.settings[key];
+        }
+      }
+    }
+
     // Remote always wins — it's the source of truth per user
     localStorage.setItem(this._key, JSON.stringify(remote));
     return remote;

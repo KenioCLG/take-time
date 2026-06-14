@@ -215,7 +215,9 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   align-items: center;
   justify-content: center;
   border: none;
-  background: transparent;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
   color: var(--ds-text-tertiary);
   cursor: pointer;
   padding: 0;

@@ -2109,6 +2109,8 @@ function initSettings() {
         });
       }
       Store.save(state);
+      // Force immediate cloud sync so notification preference survives app restart
+      Store.pushToCloud(state);
       logAction(I18n.t(notifToggle.checked ? 'log.notif_on' : 'log.notif_off'));
     });
   }
