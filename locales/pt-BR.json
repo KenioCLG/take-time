@@ -367,5 +367,41 @@
   "note.title_placeholder": "Título da nota",
   "note.tags_label": "Etiquetas",
   "note.tags_placeholder": "Ex: revisão, importante",
-  "note.content_label": "Conteúdo"
+  "note.content_label": "Conteúdo",
+  "note.date_label": "Data (opcional)",
+  "note.no_date": "Sem data",
+
+  "stats.title": "Estatísticas",
+  "stats.total_hours": "Horas totais",
+  "stats.streak": "Sequência",
+  "stats.days": "dias",
+  "stats.by_subject": "Por atividade",
+  "stats.weekly": "Esta semana",
+  "stats.monthly": "Este mês",
+  "stats.no_data": "Sem dados ainda",
+  "stats.completed": "Concluídos",
+  "stats.pending": "Pendentes",
+
+  "week_view.title": "Visão Semanal",
+  "month_view.title": "Visão Mensal",
+
+  "template.save": "Salvar como template",
+  "template.apply": "Aplicar template",
+  "template.name": "Nome do template",
+  "template.empty": "Nenhum template salvo",
+  "template.applied": "Template aplicado",
+  "template.saved": "Template salvo",
+  "template.delete": "Excluir template",
+
+  "repeat.label": "Repetir nos dias",
+  "repeat.daily": "Diariamente",
+  "repeat.weekdays": "Dias úteis",
+  "repeat.custom": "Personalizado",
+  "day.sun": "Dom",
+  "day.mon": "Seg",
+  "day.tue": "Ter",
+  "day.wed": "Qua",
+  "day.thu": "Qui",
+  "day.fri": "Sex",
+  "day.sat": "Sáb"
 }

@@ -621,6 +621,27 @@ function renderBlockList() {
   const totalBlocks = summaryBlocks.length;
   const doneBlocks = summaryBlocks.filter(b => b.done).length;
   const dayPct = totalBlocks > 0 ? Math.round((doneBlocks / totalBlocks) * 100) : 0;
+  const viewBtns = `<div class="view-btns">
+    <button class="view-btn" id="btnWeekView" title="${I18n.t('week_view.title', null, 'Visão Semanal')}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="22"/><line x1="15" y1="4" x2="15" y2="22"/></svg>
+    </button>
+    <button class="view-btn" id="btnMonthView" title="${I18n.t('month_view.title', null, 'Visão Mensal')}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </button>
+    <button class="view-btn" id="btnStats" title="${I18n.t('stats.title', null, 'Estatísticas')}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </button>
+    <button class="view-btn" id="btnShare" title="Compartilhar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    </button>
+    <button class="view-btn" id="btnSaveTemplate" title="${I18n.t('template.save', null, 'Salvar template')}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    </button>
+    <button class="view-btn" id="btnApplyTemplate" title="${I18n.t('template.apply', null, 'Aplicar template')}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
+    </button>
+  </div>`;
+
   const summaryHtml = totalBlocks > 0 ? `
     <div class="day-summary-bar">
       <span class="day-summary-text">${doneBlocks}/${totalBlocks} ${I18n.t('pizza.done_label', null, 'concluídas')}</span>
@@ -628,8 +649,9 @@ function renderBlockList() {
         <div class="day-summary-fill" style="width:${dayPct}%; background:${dayPct >= 100 ? 'var(--ds-success)' : 'var(--ds-accent)'}"></div>
       </div>
       <span class="day-summary-pct">${dayPct}%</span>
+      ${viewBtns}
     </div>
-  ` : '';
+  ` : viewBtns;
 
   container.innerHTML = summaryHtml + dayBlocks.map(block => {
     const subj = state.subjects.find(s => s.id === block.subjectId);
@@ -667,7 +689,26 @@ function renderBlockList() {
               <label class="ds-label" style="font-size:10px;">${I18n.t('syllabus.label')}</label>
               <select class="ds-select select-block-syllabus block-syllabus-select" data-block-id="${block.id}">
                 <option value="">${I18n.t('syllabus.select_prompt')}</option>
-                ${syllabus.map(item => `<option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>[${item.status === 'completed' ? '\u2713' : '\u25CB'}] ${DS.escapeHtml(item.topic)}</option>`).join('')}
+                ${(() => {
+                  const groups = {};
+                  const noMat = [];
+                  syllabus.forEach(item => {
+                    if (item.materia) {
+                      if (!groups[item.materia]) groups[item.materia] = [];
+                      groups[item.materia].push(item);
+                    } else {
+                      noMat.push(item);
+                    }
+                  });
+                  let opts = '';
+                  for (const [mat, items] of Object.entries(groups)) {
+                    opts += `<optgroup label="${DS.escapeHtml(mat)}">`;
+                    opts += items.map(item => `<option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>[${item.status === 'completed' ? '\u2713' : '\u25CB'}] ${DS.escapeHtml(item.topic)}</option>`).join('');
+                    opts += '</optgroup>';
+                  }
+                  opts += noMat.map(item => `<option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>[${item.status === 'completed' ? '\u2713' : '\u25CB'}] ${DS.escapeHtml(item.topic)}</option>`).join('');
+                  return opts;
+                })()}
               </select>
             </div>
             ${currentTopic ? `
@@ -784,6 +825,48 @@ function renderBlockList() {
       </div>
     `;
   }).join('');
+
+  // Sortable drag to swap block times
+  if (window.Sortable && dayBlocks.length > 1) {
+    new Sortable(container, {
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      handle: '.block-type-badge',
+      draggable: '.block-item-container',
+      forceFallback: true,
+      onEnd: function(evt) {
+        if (evt.oldIndex === evt.newIndex) return;
+        const sorted = [...container.querySelectorAll('.block-card[data-id]')];
+        const ids = sorted.map(el => el.dataset.id);
+        // Collect original times in order
+        const originalTimes = dayBlocks.map(b => ({ start: b.start, end: b.end }));
+        // Assign times to new order
+        ids.forEach((id, i) => {
+          const block = state.blocks.find(b => b.id === id);
+          if (block && originalTimes[i]) {
+            block.start = originalTimes[i].start;
+            block.end = originalTimes[i].end;
+          }
+        });
+        Store.save(state);
+        render();
+      }
+    });
+  }
+
+  // View buttons
+  const bwv = container.querySelector('#btnWeekView');
+  if (bwv) bwv.addEventListener('click', (e) => { e.stopPropagation(); openWeekView(); });
+  const bmv = container.querySelector('#btnMonthView');
+  if (bmv) bmv.addEventListener('click', (e) => { e.stopPropagation(); openMonthView(); });
+  const bst = container.querySelector('#btnStats');
+  if (bst) bst.addEventListener('click', (e) => { e.stopPropagation(); openStats(); });
+  const bsh = container.querySelector('#btnShare');
+  if (bsh) bsh.addEventListener('click', (e) => { e.stopPropagation(); shareSchedule(); });
+  const bsv = container.querySelector('#btnSaveTemplate');
+  if (bsv) bsv.addEventListener('click', (e) => { e.stopPropagation(); saveAsTemplate(); });
+  const bat = container.querySelector('#btnApplyTemplate');
+  if (bat) bat.addEventListener('click', (e) => { e.stopPropagation(); applyTemplate(); });
 
   // Expand/collapse click binder
   container.querySelectorAll('.block-card').forEach(card => {
@@ -931,6 +1014,33 @@ function renderBlockList() {
       }
     });
   });
+
+  // Day notes section — show notes linked to this date
+  const dayNotes = (state.notes || []).filter(n => n.date === dateKey(selectedDate));
+  if (dayNotes.length > 0) {
+    const notesSection = document.createElement('div');
+    notesSection.className = 'day-notes-section';
+    notesSection.innerHTML = `
+      <div class="day-notes-header">
+        <span class="ds-label" style="font-size:11px;">${I18n.t('tab.notes', null, 'Notas')} (${dayNotes.length})</span>
+      </div>
+      ${dayNotes.map(note => {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = note.content || '';
+        const preview = (tmp.textContent || '').substring(0, 60).replace(/\s+/g, ' ').trim();
+        return `
+          <div class="day-note-card" data-note-id="${note.id}">
+            <span class="day-note-title">${DS.escapeHtml(note.title || I18n.t('note.untitled', null, 'Sem título'))}</span>
+            ${preview ? `<span class="day-note-preview">${DS.escapeHtml(preview)}</span>` : ''}
+          </div>`;
+      }).join('')}
+    `;
+    container.appendChild(notesSection);
+
+    notesSection.querySelectorAll('.day-note-card').forEach(card => {
+      card.addEventListener('click', () => openNoteModal(card.dataset.noteId));
+    });
+  }
 }
 
 // ===== RENDER: WEEK NAV =====
@@ -1186,6 +1296,10 @@ function openBlockModal(blockId = null) {
     if (topicGroup) topicGroup.classList.add('hidden');
     if (timeRow) timeRow.classList.add('hidden');
 
+    // Repeat days
+    const repeatDays = block.repeatDays || (block.repeatDaily ? [0,1,2,3,4,5,6] : []);
+    setRepeatDayButtons(repeatDays);
+
     // Montar o popup da pizza com os Assuntos para check
     const subj = state.subjects.find(s => s.id === block.subjectId);
     const checklistContainer = $('#modalBlockSubjectChecklist');
@@ -1195,16 +1309,42 @@ function openBlockModal(blockId = null) {
         if (syllabus.length === 0) {
           checklistContainer.innerHTML = `<p class="subject-empty" style="font-size:12px; color:var(--ds-text-tertiary);">Nenhum assunto cadastrado.</p>`;
         } else {
-          // Filtrar os pendentes e concluídos para mostrar
+          // Group by matéria
+          const groups = {};
+          const noMateria = [];
+          syllabus.forEach(item => {
+            if (item.materia) {
+              if (!groups[item.materia]) groups[item.materia] = [];
+              groups[item.materia].push(item);
+            } else {
+              noMateria.push(item);
+            }
+          });
+
+          let itemsHtml = '';
+          const renderItem = (item) => `
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; padding:2px 0;">
+              <input type="checkbox" class="pizza-chk-syllabus" data-subject-id="${subj.id}" data-item-id="${item.id}" ${item.status === 'completed' ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--ds-accent);">
+              <span style="${item.status === 'completed' ? 'text-decoration:line-through; color:var(--ds-text-tertiary);' : 'color:var(--ds-text-primary);'}">${DS.escapeHtml(item.topic)}</span>
+            </label>`;
+
+          for (const [materia, items] of Object.entries(groups)) {
+            const done = items.filter(i => i.status === 'completed').length;
+            itemsHtml += `
+              <div class="pizza-materia-group">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--ds-separator);">
+                  <span style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--ds-text-secondary);">${DS.escapeHtml(materia)}</span>
+                  <span style="font-size:10px; color:var(--ds-text-tertiary);">${done}/${items.length}</span>
+                </div>
+                ${items.map(renderItem).join('')}
+              </div>`;
+          }
+          noMateria.forEach(item => { itemsHtml += renderItem(item); });
+
           checklistContainer.innerHTML = `
-            <label class="ds-label" style="font-size:11px; margin-bottom:8px;">Assuntos (Syllabus)</label>
-            <div style="max-height: 150px; overflow-y: auto; display:flex; flex-direction:column; gap:8px;">
-              ${syllabus.map(item => `
-                <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
-                  <input type="checkbox" class="pizza-chk-syllabus" data-subject-id="${subj.id}" data-item-id="${item.id}" ${item.status === 'completed' ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--ds-accent);">
-                  <span style="${item.status === 'completed' ? 'text-decoration:line-through; color:var(--ds-text-tertiary);' : 'color:var(--ds-text-primary);'}">${DS.escapeHtml(item.topic)}</span>
-                </label>
-              `).join('')}
+            <label class="ds-label" style="font-size:11px; margin-bottom:8px;">${I18n.t('syllabus.label', null, 'Assuntos')}</label>
+            <div style="max-height: 200px; overflow-y: auto; display:flex; flex-direction:column; gap:4px;">
+              ${itemsHtml}
             </div>
           `;
 
@@ -1242,8 +1382,92 @@ function openBlockModal(blockId = null) {
           });
         }
         checklistContainer.classList.remove('hidden');
+      } else if (subj.type === 'training') {
+        const exercises = subj.exercises || [];
+        if (exercises.length === 0) {
+          checklistContainer.innerHTML = `<p class="subject-empty" style="font-size:12px; color:var(--ds-text-tertiary);">${I18n.t('exercise.none', null, 'Nenhum exercício cadastrado.')}</p>`;
+        } else {
+          const completedItems = block.completedItems || [];
+          checklistContainer.innerHTML = `
+            <label class="ds-label" style="font-size:11px; margin-bottom:8px;">${I18n.t('exercise.sheet', null, 'Ficha de Treino')}</label>
+            <div style="max-height: 150px; overflow-y: auto; display:flex; flex-direction:column; gap:8px;">
+              ${exercises.map(ex => {
+                const isChecked = completedItems.includes(ex.id);
+                return `
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                  <input type="checkbox" class="pizza-chk-exercise" data-block-id="${block.id}" data-ex-id="${ex.id}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--ds-accent);">
+                  <span style="${isChecked ? 'text-decoration:line-through; color:var(--ds-text-tertiary);' : 'color:var(--ds-text-primary);'}">${DS.escapeHtml(ex.name)}</span>
+                  <span style="margin-left:auto; font-size:11px; color:var(--ds-text-tertiary);">${ex.sets}x${ex.reps}${ex.weight ? ' ('+ex.weight+')' : ''}</span>
+                </label>`;
+              }).join('')}
+            </div>
+          `;
+          checklistContainer.querySelectorAll('.pizza-chk-exercise').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const blockId = e.target.dataset.blockId;
+              const exId = e.target.dataset.exId;
+              const b = state.blocks.find(bl => bl.id === blockId);
+              if (!b) return;
+              if (!b.completedItems) b.completedItems = [];
+              if (e.target.checked) {
+                if (!b.completedItems.includes(exId)) b.completedItems.push(exId);
+              } else {
+                b.completedItems = b.completedItems.filter(id => id !== exId);
+              }
+              const total = exercises.length;
+              b.done = total > 0 && b.completedItems.length === total;
+              Store.save(state);
+              const span = e.target.nextElementSibling;
+              span.style.textDecoration = e.target.checked ? 'line-through' : 'none';
+              span.style.color = e.target.checked ? 'var(--ds-text-tertiary)' : 'var(--ds-text-primary)';
+              requestAnimationFrame(() => { render(); renderSubjects(); });
+            });
+          });
+        }
+        checklistContainer.classList.remove('hidden');
+      } else if (subj.type === 'inactive') {
+        const checklist = subj.checklist || [];
+        if (checklist.length === 0) {
+          checklistContainer.innerHTML = `<p class="subject-empty" style="font-size:12px; color:var(--ds-text-tertiary);">${I18n.t('routine.none', null, 'Nenhum hábito cadastrado.')}</p>`;
+        } else {
+          const completedItems = block.completedItems || [];
+          checklistContainer.innerHTML = `
+            <label class="ds-label" style="font-size:11px; margin-bottom:8px;">${I18n.t('routine.label', null, 'Rotina')}</label>
+            <div style="max-height: 150px; overflow-y: auto; display:flex; flex-direction:column; gap:8px;">
+              ${checklist.map(task => {
+                const isChecked = completedItems.includes(task.id);
+                return `
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                  <input type="checkbox" class="pizza-chk-routine" data-block-id="${block.id}" data-task-id="${task.id}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--ds-accent);">
+                  <span style="${isChecked ? 'text-decoration:line-through; color:var(--ds-text-tertiary);' : 'color:var(--ds-text-primary);'}">${DS.escapeHtml(task.task)}</span>
+                </label>`;
+              }).join('')}
+            </div>
+          `;
+          checklistContainer.querySelectorAll('.pizza-chk-routine').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const blockId = e.target.dataset.blockId;
+              const taskId = e.target.dataset.taskId;
+              const b = state.blocks.find(bl => bl.id === blockId);
+              if (!b) return;
+              if (!b.completedItems) b.completedItems = [];
+              if (e.target.checked) {
+                if (!b.completedItems.includes(taskId)) b.completedItems.push(taskId);
+              } else {
+                b.completedItems = b.completedItems.filter(id => id !== taskId);
+              }
+              const total = checklist.length;
+              b.done = total > 0 && b.completedItems.length === total;
+              Store.save(state);
+              const span = e.target.nextElementSibling;
+              span.style.textDecoration = e.target.checked ? 'line-through' : 'none';
+              span.style.color = e.target.checked ? 'var(--ds-text-tertiary)' : 'var(--ds-text-primary)';
+              requestAnimationFrame(() => { render(); renderSubjects(); });
+            });
+          });
+        }
+        checklistContainer.classList.remove('hidden');
       } else {
-        // Se for treino ou rotina, pode implementar lógica similar depois, por enquanto esconde ou mostra lista genérica
         checklistContainer.classList.add('hidden');
       }
     }
@@ -1261,9 +1485,30 @@ function openBlockModal(blockId = null) {
     if (timeRow) timeRow.classList.remove('hidden');
     const checklistContainer = $('#modalBlockSubjectChecklist');
     if (checklistContainer) checklistContainer.classList.add('hidden');
+    setRepeatDayButtons([]);
   }
 
+  // Bind repeat day buttons
+  document.querySelectorAll('.repeat-day-btn').forEach(btn => {
+    btn.onclick = () => btn.classList.toggle('active');
+  });
+
   DS.sheet.open($('#modalBlock'), 0.92);
+}
+
+function setRepeatDayButtons(days) {
+  document.querySelectorAll('.repeat-day-btn').forEach(btn => {
+    const d = parseInt(btn.dataset.day);
+    btn.classList.toggle('active', days.includes(d));
+  });
+}
+
+function getRepeatDays() {
+  const days = [];
+  document.querySelectorAll('.repeat-day-btn.active').forEach(btn => {
+    days.push(parseInt(btn.dataset.day));
+  });
+  return days.sort();
 }
 
 function closeBlockModal() { DS.sheet.close($('#modalBlock')); editingBlockId = null; }
@@ -1667,15 +1912,22 @@ function saveBlock() {
 
   const subj = state.subjects.find(s => s.id === subjectId);
 
+  const repeatDays = getRepeatDays();
   const isEditing = !!editingBlockId;
   if (isEditing) {
     const block = state.blocks.find(b => b.id === editingBlockId);
-    if (block) { block.subjectId = subjectId; block.topic = topic; block.start = start; block.end = end; }
+    if (block) {
+      block.subjectId = subjectId; block.topic = topic; block.start = start; block.end = end;
+      block.repeatDays = repeatDays;
+      block.repeatDaily = repeatDays.length === 7;
+    }
     logAction(I18n.t('log.edited_block', { name: topic || subj?.name, start, end }));
   } else {
     state.blocks.push({
       id: uid(), date: dateKey(selectedDate),
       subjectId, topic, start, end, done: false,
+      repeatDays,
+      repeatDaily: repeatDays.length === 7,
     });
     logAction(I18n.t('log.created_block', { name: topic || subj?.name, start, end }));
   }
@@ -1868,8 +2120,9 @@ function renderNotes() {
 
   sorted.forEach(note => {
     const tagsHtml = (note.tags || []).map(t => `<span class="note-tag">${DS.escapeHtml(t)}</span>`).join('');
-    const date = note.updatedAt || note.createdAt || '';
-    const dateStr = date ? new Date(date).toLocaleDateString() : '';
+    const noteDate = note.date || '';
+    const fallbackDate = note.updatedAt || note.createdAt || '';
+    const dateStr = noteDate || (fallbackDate ? new Date(fallbackDate).toLocaleDateString() : '');
     // Strip HTML tags for plain text preview
     const tmp = document.createElement('div');
     tmp.innerHTML = note.content || '';
@@ -1904,12 +2157,14 @@ function openNoteModal(noteId = null) {
     $('#modalNoteTitle').textContent = I18n.t('note.edit', null, 'Editar Nota');
     $('#inputNoteTitle').value = note.title || '';
     $('#inputNoteTags').value = (note.tags || []).join(', ');
+    $('#inputNoteDate').value = note.date || '';
     editor.innerHTML = note.content || '';
     $('#btnDeleteNote').classList.remove('hidden');
   } else {
     $('#modalNoteTitle').textContent = I18n.t('note.new', null, 'Nova Nota');
     $('#inputNoteTitle').value = '';
     $('#inputNoteTags').value = '';
+    $('#inputNoteDate').value = dateKey(selectedDate);
     editor.innerHTML = '';
     $('#btnDeleteNote').classList.add('hidden');
   }
@@ -1927,6 +2182,7 @@ function saveNote() {
   const isEmpty = !content || content === '<br>' || !editor.textContent.trim();
   const tagsRaw = $('#inputNoteTags').value.trim();
   const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const noteDate = $('#inputNoteDate').value || '';
 
   if (!title && isEmpty) {
     DS.toast(I18n.t('note.empty_warning', null, 'Adicione um título ou conteúdo'), 'warning');
@@ -1942,6 +2198,7 @@ function saveNote() {
       note.title = title;
       note.content = content;
       note.tags = tags;
+      note.date = noteDate;
       note.updatedAt = now;
     }
     logAction(I18n.t('log.edited_note', { name: title }, `Nota editada: ${title}`));
@@ -1951,6 +2208,7 @@ function saveNote() {
       title,
       content,
       tags,
+      date: noteDate,
       createdAt: now,
       updatedAt: now,
     });
@@ -2532,31 +2790,45 @@ function updateThemeColor() {
 
 function autoRepeatDailyBlocks() {
   const todayKey = dateKey(selectedDate);
-  const yesterday = new Date(selectedDate);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayKey = dateKey(yesterday);
+  const todayDow = selectedDate.getDay(); // 0=Sun, 6=Sat
 
-  state.blocks
-    .filter(b => b.repeatDaily && b.date === yesterdayKey)
-    .forEach(b => {
-      const alreadyExists = state.blocks.some(
-        other => other.date === todayKey && other.subjectId === b.subjectId && other.start === b.start && other.end === b.end
-      );
-      if (!alreadyExists) {
-        state.blocks.push({
-          id: uid(),
-          date: todayKey,
-          subjectId: b.subjectId,
-          topic: b.topic,
-          start: b.start,
-          end: b.end,
-          done: false,
-          repeatDaily: true,
-          selectedSyllabusId: b.selectedSyllabusId || null,
-          completedItems: b.completedItems ? [...b.completedItems] : [],
-        });
-      }
-    });
+  // Find all blocks with repeat settings from any past date
+  const repeatBlocks = state.blocks.filter(b => {
+    if (b.date >= todayKey) return false;
+    // Support both legacy repeatDaily and new repeatDays
+    if (b.repeatDaily) return true;
+    if (b.repeatDays && b.repeatDays.length > 0) return b.repeatDays.includes(todayDow);
+    return false;
+  });
+
+  // Group by signature to get the most recent version of each repeating block
+  const seen = new Map();
+  repeatBlocks.sort((a, b) => b.date.localeCompare(a.date));
+  repeatBlocks.forEach(b => {
+    const key = `${b.subjectId}|${b.start}|${b.end}`;
+    if (!seen.has(key)) seen.set(key, b);
+  });
+
+  seen.forEach(b => {
+    const alreadyExists = state.blocks.some(
+      other => other.date === todayKey && other.subjectId === b.subjectId && other.start === b.start && other.end === b.end
+    );
+    if (!alreadyExists) {
+      state.blocks.push({
+        id: uid(),
+        date: todayKey,
+        subjectId: b.subjectId,
+        topic: b.topic,
+        start: b.start,
+        end: b.end,
+        done: false,
+        repeatDaily: b.repeatDaily || false,
+        repeatDays: b.repeatDays || (b.repeatDaily ? [0,1,2,3,4,5,6] : []),
+        selectedSyllabusId: b.selectedSyllabusId || null,
+        completedItems: [],
+      });
+    }
+  });
 }
 
 // ===== DAILY BLOCKS GENERATOR FROM WEEKLY SLOTS =====
@@ -2868,6 +3140,362 @@ function initPullToRefresh() {
   });
 }
 
+// ===== WEEKLY VIEW =====
+function openWeekView() {
+  const body = $('#weekViewBody');
+  const startOfWeek = new Date(selectedDate);
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+  const hours = [];
+  for (let h = 0; h < 24; h++) hours.push(h);
+
+  let html = '<div class="week-grid">';
+  // Header row
+  html += '<div class="week-grid-header"><span class="week-grid-hour-label"></span>';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    const isToday = dateKey(d) === dateKey(new Date());
+    html += `<span class="week-grid-day-header ${isToday ? 'today' : ''}">${formatWeekday(d)}<br><strong>${d.getDate()}</strong></span>`;
+  }
+  html += '</div>';
+
+  // Body rows — one per hour
+  html += '<div class="week-grid-body">';
+  hours.forEach(h => {
+    html += `<div class="week-grid-row">`;
+    html += `<span class="week-grid-hour-label">${h}h</span>`;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(startOfWeek.getDate() + i);
+      const dk = dateKey(d);
+      // Find blocks that overlap this hour
+      const blocksInHour = state.blocks.filter(b => {
+        if (b.date !== dk) return false;
+        const [sh] = b.start.split(':').map(Number);
+        const [eh] = b.end.split(':').map(Number);
+        return h >= sh && h < eh;
+      });
+      if (blocksInHour.length > 0) {
+        const b = blocksInHour[0];
+        const subj = state.subjects.find(s => s.id === b.subjectId);
+        const color = subj?.color || '#8e8e93';
+        html += `<span class="week-grid-cell filled ${b.done ? 'done' : ''}" style="background:${color};" title="${subj?.name || ''}"></span>`;
+      } else {
+        html += `<span class="week-grid-cell"></span>`;
+      }
+    }
+    html += '</div>';
+  });
+  html += '</div></div>';
+
+  body.innerHTML = html;
+  DS.sheet.open($('#modalWeekView'), 0.95);
+}
+
+// ===== MONTHLY VIEW =====
+let monthViewDate = new Date();
+function openMonthView() {
+  monthViewDate = new Date(selectedDate);
+  renderMonthView();
+  DS.sheet.open($('#modalMonthView'), 0.92);
+}
+
+function renderMonthView() {
+  const body = $('#monthViewBody');
+  const year = monthViewDate.getFullYear();
+  const month = monthViewDate.getMonth();
+  const title = $('#monthViewTitle');
+  title.textContent = new Date(year, month).toLocaleDateString(I18n.locale || 'pt-BR', { month: 'long', year: 'numeric' });
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = dateKey(new Date());
+
+  let html = '<div class="month-grid">';
+  // Weekday headers
+  const dayNames = ['day.sun','day.mon','day.tue','day.wed','day.thu','day.fri','day.sat'];
+  html += '<div class="month-grid-header">';
+  dayNames.forEach(d => { html += `<span>${I18n.t(d)}</span>`; });
+  html += '</div>';
+
+  html += '<div class="month-grid-body">';
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) html += '<div class="month-cell empty"></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dk = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const dayBlocks = state.blocks.filter(b => b.date === dk);
+    const activeBlocks = dayBlocks.filter(b => {
+      const s = state.subjects.find(s => s.id === b.subjectId);
+      return s?.type !== 'inactive';
+    });
+    const done = activeBlocks.filter(b => b.done).length;
+    const total = activeBlocks.length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : -1;
+
+    let levelClass = '';
+    if (pct >= 100) levelClass = 'level-4';
+    else if (pct >= 75) levelClass = 'level-3';
+    else if (pct >= 50) levelClass = 'level-2';
+    else if (pct >= 0) levelClass = 'level-1';
+
+    const isToday = dk === today;
+    const isSelected = dk === dateKey(selectedDate);
+    html += `<div class="month-cell ${levelClass} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" data-date="${dk}">
+      <span class="month-cell-num">${d}</span>
+      ${total > 0 ? `<span class="month-cell-dots">${done}/${total}</span>` : ''}
+    </div>`;
+  }
+  html += '</div></div>';
+  body.innerHTML = html;
+
+  // Click to navigate
+  body.querySelectorAll('.month-cell[data-date]').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const [y, m, d] = cell.dataset.date.split('-').map(Number);
+      selectedDate = new Date(y, m - 1, d);
+      DS.sheet.close($('#modalMonthView'));
+      render();
+    });
+  });
+}
+
+// ===== STATS DASHBOARD =====
+function openStats() {
+  const body = $('#statsBody');
+  const blocks = state.blocks || [];
+  const subjects = state.subjects || [];
+
+  // Total hours
+  let totalMinutes = 0;
+  blocks.forEach(b => {
+    const [sh, sm] = b.start.split(':').map(Number);
+    const [eh, em] = b.end.split(':').map(Number);
+    totalMinutes += (eh * 60 + em) - (sh * 60 + sm);
+  });
+  const totalHours = (totalMinutes / 60).toFixed(1);
+
+  // By subject
+  const bySubject = {};
+  blocks.forEach(b => {
+    const subj = subjects.find(s => s.id === b.subjectId);
+    if (!subj || subj.type === 'inactive') return;
+    const name = subj.name || 'Unknown';
+    if (!bySubject[name]) bySubject[name] = { color: subj.color, minutes: 0, done: 0, total: 0 };
+    const [sh, sm] = b.start.split(':').map(Number);
+    const [eh, em] = b.end.split(':').map(Number);
+    bySubject[name].minutes += (eh * 60 + em) - (sh * 60 + sm);
+    bySubject[name].total++;
+    if (b.done) bySubject[name].done++;
+  });
+
+  // Streak
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dk = dateKey(d);
+    const dayActive = blocks.filter(b => {
+      if (b.date !== dk) return false;
+      const s = subjects.find(s => s.id === b.subjectId);
+      return s?.type !== 'inactive';
+    });
+    if (dayActive.length > 0 && dayActive.every(b => b.done)) {
+      streak++;
+    } else if (dayActive.length > 0) {
+      break;
+    }
+  }
+
+  // Completed vs pending
+  const activeBlocks = blocks.filter(b => {
+    const s = subjects.find(s => s.id === b.subjectId);
+    return s?.type !== 'inactive';
+  });
+  const totalDone = activeBlocks.filter(b => b.done).length;
+  const totalPending = activeBlocks.length - totalDone;
+
+  let html = `
+    <div class="stats-cards">
+      <div class="stat-card">
+        <span class="stat-value">${totalHours}h</span>
+        <span class="stat-label">${I18n.t('stats.total_hours', null, 'Horas totais')}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">${streak}</span>
+        <span class="stat-label">${I18n.t('stats.streak', null, 'Sequência')} (${I18n.t('stats.days', null, 'dias')})</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" style="color:var(--ds-success);">${totalDone}</span>
+        <span class="stat-label">${I18n.t('stats.completed', null, 'Concluídos')}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" style="color:var(--ds-text-tertiary);">${totalPending}</span>
+        <span class="stat-label">${I18n.t('stats.pending', null, 'Pendentes')}</span>
+      </div>
+    </div>
+  `;
+
+  // By subject bars
+  const sortedSubjects = Object.entries(bySubject).sort((a, b) => b[1].minutes - a[1].minutes);
+  if (sortedSubjects.length > 0) {
+    const maxMin = sortedSubjects[0][1].minutes;
+    html += `<div class="stats-section">
+      <h4 class="ds-label" style="margin-bottom:12px;">${I18n.t('stats.by_subject', null, 'Por atividade')}</h4>`;
+    sortedSubjects.forEach(([name, data]) => {
+      const pct = Math.round((data.minutes / maxMin) * 100);
+      const hrs = (data.minutes / 60).toFixed(1);
+      html += `
+        <div class="stats-bar-row">
+          <span class="stats-bar-label">${DS.escapeHtml(name)}</span>
+          <div class="stats-bar-track">
+            <div class="stats-bar-fill" style="width:${pct}%; background:${data.color};"></div>
+          </div>
+          <span class="stats-bar-value">${hrs}h</span>
+        </div>`;
+    });
+    html += '</div>';
+  }
+
+  body.innerHTML = html;
+  DS.sheet.open($('#modalStats'), 0.92);
+}
+
+// ===== SHARE SCHEDULE =====
+async function shareSchedule() {
+  const dayBlocks = state.blocks
+    .filter(b => b.date === dateKey(selectedDate))
+    .sort((a, b) => a.start.localeCompare(b.start));
+
+  if (dayBlocks.length === 0) {
+    DS.toast('Nenhum bloco para compartilhar', 'warning');
+    return;
+  }
+
+  const dateStr = formatFullDate(selectedDate);
+  let text = `📅 ${dateStr}\n\n`;
+  dayBlocks.forEach(b => {
+    const subj = state.subjects.find(s => s.id === b.subjectId);
+    const status = b.done ? '✅' : '⬜';
+    text += `${status} ${b.start}-${b.end} ${subj?.name || ''}\n`;
+  });
+
+  const active = dayBlocks.filter(b => {
+    const s = state.subjects.find(s => s.id === b.subjectId);
+    return s?.type !== 'inactive';
+  });
+  const done = active.filter(b => b.done).length;
+  const pct = active.length > 0 ? Math.round((done / active.length) * 100) : 0;
+  text += `\n📊 ${done}/${active.length} (${pct}%)`;
+  text += '\n\n— Take Time';
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: `Take Time — ${dateStr}`, text });
+      return;
+    } catch {}
+  }
+
+  // Fallback: copy to clipboard
+  try {
+    await navigator.clipboard.writeText(text);
+    DS.toast('Cronograma copiado!', 'success');
+  } catch {
+    DS.toast('Erro ao copiar', 'error');
+  }
+}
+
+// ===== DAY TEMPLATES =====
+function saveAsTemplate() {
+  const dayBlocks = state.blocks.filter(b => b.date === dateKey(selectedDate));
+  if (dayBlocks.length === 0) {
+    DS.toast(I18n.t('template.empty', null, 'Nenhum bloco para salvar'), 'warning');
+    return;
+  }
+
+  const name = prompt(I18n.t('template.name', null, 'Nome do template'));
+  if (!name) return;
+
+  if (!state.templates) state.templates = [];
+  state.templates.push({
+    id: uid(),
+    name,
+    blocks: dayBlocks.map(b => ({
+      subjectId: b.subjectId,
+      topic: b.topic,
+      start: b.start,
+      end: b.end,
+    })),
+  });
+  Store.save(state);
+  DS.toast(I18n.t('template.saved', null, 'Template salvo'), 'success');
+}
+
+async function applyTemplate() {
+  if (!state.templates || state.templates.length === 0) {
+    DS.toast(I18n.t('template.empty', null, 'Nenhum template salvo'), 'warning');
+    return;
+  }
+
+  // Build a simple selection UI via DS.sheet
+  const templateList = state.templates.map(t =>
+    `<div class="ds-list-item template-pick" data-id="${t.id}" style="cursor:pointer; padding:12px;">
+      <span style="flex:1;">${DS.escapeHtml(t.name)} (${t.blocks.length} blocos)</span>
+      <button class="ds-btn ds-btn-plain template-delete" data-id="${t.id}" style="color:var(--ds-danger);">${DS.icon('x', { size: 16 })}</button>
+    </div>`
+  ).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'ds-overlay';
+  overlay.innerHTML = `<div class="ds-sheet" style="max-height:50vh;">
+    <div class="ds-sheet-handle-area"><div class="ds-sheet-handle"></div></div>
+    <div class="ds-sheet-header">
+      <button class="ds-btn ds-btn-plain template-close">${I18n.t('confirm.cancel', null, 'Cancelar')}</button>
+      <h3 class="ds-headline">${I18n.t('template.apply', null, 'Aplicar template')}</h3>
+      <span></span>
+    </div>
+    <div class="ds-sheet-body">${templateList}</div>
+  </div>`;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('.template-close').addEventListener('click', () => overlay.remove());
+  overlay.querySelectorAll('.template-pick').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.template-delete')) return;
+      const tpl = state.templates.find(t => t.id === el.dataset.id);
+      if (!tpl) return;
+
+      const dk = dateKey(selectedDate);
+      tpl.blocks.forEach(tb => {
+        const exists = state.blocks.some(b => b.date === dk && b.subjectId === tb.subjectId && b.start === tb.start);
+        if (!exists) {
+          state.blocks.push({ id: uid(), date: dk, ...tb, done: false, completedItems: [] });
+        }
+      });
+      Store.save(state);
+      render();
+      overlay.remove();
+      DS.toast(I18n.t('template.applied', null, 'Template aplicado'), 'success');
+    });
+  });
+  overlay.querySelectorAll('.template-delete').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const ok = await DS.confirm(I18n.t('template.delete', null, 'Excluir template'), '', I18n.t('confirm.delete', null, 'Excluir'));
+      if (ok) {
+        state.templates = state.templates.filter(t => t.id !== btn.dataset.id);
+        Store.save(state);
+        overlay.remove();
+        applyTemplate(); // reopen with updated list
+      }
+    });
+  });
+
+  requestAnimationFrame(() => DS.sheet.open(overlay, 0.5));
+}
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
   // Restore Supabase session from localStorage
@@ -2960,6 +3588,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.execCommand(cmd, false, val);
     });
   });
+
+  // Views: Weekly, Monthly, Stats
+  const $weekViewClose = $('#weekViewClose');
+  if ($weekViewClose) $weekViewClose.addEventListener('click', () => DS.sheet.close($('#modalWeekView')));
+  const $monthViewClose = $('#monthViewClose');
+  if ($monthViewClose) $monthViewClose.addEventListener('click', () => DS.sheet.close($('#modalMonthView')));
+  const $monthViewPrev = $('#monthViewPrev');
+  if ($monthViewPrev) $monthViewPrev.addEventListener('click', () => { monthViewDate.setMonth(monthViewDate.getMonth() - 1); renderMonthView(); });
+  const $monthViewNext = $('#monthViewNext');
+  if ($monthViewNext) $monthViewNext.addEventListener('click', () => { monthViewDate.setMonth(monthViewDate.getMonth() + 1); renderMonthView(); });
+  const $statsClose = $('#statsClose');
+  if ($statsClose) $statsClose.addEventListener('click', () => DS.sheet.close($('#modalStats')));
 
   // Profile Slots and Content button bindings
   const $btnProfileAddSlot = $('#btnProfileAddSlot');

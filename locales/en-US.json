@@ -366,5 +366,41 @@
   "note.title_placeholder": "Note title",
   "note.tags_label": "Tags",
   "note.tags_placeholder": "e.g.: review, important",
-  "note.content_label": "Content"
+  "note.content_label": "Content",
+  "note.date_label": "Date (optional)",
+  "note.no_date": "No date",
+
+  "stats.title": "Statistics",
+  "stats.total_hours": "Total hours",
+  "stats.streak": "Streak",
+  "stats.days": "days",
+  "stats.by_subject": "By activity",
+  "stats.weekly": "This week",
+  "stats.monthly": "This month",
+  "stats.no_data": "No data yet",
+  "stats.completed": "Completed",
+  "stats.pending": "Pending",
+
+  "week_view.title": "Weekly View",
+  "month_view.title": "Monthly View",
+
+  "template.save": "Save as template",
+  "template.apply": "Apply template",
+  "template.name": "Template name",
+  "template.empty": "No saved templates",
+  "template.applied": "Template applied",
+  "template.saved": "Template saved",
+  "template.delete": "Delete template",
+
+  "repeat.label": "Repeat on days",
+  "repeat.daily": "Daily",
+  "repeat.weekdays": "Weekdays",
+  "repeat.custom": "Custom",
+  "day.sun": "Sun",
+  "day.mon": "Mon",
+  "day.tue": "Tue",
+  "day.wed": "Wed",
+  "day.thu": "Thu",
+  "day.fri": "Fri",
+  "day.sat": "Sat"
 }

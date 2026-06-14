@@ -234,6 +234,7 @@ const Supabase = {
         title: n.title || '',
         content: n.content || '',
         tags: n.tags || [],
+        date: n.date || '',
         createdAt: n.created_at,
         updatedAt: n.updated_at,
       }));
@@ -317,7 +318,7 @@ const Supabase = {
       const dbNotes = (state.notes || []).map(n => ({
         id: n.id, user_id: userId,
         title: n.title || '', content: n.content || '',
-        tags: n.tags || [],
+        tags: n.tags || [], date: n.date || null,
         created_at: n.createdAt || new Date().toISOString(),
         updated_at: n.updatedAt || new Date().toISOString(),
       }));
