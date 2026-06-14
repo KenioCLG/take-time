@@ -613,11 +613,15 @@ function renderBlockList() {
     return;
   }
 
-  // Day summary bar
-  const totalBlocks = dayBlocks.length;
-  const doneBlocks = dayBlocks.filter(b => b.done).length;
+  // Day summary bar (exclude inactive from completion tracking, same as pizza)
+  const summaryBlocks = dayBlocks.filter(b => {
+    const s = state.subjects.find(s => s.id === b.subjectId);
+    return s?.type !== 'inactive';
+  });
+  const totalBlocks = summaryBlocks.length;
+  const doneBlocks = summaryBlocks.filter(b => b.done).length;
   const dayPct = totalBlocks > 0 ? Math.round((doneBlocks / totalBlocks) * 100) : 0;
-  const summaryHtml = `
+  const summaryHtml = totalBlocks > 0 ? `
     <div class="day-summary-bar">
       <span class="day-summary-text">${doneBlocks}/${totalBlocks} ${I18n.t('pizza.done_label', null, 'concluídas')}</span>
       <div class="day-summary-track">
@@ -625,7 +629,7 @@ function renderBlockList() {
       </div>
       <span class="day-summary-pct">${dayPct}%</span>
     </div>
-  `;
+  ` : '';
 
   container.innerHTML = summaryHtml + dayBlocks.map(block => {
     const subj = state.subjects.find(s => s.id === block.subjectId);
