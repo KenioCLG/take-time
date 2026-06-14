@@ -284,12 +284,14 @@ const Supabase = {
       await this._restUpsert('blocks', dbBlocks);
       await this._restDeleteOrphans('blocks', dbBlocks.map(b => b.id));
 
-      // 4. Settings (profile)
+      // 4. Settings (profile) — upsert to ensure row exists
       const st = state.settings || {};
       try {
-        await this._fetch(`/rest/v1/profiles?id=eq.${userId}`, {
-          method: 'PATCH',
+        await this._fetch(`/rest/v1/profiles`, {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates' },
           body: JSON.stringify({
+            id: userId,
             notifications: st.notifications ?? false,
             reminder_min: st.reminderMin ?? 10,
             theme: st.theme || 'auto',
@@ -299,7 +301,7 @@ const Supabase = {
             marquee_texts: st.marqueeTexts || [],
           }),
         });
-      } catch (e) { console.warn('[Sync] PATCH profiles failed:', e); }
+      } catch (e) { console.warn('[Sync] UPSERT profiles failed:', e); }
 
       // 5. Priorities
       const dbPriorities = [];
