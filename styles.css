@@ -543,6 +543,47 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   font-weight: var(--ds-weight-bold);
 }
 
+/* ===== MATÉRIA / ASSUNTOS ===== */
+.materia-group {
+  margin-bottom: var(--ds-space-2);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-bg-secondary);
+  overflow: hidden;
+}
+.materia-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--ds-fill-quaternary);
+}
+.materia-name {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.materia-count {
+  font-size: var(--ds-text-2xs);
+  color: var(--ds-text-tertiary);
+  font-weight: var(--ds-weight-semibold);
+}
+.assunto-status {
+  font-size: 12px;
+  color: var(--ds-text-tertiary);
+  margin-right: 6px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.content-item-row.completed .assunto-status {
+  color: var(--ds-color-success, #34c759);
+}
+.content-item-row.completed {
+  opacity: 0.6;
+}
+
 /* ===== NOTES ===== */
 .notes-list { display: flex; flex-direction: column; gap: var(--ds-space-2); }
 

@@ -317,82 +317,6 @@ function iconContrastColor(hex) {
   return lum > 0.55 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)';
 }
 
-// SVG icon paths for each subject type — Lucide-style, clean strokes
-function sliceIcon(type, x, y, size, fillColor) {
-  const g = document.createElementNS(SVG_NS, 'g');
-  g.setAttribute('transform', `translate(${x - size/2}, ${y - size/2})`);
-  g.setAttribute('pointer-events', 'none');
-  g.setAttribute('class', `slice-icon slice-icon--${type}`);
-
-  const s = size / 24; // scale factor from 24x24 viewbox
-  const sw = `${1.8 * s}`;
-
-  if (type === 'study') {
-    // Open book (Lucide book-open style)
-    const left = document.createElementNS(SVG_NS, 'path');
-    left.setAttribute('d', `M${2*s},${3*s} C${2*s},${3*s} ${6*s},${2*s} ${12*s},${4*s} L${12*s},${21*s} C${6*s},${19*s} ${2*s},${20*s} ${2*s},${20*s} Z`);
-    left.setAttribute('fill', 'none');
-    left.setAttribute('stroke', fillColor);
-    left.setAttribute('stroke-width', sw);
-    left.setAttribute('stroke-linejoin', 'round');
-    g.appendChild(left);
-    const right = document.createElementNS(SVG_NS, 'path');
-    right.setAttribute('d', `M${22*s},${3*s} C${22*s},${3*s} ${18*s},${2*s} ${12*s},${4*s} L${12*s},${21*s} C${18*s},${19*s} ${22*s},${20*s} ${22*s},${20*s} Z`);
-    right.setAttribute('fill', 'none');
-    right.setAttribute('stroke', fillColor);
-    right.setAttribute('stroke-width', sw);
-    right.setAttribute('stroke-linejoin', 'round');
-    g.appendChild(right);
-  } else if (type === 'training') {
-    // Dumbbell — thick bar with rounded weights
-    const bar = document.createElementNS(SVG_NS, 'line');
-    bar.setAttribute('x1', `${6*s}`); bar.setAttribute('y1', `${12*s}`);
-    bar.setAttribute('x2', `${18*s}`); bar.setAttribute('y2', `${12*s}`);
-    bar.setAttribute('stroke', fillColor);
-    bar.setAttribute('stroke-width', `${2.5*s}`);
-    bar.setAttribute('stroke-linecap', 'round');
-    g.appendChild(bar);
-    // Left weight plates
-    [{ x: 2, w: 3, h: 10 }, { x: 5, w: 2, h: 7 }].forEach(p => {
-      const r = document.createElementNS(SVG_NS, 'rect');
-      r.setAttribute('x', `${p.x*s}`); r.setAttribute('y', `${(12 - p.h/2)*s}`);
-      r.setAttribute('width', `${p.w*s}`); r.setAttribute('height', `${p.h*s}`);
-      r.setAttribute('rx', `${1.2*s}`);
-      r.setAttribute('fill', fillColor); r.setAttribute('opacity', '0.25');
-      r.setAttribute('stroke', fillColor); r.setAttribute('stroke-width', sw);
-      g.appendChild(r);
-    });
-    // Right weight plates (mirrored)
-    [{ x: 19, w: 3, h: 10 }, { x: 17, w: 2, h: 7 }].forEach(p => {
-      const r = document.createElementNS(SVG_NS, 'rect');
-      r.setAttribute('x', `${p.x*s}`); r.setAttribute('y', `${(12 - p.h/2)*s}`);
-      r.setAttribute('width', `${p.w*s}`); r.setAttribute('height', `${p.h*s}`);
-      r.setAttribute('rx', `${1.2*s}`);
-      r.setAttribute('fill', fillColor); r.setAttribute('opacity', '0.25');
-      r.setAttribute('stroke', fillColor); r.setAttribute('stroke-width', sw);
-      g.appendChild(r);
-    });
-  } else {
-    // Routine — rounded checkbox with animated check
-    const box = document.createElementNS(SVG_NS, 'rect');
-    box.setAttribute('x', `${4*s}`); box.setAttribute('y', `${4*s}`);
-    box.setAttribute('width', `${16*s}`); box.setAttribute('height', `${16*s}`);
-    box.setAttribute('rx', `${4*s}`);
-    box.setAttribute('fill', fillColor); box.setAttribute('fill-opacity', '0.12');
-    box.setAttribute('stroke', fillColor);
-    box.setAttribute('stroke-width', sw);
-    g.appendChild(box);
-    // Checkmark
-    const check = document.createElementNS(SVG_NS, 'polyline');
-    check.setAttribute('points', `${8*s},${12.5*s} ${11*s},${15.5*s} ${16*s},${9*s}`);
-    check.setAttribute('fill', 'none'); check.setAttribute('stroke', fillColor);
-    check.setAttribute('stroke-width', `${2.2*s}`);
-    check.setAttribute('stroke-linecap', 'round');
-    check.setAttribute('stroke-linejoin', 'round');
-    g.appendChild(check);
-  }
-  return g;
-}
 
 // Inline SVG icon string for block cards (type badge)
 function blockTypeIconSvg(type, color) {
@@ -1198,6 +1122,9 @@ function openBlockModal(blockId = null) {
   editingBlockId = blockId;
   populateSubjectSelect();
 
+  const topicGroup = $('#inputTopic').closest('.form-group');
+  const timeRow = $('#inputStart').closest('.form-row');
+
   if (blockId) {
     const block = state.blocks.find(b => b.id === blockId);
     if (!block) return;
@@ -1207,6 +1134,11 @@ function openBlockModal(blockId = null) {
     $('#inputStart').value = block.start;
     $('#inputEnd').value = block.end;
     $('#btnDeleteBlock').classList.remove('hidden');
+    $('#btnDeleteBlock').textContent = 'Remover atividade deste dia';
+
+    // Esconder campos globais/estruturais ao editar a instância
+    if (topicGroup) topicGroup.classList.add('hidden');
+    if (timeRow) timeRow.classList.add('hidden');
   } else {
     $('#modalTitle').textContent = I18n.t('block.new');
     $('#inputTopic').value = '';
@@ -1214,6 +1146,10 @@ function openBlockModal(blockId = null) {
     $('#inputEnd').value = '09:00';
     $('#btnDeleteBlock').classList.add('hidden');
     if (state.subjects.length > 0) $('#inputSubject').value = state.subjects[0].id;
+
+    // Mostrar campos ao criar novo bloco extra
+    if (topicGroup) topicGroup.classList.remove('hidden');
+    if (timeRow) timeRow.classList.remove('hidden');
   }
 
   DS.sheet.open($('#modalBlock'), 0.92);
@@ -1302,39 +1238,95 @@ function renderModalSlots(slots = []) {
   render();
 }
 
+function updateMateriaDatalist() {
+  const dl = $('#datalistMaterias');
+  if (!dl) return;
+  const materias = [...new Set(modalContentItems.filter(i => i.materia).map(i => i.materia))];
+  dl.innerHTML = materias.map(m => `<option value="${DS.escapeHtml(m)}">`).join('');
+}
+
 function renderModalContentList(items = [], type = 'study') {
   modalContentItems = [...items];
   const listEl = $('#profileContentList');
-  
+
   const render = () => {
     if (modalContentItems.length === 0) {
       listEl.innerHTML = `<p class="content-none">${I18n.t('content.none')}</p>`;
       return;
     }
-    
-    listEl.innerHTML = modalContentItems.map((item, index) => {
-      let desc = '';
-      if (type === 'study') {
-        const statusIcon = item.status === 'completed' ? '✓' : '○';
-        desc = `<span style="color:var(--ds-text-tertiary); margin-right:4px;">${statusIcon}</span><span>${DS.escapeHtml(item.topic)}</span>`;
-      } else if (type === 'training') {
-        desc = `<div><strong>${DS.escapeHtml(item.name)}</strong> <span class="content-meta">${item.sets}x${item.reps} (${item.weight})</span></div>`;
-      } else {
-        desc = `<span>${DS.escapeHtml(item.task)}</span>`;
+
+    if (type === 'study') {
+      // Group by matéria
+      const groups = {};
+      const noMateria = [];
+      modalContentItems.forEach((item, index) => {
+        item._index = index;
+        if (item.materia) {
+          if (!groups[item.materia]) groups[item.materia] = [];
+          groups[item.materia].push(item);
+        } else {
+          noMateria.push(item);
+        }
+      });
+
+      let html = '';
+      for (const [materia, items] of Object.entries(groups)) {
+        const completedCount = items.filter(i => i.status === 'completed').length;
+        html += `<div class="materia-group">
+          <div class="materia-header">
+            <span class="materia-name">${DS.escapeHtml(materia)}</span>
+            <span class="materia-count">${completedCount}/${items.length}</span>
+          </div>`;
+        items.forEach(item => {
+          const statusIcon = item.status === 'completed' ? '✓' : '○';
+          const statusClass = item.status === 'completed' ? 'completed' : '';
+          html += `
+            <div class="ds-list-item content-item-row ${statusClass}" data-id="${item.id}">
+              <span class="assunto-status">${statusIcon}</span>
+              <div style="flex:1; min-width:0; font-size:13px;">${DS.escapeHtml(item.topic)}</div>
+              <button type="button" class="ds-btn ds-btn-plain btn-remove-content remove-content-btn" data-index="${item._index}">
+                ${DS.icon('x', { size: 16 })}
+              </button>
+            </div>`;
+        });
+        html += '</div>';
       }
-      
-      return `
-        <div class="ds-list-item content-item-row" data-id="${item.id}">
-          <div class="drag-handle" style="cursor: grab; margin-right: 8px; color: var(--ds-text-tertiary); display:flex; align-items:center;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      // Ungrouped items
+      noMateria.forEach(item => {
+        const statusIcon = item.status === 'completed' ? '✓' : '○';
+        html += `
+          <div class="ds-list-item content-item-row" data-id="${item.id}">
+            <span class="assunto-status">${statusIcon}</span>
+            <div style="flex:1; min-width:0; font-size:13px;">${DS.escapeHtml(item.topic)}</div>
+            <button type="button" class="ds-btn ds-btn-plain btn-remove-content remove-content-btn" data-index="${item._index}">
+              ${DS.icon('x', { size: 16 })}
+            </button>
+          </div>`;
+      });
+
+      listEl.innerHTML = html;
+    } else {
+      // Training / Routine — flat list
+      listEl.innerHTML = modalContentItems.map((item, index) => {
+        let desc = '';
+        if (type === 'training') {
+          desc = `<div><strong>${DS.escapeHtml(item.name)}</strong> <span class="content-meta">${item.sets}x${item.reps} (${item.weight})</span></div>`;
+        } else {
+          desc = `<span>${DS.escapeHtml(item.task)}</span>`;
+        }
+        return `
+          <div class="ds-list-item content-item-row" data-id="${item.id}">
+            <div class="drag-handle" style="cursor: grab; margin-right: 8px; color: var(--ds-text-tertiary); display:flex; align-items:center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </div>
+            <div style="flex:1; min-width:0; font-size:13px;">${desc}</div>
+            <button type="button" class="ds-btn ds-btn-plain btn-remove-content remove-content-btn" data-index="${index}">
+              ${DS.icon('x', { size: 16 })}
+            </button>
           </div>
-          <div style="flex:1; min-width:0; font-size:13px;">${desc}</div>
-          <button type="button" class="ds-btn ds-btn-plain btn-remove-content remove-content-btn" data-index="${index}">
-            ${DS.icon('x', { size: 16 })}
-          </button>
-        </div>
-      `;
-    }).join('');
+        `;
+      }).join('');
+    }
     
     listEl.querySelectorAll('.btn-remove-content').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -2748,9 +2740,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
         render();
         renderSubjects();
+        if (!state.notes) state.notes = [];
         if (typeof initPriorities === 'function') initPriorities();
         if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
-        initSettings();
+        hydrateSettingsDOM();
       }
     }).catch(() => {});
   }
@@ -2862,14 +2855,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   if ($btnSyllabusAdd) {
     $btnSyllabusAdd.addEventListener('click', () => {
       const titleInput = $('#inputSyllabusTitle');
+      const materiaInput = $('#inputSyllabusMateria');
       if (!titleInput) return;
       const title = titleInput.value.trim();
+      const materia = materiaInput ? materiaInput.value.trim() : '';
 
-      if (!title) { DS.toast(I18n.t('alert.enter_subject'), 'warning'); return; }
+      if (!title) { DS.toast(I18n.t('alert.enter_subject', null, 'Digite um assunto'), 'warning'); return; }
 
-      modalContentItems.push({ id: uid(), topic: title, status: 'pending' });
+      modalContentItems.push({ id: uid(), topic: title, materia: materia || '', status: 'pending' });
       titleInput.value = '';
+      // Keep materia for adding multiple assuntos to same materia
       renderModalContentList(modalContentItems, 'study');
+      updateMateriaDatalist();
     });
   }
 

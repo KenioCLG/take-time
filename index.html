@@ -590,10 +590,14 @@
           </label>
           <div id="profileContentList" class="content-list"></div>
 
-          <!-- Add Study Subject Item Form -->
-          <div id="formAddSyllabus" class="hidden add-content-form">
-            <input type="text" id="inputSyllabusTitle" class="ds-input" data-i18n-placeholder="content.add_subject_placeholder" placeholder="Novo assunto (ex: Princípios Fundamentais)" style="flex:1;">
-            <div style="display:flex; align-items:center;">
+          <!-- Add Study Subject Item Form (Matéria + Assunto) -->
+          <div id="formAddSyllabus" class="hidden add-content-form add-content-form--vertical">
+            <div style="display:flex; gap:var(--ds-space-2); align-items:center;">
+              <input type="text" id="inputSyllabusMateria" class="ds-input" list="datalistMaterias" placeholder="Matéria (ex: Dir. Constitucional)" data-i18n-placeholder="content.materia_placeholder" style="flex:1;">
+              <datalist id="datalistMaterias"></datalist>
+            </div>
+            <div style="display:flex; gap:var(--ds-space-2); align-items:center;">
+              <input type="text" id="inputSyllabusTitle" class="ds-input" placeholder="Assunto (ex: Princípios Fundamentais)" data-i18n-placeholder="content.add_subject_placeholder" style="flex:1;">
               <button type="button" class="ds-btn ds-btn-icon-sm" id="btnSyllabusAdd" aria-label="Add" style="flex-shrink:0;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               </button>
@@ -699,7 +703,7 @@
   <script src="ds.js?v=4"></script>
   <script src="store.js?v=6"></script>
   <script src="i18n.js?v=2"></script>
-  <script src="auth.js?v=7"></script>
+  <script src="auth.js?v=8"></script>
   <script src="notifications.js?v=4"></script>
   <script src="app.js?v=48"></script>
   <script type="module">

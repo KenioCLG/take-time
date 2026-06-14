@@ -172,20 +172,21 @@ const Supabase = {
   async loadRelationalData() {
     if (!this._user) return null;
     try {
-      const [subjects, items, blocks, profiles, priorities, logs] = await Promise.all([
+      const [subjects, items, blocks, profiles, priorities, logs, notes] = await Promise.all([
         this._restGet('subjects', '&order=sort_order'),
         this._restGet('subject_items', '&order=sort_order'),
         this._restGet('blocks'),
         this._restGet('profiles', `&id=eq.${this._user.id}`),
         this._restGet('priorities', '&order=sort_order'),
         this._restGet('logs', '&order=created_at.desc&limit=50'),
+        this._restGet('notes', '&order=updated_at.desc').catch(() => []),
       ]);
 
       const mappedSubjects = subjects.map(s => {
         const sItems = items.filter(i => i.subject_id === s.id);
         const base = { id: s.id, name: s.name, color: s.color, type: s.type, slots: s.slots || [] };
         if (s.type === 'study') {
-          base.syllabus = sItems.map(i => ({ id: i.id, topic: i.name, status: i.done ? 'completed' : 'pending' }));
+          base.syllabus = sItems.map(i => ({ id: i.id, topic: i.name, materia: i.materia || '', status: i.done ? 'completed' : 'pending' }));
         } else if (s.type === 'training') {
           base.exercises = sItems.map(i => ({ id: i.id, name: i.name, sets: i.sets || 0, reps: i.reps || '', weight: i.weight || '' }));
         } else {
@@ -228,7 +229,16 @@ const Supabase = {
         message: l.action + (l.detail ? ': ' + l.detail : ''),
       }));
 
-      return { subjects: mappedSubjects, blocks: mappedBlocks, logs: mappedLogs, settings: mappedSettings, priorities: mappedPriorities };
+      const mappedNotes = (notes || []).map(n => ({
+        id: n.id,
+        title: n.title || '',
+        content: n.content || '',
+        tags: n.tags || [],
+        createdAt: n.created_at,
+        updatedAt: n.updated_at,
+      }));
+
+      return { subjects: mappedSubjects, blocks: mappedBlocks, notes: mappedNotes, logs: mappedLogs, settings: mappedSettings, priorities: mappedPriorities };
     } catch (e) {
       console.warn('[Sync] loadRelationalData failed:', e);
       return null;
@@ -254,6 +264,7 @@ const Supabase = {
           dbItems.push({
             id: item.id, user_id: userId, subject_id: s.id,
             name: item.topic || item.name || item.task || '',
+            materia: item.materia || null,
             sets: item.sets || null, reps: item.reps ? String(item.reps) : null, weight: item.weight || null,
             done: s.type === 'study' ? item.status === 'completed' : !!item.done,
             sort_order: i,
@@ -299,6 +310,19 @@ const Supabase = {
       });
       await this._restUpsert('priorities', dbPriorities);
       await this._restDeleteOrphans('priorities', dbPriorities.map(p => p.id));
+
+      // 6. Notes
+      const dbNotes = (state.notes || []).map(n => ({
+        id: n.id, user_id: userId,
+        title: n.title || '', content: n.content || '',
+        tags: n.tags || [],
+        created_at: n.createdAt || new Date().toISOString(),
+        updated_at: n.updatedAt || new Date().toISOString(),
+      }));
+      try {
+        await this._restUpsert('notes', dbNotes);
+        await this._restDeleteOrphans('notes', dbNotes.map(n => n.id));
+      } catch (e) { console.warn('[Sync] Notes sync failed (table may not exist yet):', e); }
 
       return true;
     } catch (e) {
