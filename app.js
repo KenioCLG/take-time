@@ -1139,6 +1139,69 @@ function openBlockModal(blockId = null) {
     // Esconder campos globais/estruturais ao editar a instância
     if (topicGroup) topicGroup.classList.add('hidden');
     if (timeRow) timeRow.classList.add('hidden');
+
+    // Montar o popup da pizza com os Assuntos para check
+    const subj = state.subjects.find(s => s.id === block.subjectId);
+    const checklistContainer = $('#modalBlockSubjectChecklist');
+    if (checklistContainer && subj) {
+      if (subj.type === 'study') {
+        const syllabus = subj.syllabus || [];
+        if (syllabus.length === 0) {
+          checklistContainer.innerHTML = `<p class="subject-empty" style="font-size:12px; color:var(--ds-text-tertiary);">Nenhum assunto cadastrado.</p>`;
+        } else {
+          // Filtrar os pendentes e concluídos para mostrar
+          checklistContainer.innerHTML = `
+            <label class="ds-label" style="font-size:11px; margin-bottom:8px;">Assuntos (Syllabus)</label>
+            <div style="max-height: 150px; overflow-y: auto; display:flex; flex-direction:column; gap:8px;">
+              ${syllabus.map(item => `
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                  <input type="checkbox" class="pizza-chk-syllabus" data-subject-id="${subj.id}" data-item-id="${item.id}" ${item.status === 'completed' ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--ds-accent);">
+                  <span style="${item.status === 'completed' ? 'text-decoration:line-through; color:var(--ds-text-tertiary);' : 'color:var(--ds-text-primary);'}">${DS.escapeHtml(item.topic)}</span>
+                </label>
+              `).join('')}
+            </div>
+          `;
+
+          // Adicionar listeners nos checkboxes
+          checklistContainer.querySelectorAll('.pizza-chk-syllabus').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const subjectId = e.target.dataset.subjectId;
+              const itemId = e.target.dataset.itemId;
+              const isChecked = e.target.checked;
+              
+              const subject = state.subjects.find(s => s.id === subjectId);
+              if (subject && subject.syllabus) {
+                const topic = subject.syllabus.find(t => t.id === itemId);
+                if (topic) {
+                  topic.status = isChecked ? 'completed' : 'pending';
+                  Store.pushToCloud();
+                  logAction(I18n.t(topic.status === 'completed' ? 'log.syllabus_done' : 'log.syllabus_undone', { name: topic.topic }));
+                  // Atualiza o visual local do texto riscado
+                  const span = e.target.nextElementSibling;
+                  if (isChecked) {
+                    span.style.textDecoration = 'line-through';
+                    span.style.color = 'var(--ds-text-tertiary)';
+                  } else {
+                    span.style.textDecoration = 'none';
+                    span.style.color = 'var(--ds-text-primary)';
+                  }
+                  // Chama render() silenciosamente para atualizar pizza etc se precisar
+                  requestAnimationFrame(() => {
+                    render();
+                    renderSubjects();
+                  });
+                }
+              }
+            });
+          });
+        }
+        checklistContainer.classList.remove('hidden');
+      } else {
+        // Se for treino ou rotina, pode implementar lógica similar depois, por enquanto esconde ou mostra lista genérica
+        checklistContainer.classList.add('hidden');
+      }
+    }
+
   } else {
     $('#modalTitle').textContent = I18n.t('block.new');
     $('#inputTopic').value = '';
@@ -1150,6 +1213,8 @@ function openBlockModal(blockId = null) {
     // Mostrar campos ao criar novo bloco extra
     if (topicGroup) topicGroup.classList.remove('hidden');
     if (timeRow) timeRow.classList.remove('hidden');
+    const checklistContainer = $('#modalBlockSubjectChecklist');
+    if (checklistContainer) checklistContainer.classList.add('hidden');
   }
 
   DS.sheet.open($('#modalBlock'), 0.92);
@@ -1690,13 +1755,16 @@ async function deleteBlock() {
 
 // ===== NOTES =====
 let editingNoteId = null;
+let currentNoteFilterTag = null;
 
 function renderNotes() {
   const list = $('#notesList');
+  const tagsFilterContainer = $('#notesTagsFilter');
   if (!list) return;
   const notes = state.notes || [];
 
   if (notes.length === 0) {
+    if (tagsFilterContainer) tagsFilterContainer.innerHTML = '';
     list.innerHTML = `<div class="notes-empty">
       <p style="color:var(--ds-text-tertiary); text-align:center; padding:40px 20px; font-size:14px;">
         ${I18n.t('note.empty', null, 'Nenhuma nota ainda. Toque em + para criar.')}
@@ -1705,30 +1773,56 @@ function renderNotes() {
     return;
   }
 
-  // Group by tags
-  const tagged = {};
-  const untagged = [];
+  // Coletar todas as tags únicas
+  const allTags = new Set();
   notes.forEach(n => {
     if (n.tags && n.tags.length > 0) {
-      n.tags.forEach(tag => {
-        if (!tagged[tag]) tagged[tag] = [];
-        tagged[tag].push(n);
-      });
-    } else {
-      untagged.push(n);
+      n.tags.forEach(t => allTags.add(t));
     }
   });
+
+  // Renderizar o filtro de tags
+  if (tagsFilterContainer) {
+    if (allTags.size > 0) {
+      let tagsHtml = `<button class="ds-tag-chip ${currentNoteFilterTag === null ? 'active' : ''}" data-tag="ALL">Todas</button>`;
+      Array.from(allTags).sort().forEach(tag => {
+        const isActive = currentNoteFilterTag === tag;
+        tagsHtml += `<button class="ds-tag-chip ${isActive ? 'active' : ''}" data-tag="${DS.escapeHtml(tag)}">${DS.escapeHtml(tag)}</button>`;
+      });
+      tagsFilterContainer.innerHTML = tagsHtml;
+
+      // Listeners
+      tagsFilterContainer.querySelectorAll('.ds-tag-chip').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const tag = e.target.dataset.tag;
+          currentNoteFilterTag = tag === 'ALL' ? null : tag;
+          renderNotes();
+        });
+      });
+    } else {
+      tagsFilterContainer.innerHTML = '';
+    }
+  }
+
+  // Filtrar notas se tiver tag ativa
+  let filteredNotes = notes;
+  if (currentNoteFilterTag) {
+    filteredNotes = notes.filter(n => n.tags && n.tags.includes(currentNoteFilterTag));
+  }
 
   let html = '';
 
   // All notes sorted by date (newest first)
-  const sorted = [...notes].sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''));
+  const sorted = [...filteredNotes].sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''));
 
   sorted.forEach(note => {
     const tagsHtml = (note.tags || []).map(t => `<span class="note-tag">${DS.escapeHtml(t)}</span>`).join('');
     const date = note.updatedAt || note.createdAt || '';
     const dateStr = date ? new Date(date).toLocaleDateString() : '';
-    const preview = (note.content || '').substring(0, 80).replace(/\n/g, ' ');
+    // Strip HTML tags for plain text preview
+    const tmp = document.createElement('div');
+    tmp.innerHTML = note.content || '';
+    const preview = (tmp.textContent || '').substring(0, 80).replace(/\s+/g, ' ').trim();
 
     html += `
       <div class="note-card" data-note-id="${note.id}">
@@ -1751,6 +1845,7 @@ function renderNotes() {
 
 function openNoteModal(noteId = null) {
   editingNoteId = noteId;
+  const editor = $('#inputNoteContent');
 
   if (noteId) {
     const note = (state.notes || []).find(n => n.id === noteId);
@@ -1758,13 +1853,13 @@ function openNoteModal(noteId = null) {
     $('#modalNoteTitle').textContent = I18n.t('note.edit', null, 'Editar Nota');
     $('#inputNoteTitle').value = note.title || '';
     $('#inputNoteTags').value = (note.tags || []).join(', ');
-    $('#inputNoteContent').value = note.content || '';
+    editor.innerHTML = note.content || '';
     $('#btnDeleteNote').classList.remove('hidden');
   } else {
     $('#modalNoteTitle').textContent = I18n.t('note.new', null, 'Nova Nota');
     $('#inputNoteTitle').value = '';
     $('#inputNoteTags').value = '';
-    $('#inputNoteContent').value = '';
+    editor.innerHTML = '';
     $('#btnDeleteNote').classList.add('hidden');
   }
 
@@ -1775,11 +1870,14 @@ function closeNoteModal() { DS.sheet.close($('#modalNote')); editingNoteId = nul
 
 function saveNote() {
   const title = $('#inputNoteTitle').value.trim();
-  const content = $('#inputNoteContent').value.trim();
+  const editor = $('#inputNoteContent');
+  const content = editor.innerHTML.trim();
+  // Treat empty editor (just <br> or whitespace) as empty
+  const isEmpty = !content || content === '<br>' || !editor.textContent.trim();
   const tagsRaw = $('#inputNoteTags').value.trim();
   const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
 
-  if (!title && !content) {
+  if (!title && isEmpty) {
     DS.toast(I18n.t('note.empty_warning', null, 'Adicione um título ou conteúdo'), 'warning');
     return;
   }
@@ -2798,6 +2896,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   if ($modalNoteSave) $modalNoteSave.addEventListener('click', saveNote);
   const $btnDeleteNote = $('#btnDeleteNote');
   if ($btnDeleteNote) $btnDeleteNote.addEventListener('click', deleteNote);
+
+  // Note editor toolbar
+  document.querySelectorAll('#noteToolbar .note-tb-btn').forEach(btn => {
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // keep focus on editor
+      const cmd = btn.dataset.cmd;
+      const val = btn.dataset.val || null;
+      document.execCommand(cmd, false, val);
+    });
+  });
 
   // Profile Slots and Content button bindings
   const $btnProfileAddSlot = $('#btnProfileAddSlot');

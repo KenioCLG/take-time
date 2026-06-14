@@ -644,12 +644,90 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   border-radius: var(--ds-radius-full);
 }
 
-.note-editor {
-  resize: vertical;
-  min-height: 160px;
-  font-size: 14px;
-  line-height: 1.6;
+/* Note toolbar */
+.note-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  background: var(--ds-bg-secondary);
+  border: 1px solid var(--ds-separator);
+  border-bottom: none;
+  border-radius: var(--ds-radius-md) var(--ds-radius-md) 0 0;
+}
+.note-tb-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--ds-text-secondary);
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  font-size: 13px;
   font-family: var(--ds-font);
+  transition: background var(--ds-duration-micro), color var(--ds-duration-micro);
+}
+.note-tb-btn:hover, .note-tb-btn:active {
+  background: var(--ds-fill-quaternary);
+  color: var(--ds-text-primary);
+}
+.note-tb-btn.active {
+  background: var(--ds-accent);
+  color: #fff;
+}
+.note-tb-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--ds-separator);
+  margin: 0 4px;
+}
+
+/* Rich editor area */
+.note-editor {
+  min-height: 200px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.7;
+  font-family: var(--ds-font);
+  color: var(--ds-text-primary);
+  background: var(--ds-bg-card);
+  border: 1px solid var(--ds-separator);
+  border-radius: 0 0 var(--ds-radius-md) var(--ds-radius-md);
+  outline: none;
+  transition: border-color var(--ds-duration-fast);
+  -webkit-user-modify: read-write-plaintext-only;
+  -webkit-user-modify: read-write;
+}
+.note-editor:focus {
+  border-color: var(--ds-accent);
+}
+.note-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--ds-text-tertiary);
+  pointer-events: none;
+}
+.note-editor h2 {
+  font-size: 18px;
+  font-weight: var(--ds-weight-bold);
+  margin: 12px 0 6px;
+}
+.note-editor blockquote {
+  border-left: 3px solid var(--ds-accent);
+  margin: 8px 0;
+  padding: 4px 12px;
+  color: var(--ds-text-secondary);
+}
+.note-editor ul, .note-editor ol {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+.note-editor li {
+  margin: 2px 0;
 }
 
 /* ===== SUBJECTS ===== */
@@ -1774,3 +1852,9 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   border-radius: 50%;
   flex-shrink: 0;
 }
+/* Notes Tags Filter */
+.tags-filter-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 16px 20px 0px 20px; scrollbar-width: none; -ms-overflow-style: none; }
+.tags-filter-scroll::-webkit-scrollbar { display: none; }
+.ds-tag-chip { padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; border: 1px solid var(--ds-separator); background: var(--ds-bg-secondary); color: var(--ds-text-secondary); transition: all 0.2s ease; }
+.ds-tag-chip.active { background: var(--ds-accent); color: #fff; border-color: var(--ds-accent); }
+
