@@ -122,6 +122,7 @@ async function loginUser() {
   if (typeof renderSubjects === 'function') renderSubjects();
   if (typeof initPriorities === 'function') initPriorities();
   if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
+  if (typeof hydrateSettingsDOM === 'function') hydrateSettingsDOM();
 
   // Onboarding automático
   if (state.subjects && state.subjects.length === 0) {
@@ -538,17 +539,30 @@ function renderPizza() {
         path.addEventListener('click', () => openBlockModal(block.id));
         svg.appendChild(path);
 
-        // Slice icon (type-based, centered in arc)
-        const midAngle = (sa + ea) / 2;
-        const midR = (R_OUTER + R_INNER) / 2;
-        const midP = polarToXY(midAngle, midR);
-        const arcSpan = ea - sa;
+        // Check icon (only when block is done)
+        if (block.done) {
+          const midAngle = (sa + ea) / 2;
+          const midR = (R_OUTER + R_INNER) / 2;
+          const midP = polarToXY(midAngle, midR);
+          const arcSpan = ea - sa;
 
-        if (arcSpan > 8) {
-          const iconSize = arcSpan > 25 ? 20 : 14;
-          const iconColor = isInactive ? 'var(--ds-text-tertiary)' : iconContrastColor(color);
-          const icon = sliceIcon(subj?.type || 'study', midP.x, midP.y, iconSize, iconColor);
-          svg.appendChild(icon);
+          if (arcSpan > 8) {
+            const iconSize = arcSpan > 25 ? 20 : 14;
+            const iconColor = isInactive ? 'var(--ds-text-tertiary)' : iconContrastColor(color);
+            const s = iconSize / 24;
+            const g = document.createElementNS(SVG_NS, 'g');
+            g.setAttribute('transform', `translate(${midP.x - iconSize/2}, ${midP.y - iconSize/2})`);
+            g.setAttribute('pointer-events', 'none');
+            const check = document.createElementNS(SVG_NS, 'polyline');
+            check.setAttribute('points', `${6*s},${12.5*s} ${10*s},${16.5*s} ${18*s},${8*s}`);
+            check.setAttribute('fill', 'none');
+            check.setAttribute('stroke', iconColor);
+            check.setAttribute('stroke-width', `${2.5*s}`);
+            check.setAttribute('stroke-linecap', 'round');
+            check.setAttribute('stroke-linejoin', 'round');
+            g.appendChild(check);
+            svg.appendChild(g);
+          }
         }
       });
     });
@@ -1192,14 +1206,12 @@ function openBlockModal(blockId = null) {
     $('#inputTopic').value = block.topic || '';
     $('#inputStart').value = block.start;
     $('#inputEnd').value = block.end;
-    $('#inputRepeatDaily').checked = block.repeatDaily || false;
     $('#btnDeleteBlock').classList.remove('hidden');
   } else {
     $('#modalTitle').textContent = I18n.t('block.new');
     $('#inputTopic').value = '';
     $('#inputStart').value = '08:00';
     $('#inputEnd').value = '09:00';
-    $('#inputRepeatDaily').checked = false;
     $('#btnDeleteBlock').classList.add('hidden');
     if (state.subjects.length > 0) $('#inputSubject').value = state.subjects[0].id;
   }
@@ -1303,9 +1315,8 @@ function renderModalContentList(items = [], type = 'study') {
     listEl.innerHTML = modalContentItems.map((item, index) => {
       let desc = '';
       if (type === 'study') {
-        const isRep = item.unit === 'rep';
-        const amt = item.duration ? item.duration + ' ' + (isRep ? I18n.t('content.duration_reps') : I18n.t('content.duration_min')) : '';
-        desc = `<span>${DS.escapeHtml(item.topic)}</span> <span class="content-meta">${amt}</span>`;
+        const statusIcon = item.status === 'completed' ? '✓' : '○';
+        desc = `<span style="color:var(--ds-text-tertiary); margin-right:4px;">${statusIcon}</span><span>${DS.escapeHtml(item.topic)}</span>`;
       } else if (type === 'training') {
         desc = `<div><strong>${DS.escapeHtml(item.name)}</strong> <span class="content-meta">${item.sets}x${item.reps} (${item.weight})</span></div>`;
       } else {
@@ -1556,13 +1567,12 @@ function saveBlock() {
   const isEditing = !!editingBlockId;
   if (isEditing) {
     const block = state.blocks.find(b => b.id === editingBlockId);
-    if (block) { block.subjectId = subjectId; block.topic = topic; block.start = start; block.end = end; block.repeatDaily = $('#inputRepeatDaily').checked; }
+    if (block) { block.subjectId = subjectId; block.topic = topic; block.start = start; block.end = end; }
     logAction(I18n.t('log.edited_block', { name: topic || subj?.name, start, end }));
   } else {
     state.blocks.push({
       id: uid(), date: dateKey(selectedDate),
       subjectId, topic, start, end, done: false,
-      repeatDaily: $('#inputRepeatDaily').checked,
     });
     logAction(I18n.t('log.created_block', { name: topic || subj?.name, start, end }));
   }
@@ -1686,12 +1696,155 @@ async function deleteBlock() {
   }
 }
 
+// ===== NOTES =====
+let editingNoteId = null;
+
+function renderNotes() {
+  const list = $('#notesList');
+  if (!list) return;
+  const notes = state.notes || [];
+
+  if (notes.length === 0) {
+    list.innerHTML = `<div class="notes-empty">
+      <p style="color:var(--ds-text-tertiary); text-align:center; padding:40px 20px; font-size:14px;">
+        ${I18n.t('note.empty', null, 'Nenhuma nota ainda. Toque em + para criar.')}
+      </p>
+    </div>`;
+    return;
+  }
+
+  // Group by tags
+  const tagged = {};
+  const untagged = [];
+  notes.forEach(n => {
+    if (n.tags && n.tags.length > 0) {
+      n.tags.forEach(tag => {
+        if (!tagged[tag]) tagged[tag] = [];
+        tagged[tag].push(n);
+      });
+    } else {
+      untagged.push(n);
+    }
+  });
+
+  let html = '';
+
+  // All notes sorted by date (newest first)
+  const sorted = [...notes].sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''));
+
+  sorted.forEach(note => {
+    const tagsHtml = (note.tags || []).map(t => `<span class="note-tag">${DS.escapeHtml(t)}</span>`).join('');
+    const date = note.updatedAt || note.createdAt || '';
+    const dateStr = date ? new Date(date).toLocaleDateString() : '';
+    const preview = (note.content || '').substring(0, 80).replace(/\n/g, ' ');
+
+    html += `
+      <div class="note-card" data-note-id="${note.id}">
+        <div class="note-card-header">
+          <h4 class="note-card-title">${DS.escapeHtml(note.title || I18n.t('note.untitled', null, 'Sem título'))}</h4>
+          <span class="note-card-date">${dateStr}</span>
+        </div>
+        ${preview ? `<p class="note-card-preview">${DS.escapeHtml(preview)}</p>` : ''}
+        ${tagsHtml ? `<div class="note-card-tags">${tagsHtml}</div>` : ''}
+      </div>
+    `;
+  });
+
+  list.innerHTML = html;
+
+  list.querySelectorAll('.note-card').forEach(card => {
+    card.addEventListener('click', () => openNoteModal(card.dataset.noteId));
+  });
+}
+
+function openNoteModal(noteId = null) {
+  editingNoteId = noteId;
+
+  if (noteId) {
+    const note = (state.notes || []).find(n => n.id === noteId);
+    if (!note) return;
+    $('#modalNoteTitle').textContent = I18n.t('note.edit', null, 'Editar Nota');
+    $('#inputNoteTitle').value = note.title || '';
+    $('#inputNoteTags').value = (note.tags || []).join(', ');
+    $('#inputNoteContent').value = note.content || '';
+    $('#btnDeleteNote').classList.remove('hidden');
+  } else {
+    $('#modalNoteTitle').textContent = I18n.t('note.new', null, 'Nova Nota');
+    $('#inputNoteTitle').value = '';
+    $('#inputNoteTags').value = '';
+    $('#inputNoteContent').value = '';
+    $('#btnDeleteNote').classList.add('hidden');
+  }
+
+  DS.sheet.open($('#modalNote'), 0.92);
+}
+
+function closeNoteModal() { DS.sheet.close($('#modalNote')); editingNoteId = null; }
+
+function saveNote() {
+  const title = $('#inputNoteTitle').value.trim();
+  const content = $('#inputNoteContent').value.trim();
+  const tagsRaw = $('#inputNoteTags').value.trim();
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+  if (!title && !content) {
+    DS.toast(I18n.t('note.empty_warning', null, 'Adicione um título ou conteúdo'), 'warning');
+    return;
+  }
+
+  if (!state.notes) state.notes = [];
+  const now = new Date().toISOString();
+
+  if (editingNoteId) {
+    const note = state.notes.find(n => n.id === editingNoteId);
+    if (note) {
+      note.title = title;
+      note.content = content;
+      note.tags = tags;
+      note.updatedAt = now;
+    }
+    logAction(I18n.t('log.edited_note', { name: title }, `Nota editada: ${title}`));
+  } else {
+    state.notes.push({
+      id: uid(),
+      title,
+      content,
+      tags,
+      createdAt: now,
+      updatedAt: now,
+    });
+    logAction(I18n.t('log.created_note', { name: title }, `Nota criada: ${title}`));
+  }
+
+  Store.save(state);
+  closeNoteModal();
+  renderNotes();
+  DS.toast(editingNoteId ? I18n.t('note.updated', null, 'Nota atualizada') : I18n.t('note.created', null, 'Nota criada'), 'success');
+}
+
+async function deleteNote() {
+  const ok = await DS.confirm(
+    I18n.t('note.delete', null, 'Excluir nota'),
+    I18n.t('note.delete_msg', null, 'Tem certeza que deseja excluir esta nota?'),
+    I18n.t('confirm.delete', null, 'Excluir')
+  );
+  if (ok) {
+    const note = (state.notes || []).find(n => n.id === editingNoteId);
+    if (note) logAction(I18n.t('log.deleted_note', { name: note.title }, `Nota excluída: ${note.title}`));
+    state.notes = (state.notes || []).filter(n => n.id !== editingNoteId);
+    Store.save(state);
+    closeNoteModal();
+    renderNotes();
+  }
+}
+
 // ===== TABS =====
 function initTabs() {
   const pages = {
-    schedule: { show: ['#pizzaPage', '#weekNav'], hide: ['#pageSubjects', '#pageSettings'] },
-    subjects: { show: ['#pageSubjects'], hide: ['#pizzaPage', '#weekNav', '#pageSettings'] },
-    settings: { show: ['#pageSettings'], hide: ['#pizzaPage', '#weekNav', '#pageSubjects'] },
+    schedule: { show: ['#pizzaPage', '#weekNav'], hide: ['#pageNotes', '#pageSubjects', '#pageSettings'] },
+    notes: { show: ['#pageNotes'], hide: ['#pizzaPage', '#weekNav', '#pageSubjects', '#pageSettings'] },
+    subjects: { show: ['#pageSubjects'], hide: ['#pizzaPage', '#weekNav', '#pageNotes', '#pageSettings'] },
+    settings: { show: ['#pageSettings'], hide: ['#pizzaPage', '#weekNav', '#pageNotes', '#pageSubjects'] },
   };
 
   function switchTab(tabName, animate) {
@@ -1711,6 +1864,7 @@ function initTabs() {
       }
     });
     p.hide.forEach(s => { const el = $(s); if (el) el.classList.add('hidden'); });
+    if (tabName === 'notes') renderNotes();
     if (tabName === 'subjects') renderSubjects();
     if (tabName === 'settings' && typeof initPriorities === 'function') initPriorities();
     try { localStorage.setItem('studyplan_tab', tabName); } catch(e) {}
@@ -1768,19 +1922,28 @@ function updateBlockProgress() {
   });
 }
 
-function initSettings() {
+function hydrateSettingsDOM() {
   const themeSelect = $('#themeSelect');
   const notifToggle = $('#toggleNotif');
   const reminderSelect = $('#reminderTime');
   const marqueeToggle = $('#toggleShowMarquee');
 
-  if (themeSelect) themeSelect.value = state.settings.theme;
-  if (notifToggle) notifToggle.checked = state.settings.notifications;
-  if (reminderSelect) reminderSelect.value = state.settings.reminderMin;
+  if (themeSelect) themeSelect.value = state.settings.theme || 'auto';
+  if (notifToggle) notifToggle.checked = !!state.settings.notifications;
+  if (reminderSelect) reminderSelect.value = state.settings.reminderMin || 10;
   if (marqueeToggle) marqueeToggle.checked = state.settings.showMarquee !== false;
 
-  applyTheme(state.settings.theme);
+  applyTheme(state.settings.theme || 'auto');
   updateMarqueeVisibility();
+}
+
+function initSettings() {
+  hydrateSettingsDOM();
+
+  const themeSelect = $('#themeSelect');
+  const notifToggle = $('#toggleNotif');
+  const reminderSelect = $('#reminderTime');
+  const marqueeToggle = $('#toggleShowMarquee');
 
   if (themeSelect) {
     themeSelect.addEventListener('change', () => {
@@ -2587,6 +2750,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderSubjects();
         if (typeof initPriorities === 'function') initPriorities();
         if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
+        initSettings();
       }
     }).catch(() => {});
   }
@@ -2604,6 +2768,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSettings();
   DS.sheet.init();
   initWeekSwipe();
+
+  // "Hoje" button — go to today
+  const $btnToday = $('#btnToday');
+  if ($btnToday) $btnToday.addEventListener('click', (e) => {
+    e.preventDefault();
+    selectedDate = new Date();
+    render();
+  });
 
   // Guarded DOM element bindings — if element is missing, skip silently
   const $btnPizzaAdd = $('#btnPizzaAdd');
@@ -2623,6 +2795,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const $modalSubjectSave = $('#modalSubjectSave');
   if ($modalSubjectSave) $modalSubjectSave.addEventListener('click', saveSubject);
+
+  // Notes
+  const $btnCreateNote = $('#btnCreateNote');
+  if ($btnCreateNote) $btnCreateNote.addEventListener('click', () => openNoteModal());
+  const $modalNoteCancel = $('#modalNoteCancel');
+  if ($modalNoteCancel) $modalNoteCancel.addEventListener('click', closeNoteModal);
+  const $modalNoteSave = $('#modalNoteSave');
+  if ($modalNoteSave) $modalNoteSave.addEventListener('click', saveNote);
+  const $btnDeleteNote = $('#btnDeleteNote');
+  if ($btnDeleteNote) $btnDeleteNote.addEventListener('click', deleteNote);
 
   // Profile Slots and Content button bindings
   const $btnProfileAddSlot = $('#btnProfileAddSlot');
@@ -2680,36 +2862,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   if ($btnSyllabusAdd) {
     $btnSyllabusAdd.addEventListener('click', () => {
       const titleInput = $('#inputSyllabusTitle');
-      const durInput = $('#inputSyllabusDuration');
-      if (!titleInput || !durInput) return;
+      if (!titleInput) return;
       const title = titleInput.value.trim();
-      const durationVal = parseInt(durInput.value) || 0;
-      const unit = 'min';
 
-      if (!title) { DS.toast(I18n.t('alert.enter_topic'), 'warning'); return; }
+      if (!title) { DS.toast(I18n.t('alert.enter_subject'), 'warning'); return; }
 
-      // Validate against max slot length
-      if (modalSlots && modalSlots.length > 0) {
-        let maxSlotMin = 0;
-        let totalSlotMin = 0;
-        modalSlots.forEach(s => {
-          const [h1, m1] = s.start.split(':').map(Number);
-          const [h2, m2] = s.end.split(':').map(Number);
-          let dur = (h2 * 60 + m2) - (h1 * 60 + m1);
-          if (dur < 0) dur += 24 * 60; // handle overnight
-          if (dur > maxSlotMin) maxSlotMin = dur;
-          totalSlotMin += (dur * s.daysOfWeek.length); // Total week capacity
-        });
-
-        if (maxSlotMin > 0 && durationVal > maxSlotMin) {
-          DS.toast(I18n.t('alert.duration_exceeds_slot', { duration: durationVal, max: maxSlotMin }), 'warning');
-          return;
-        }
-      }
-
-      modalContentItems.push({ id: uid(), topic: title, duration: durationVal, unit: unit, description: '', status: 'pending' });
+      modalContentItems.push({ id: uid(), topic: title, status: 'pending' });
       titleInput.value = '';
-      durInput.value = '';
       renderModalContentList(modalContentItems, 'study');
     });
   }

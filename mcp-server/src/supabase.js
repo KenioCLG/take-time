@@ -49,7 +49,29 @@ export class SupabaseClient {
 
     const res = await fetch(url, { ...opts, headers });
     const data = await res.json().catch(() => null);
-    if (!res.ok) throw new Error(data?.message || data?.msg || data?.error_description || `HTTP ${res.status}`);
+
+    if (!res.ok) {
+      const msg = data?.message || data?.msg || data?.error_description || `HTTP ${res.status}`;
+
+      // Auto-retry on expired JWT
+      if (!opts.skipAuth && !opts._retried && (msg.includes('JWT expired') || msg.includes('token is expired') || res.status === 401)) {
+        console.error('[MCP] Token expired, re-authenticating...');
+        try {
+          if (this.refreshToken) {
+            await this.loginWithRefreshToken(this.refreshToken);
+          } else if (this._email && this._password) {
+            await this.loginWithCredentials(this._email, this._password);
+          } else {
+            throw new Error('No credentials available for re-auth');
+          }
+          return this._fetch(path, { ...opts, _retried: true });
+        } catch (e) {
+          throw new Error(`Re-authentication failed: ${e.message}`);
+        }
+      }
+
+      throw new Error(msg);
+    }
     return data;
   }
 
@@ -66,6 +88,8 @@ export class SupabaseClient {
 
   // Login with email/password to get a proper session with refresh token
   async loginWithCredentials(email, password) {
+    this._email = email;
+    this._password = password;
     const data = await this._fetch('/auth/v1/token?grant_type=password', {
       method: 'POST',
       skipAuth: true,
@@ -73,6 +97,7 @@ export class SupabaseClient {
     });
     this.accessToken = data.access_token;
     this.refreshToken = data.refresh_token;
+    persistRefreshToken(data.refresh_token);
     this.userId = data.user?.id;
     if (data.expires_in) {
       this._scheduleRefresh(data.expires_in);

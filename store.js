@@ -28,13 +28,20 @@ const Store = {
     if (this._syncDebounce) clearTimeout(this._syncDebounce);
     this._syncDebounce = setTimeout(() => {
       this.pushToCloud(data);
-    }, 2000); // Wait 2s after last save to batch changes
+    }, 3000); // Wait 3s after last save to batch changes
   },
 
+  _pushing: false,
   async pushToCloud(data) {
     if (!window.Supabase || !Supabase._user) return;
-    const ok = await Supabase.saveRelationalData(data);
-    if (ok) console.log('[Sync] Pushed to relational tables');
+    if (this._pushing) return; // skip if already pushing
+    this._pushing = true;
+    try {
+      const ok = await Supabase.saveRelationalData(data);
+      if (ok) console.log('[Sync] Pushed to relational tables');
+    } finally {
+      this._pushing = false;
+    }
   },
 
   async pullFromCloud() {
@@ -65,6 +72,9 @@ const Store = {
     if (!remote.priorities && local.priorities) {
       remote.priorities = local.priorities;
     }
+    if (!remote.notes && local.notes) {
+      remote.notes = local.notes;
+    }
 
     // Remote always wins — it's the source of truth per user
     localStorage.setItem(this._key, JSON.stringify(remote));
@@ -75,6 +85,7 @@ const Store = {
     return {
       subjects: [],
       blocks: [],
+      notes: [],
       logs: [],
       settings: { notifications: false, reminderMin: 10, theme: 'auto', showMarquee: true },
       priorities: {

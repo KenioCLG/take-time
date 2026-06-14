@@ -1023,6 +1023,12 @@ server.tool(
 
 async function main() {
   try {
+    // Store credentials for auto-retry on expiry
+    if (email && password) {
+      db._email = email;
+      db._password = password;
+    }
+
     if (refreshToken) {
       try {
         const user = await db.loginWithRefreshToken(refreshToken);
@@ -1032,8 +1038,22 @@ async function main() {
         const persisted = loadPersistedRefreshToken();
         if (persisted && persisted !== refreshToken) {
           console.error('[Take Time MCP] Env token expired, trying persisted token...');
-          const user = await db.loginWithRefreshToken(persisted);
-          console.error(`[Take Time MCP] Authenticated as ${user.email} (using persisted token)`);
+          try {
+            const user = await db.loginWithRefreshToken(persisted);
+            console.error(`[Take Time MCP] Authenticated as ${user.email} (using persisted token)`);
+          } catch (e2) {
+            if (email && password) {
+              console.error('[Take Time MCP] Persisted token also expired, using email/password...');
+              const user = await db.loginWithCredentials(email, password);
+              console.error(`[Take Time MCP] Authenticated as ${user.email} (email/password fallback)`);
+            } else {
+              throw e2;
+            }
+          }
+        } else if (email && password) {
+          console.error('[Take Time MCP] Refresh token expired, using email/password...');
+          const user = await db.loginWithCredentials(email, password);
+          console.error(`[Take Time MCP] Authenticated as ${user.email} (email/password fallback)`);
         } else {
           throw e;
         }

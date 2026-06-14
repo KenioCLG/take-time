@@ -16,11 +16,11 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="ds.css?v=3">
-  <link rel="stylesheet" href="styles.css?v=27">
+  <link rel="stylesheet" href="styles.css?v=28">
   <script>
     // One-time SW + cache nuke (v12)
     (function(){
-      var key = 'tt_cache_v27';
+      var key = 'tt_cache_v28';
       if (!localStorage.getItem(key)) {
         localStorage.setItem(key, '1');
         if ('serviceWorker' in navigator) {
@@ -148,6 +148,7 @@
         <h1 class="header-title" data-i18n="app.name" style="margin:0;">Take Time</h1>
       </div>
       <div class="header-right">
+        <a href="#" class="header-today-link" id="btnToday" data-i18n="header.today">hoje</a>
         <span class="header-clock" id="headerClock"></span>
       </div>
     </header>
@@ -185,6 +186,10 @@
         <svg class="ds-icon ds-icon--spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="12" x2="12" y2="7"/><line x1="12" y1="12" x2="15.5" y2="13.5"/></svg>
         <span data-i18n="tab.schedule">Agenda</span>
       </button>
+      <button class="ds-tab" data-tab="notes">
+        <svg class="ds-icon" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        <span data-i18n="tab.notes">Notas</span>
+      </button>
       <button class="ds-tab" data-tab="subjects">
         <svg class="ds-icon ds-icon--rock" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         <span data-i18n="tab.subjects">Atividades</span>
@@ -194,6 +199,17 @@
         <span data-i18n="tab.settings">Config</span>
       </button>
     </nav>
+
+    <!-- Notes Page (hidden) -->
+    <main class="page hidden" id="pageNotes">
+      <div class="section-header">
+        <h2 data-i18n="tab.notes">Notas</h2>
+        <button class="ds-btn ds-btn-icon" id="btnCreateNote" aria-label="Adicionar nota">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      <div class="notes-list" id="notesList"></div>
+    </main>
 
     <!-- Subjects Page (hidden) -->
     <main class="page hidden" id="pageSubjects">
@@ -466,8 +482,8 @@
           <select id="inputSubject" class="ds-input"></select>
         </div>
         <div class="form-group">
-          <label class="ds-label" data-i18n="block.topic">Tópico (opcional)</label>
-          <input type="text" id="inputTopic" class="ds-input" data-i18n-placeholder="block.topic_placeholder" placeholder="Ex: Cap. 3 - Arrays">
+          <label class="ds-label" data-i18n="block.subject_topic">Assunto (opcional)</label>
+          <input type="text" id="inputTopic" class="ds-input" data-i18n-placeholder="block.subject_topic_placeholder" placeholder="Ex: Direito Constitucional">
         </div>
         <div class="form-row">
           <div class="form-group half">
@@ -479,17 +495,34 @@
             <input type="time" id="inputEnd" class="ds-input" value="09:00">
           </div>
         </div>
-        <div class="form-group" style="flex-direction:row !important; align-items:center; justify-content:space-between; padding: 8px 0;">
-          <div>
-            <label class="ds-label" data-i18n="block.repeat_daily" style="margin-bottom:0;">Repetir Diariamente</label>
-            <p style="font-size:11px; color:var(--ds-text-tertiary); margin:4px 0 0 0;" data-i18n="block.repeat_daily_hint">Recria este bloco todos os dias</p>
-          </div>
-          <label class="ds-toggle">
-            <input type="checkbox" id="inputRepeatDaily">
-            <span class="ds-toggle-track"></span>
-          </label>
-        </div>
         <button class="ds-btn ds-btn-danger ds-btn-block hidden" id="btnDeleteBlock" data-i18n="block.delete">Excluir bloco</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Note Editor -->
+  <div class="ds-overlay hidden" id="modalNote">
+    <div class="ds-sheet">
+      <div class="ds-sheet-handle-area"><div class="ds-sheet-handle"></div></div>
+      <div class="ds-sheet-header">
+        <button class="ds-btn ds-btn-plain" id="modalNoteCancel" data-i18n="confirm.cancel">Cancelar</button>
+        <h3 class="ds-headline" id="modalNoteTitle" data-i18n="note.new">Nova Nota</h3>
+        <button class="ds-btn ds-btn-plain ds-btn-save" id="modalNoteSave" data-i18n="confirm.save">Salvar</button>
+      </div>
+      <div class="ds-sheet-body">
+        <div class="form-group">
+          <label class="ds-label" data-i18n="note.title_label">Título</label>
+          <input type="text" id="inputNoteTitle" class="ds-input" placeholder="Título da nota" data-i18n-placeholder="note.title_placeholder">
+        </div>
+        <div class="form-group">
+          <label class="ds-label" data-i18n="note.tags_label">Etiquetas</label>
+          <input type="text" id="inputNoteTags" class="ds-input" placeholder="Ex: revisão, importante" data-i18n-placeholder="note.tags_placeholder">
+        </div>
+        <div class="form-group">
+          <label class="ds-label" data-i18n="note.content_label">Conteúdo</label>
+          <textarea id="inputNoteContent" class="ds-input note-editor" rows="8" placeholder="Escreva sua nota..." data-i18n-placeholder="note.content_placeholder"></textarea>
+        </div>
+        <button class="ds-btn ds-btn-danger ds-btn-block hidden" id="btnDeleteNote" data-i18n="note.delete">Excluir nota</button>
       </div>
     </div>
   </div>
@@ -552,19 +585,15 @@
 
         <div class="form-group" id="profileContentGroup">
           <label class="ds-label" id="profileContentLabel" data-i18n="subject.content_label" style="display:flex; justify-content:space-between; align-items:center;">
-            Conteúdo do Perfil
+            Assuntos
             <svg onclick="showStudyTipsInfo()" style="cursor:pointer; color:var(--ds-text-tertiary);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
           </label>
           <div id="profileContentList" class="content-list"></div>
 
-          <!-- Add Study Syllabus Item Form -->
-          <div id="formAddSyllabus" class="hidden add-content-form add-content-form--vertical">
-            <input type="text" id="inputSyllabusTitle" class="ds-input" data-i18n-placeholder="content.add_syllabus_placeholder" placeholder="Novo tópico (ex: Arrays)">
-            <div style="display:flex; gap:var(--ds-space-2); align-items:center;">
-              <div style="flex:1; display:flex; position:relative;">
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="inputSyllabusDuration" class="ds-input" placeholder="Minutos" data-i18n-placeholder="content.duration_placeholder" style="border-radius: var(--ds-radius-md) 0 0 var(--ds-radius-md); border-right:1px solid var(--ds-separator); z-index:1; min-width:0;">
-                <div class="ds-input" style="border-radius: 0 var(--ds-radius-md) var(--ds-radius-md) 0; background-color: var(--ds-bg-secondary); border-left:none; padding: 0 12px; display:flex; align-items:center; justify-content:center; min-width:0; color: var(--ds-text-tertiary); font-size: 14px; user-select:none;" data-i18n="content.duration_min">min</div>
-              </div>
+          <!-- Add Study Subject Item Form -->
+          <div id="formAddSyllabus" class="hidden add-content-form">
+            <input type="text" id="inputSyllabusTitle" class="ds-input" data-i18n-placeholder="content.add_subject_placeholder" placeholder="Novo assunto (ex: Princípios Fundamentais)" style="flex:1;">
+            <div style="display:flex; align-items:center;">
               <button type="button" class="ds-btn ds-btn-icon-sm" id="btnSyllabusAdd" aria-label="Add" style="flex-shrink:0;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               </button>
@@ -668,11 +697,11 @@
 
   <script src="Sortable.min.js"></script>
   <script src="ds.js?v=4"></script>
-  <script src="store.js?v=5"></script>
+  <script src="store.js?v=6"></script>
   <script src="i18n.js?v=2"></script>
   <script src="auth.js?v=7"></script>
   <script src="notifications.js?v=4"></script>
-  <script src="app.js?v=47"></script>
+  <script src="app.js?v=48"></script>
   <script type="module">
     // Init 3D logo on auth screen
     import SVG3D from './svg3d.js';
