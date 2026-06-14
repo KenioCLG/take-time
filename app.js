@@ -1174,7 +1174,7 @@ function openBlockModal(blockId = null) {
                 const topic = subject.syllabus.find(t => t.id === itemId);
                 if (topic) {
                   topic.status = isChecked ? 'completed' : 'pending';
-                  Store.pushToCloud();
+                  Store.save(state);
                   logAction(I18n.t(topic.status === 'completed' ? 'log.syllabus_done' : 'log.syllabus_undone', { name: topic.topic }));
                   // Atualiza o visual local do texto riscado
                   const span = e.target.nextElementSibling;
@@ -1804,6 +1804,11 @@ function renderNotes() {
     }
   }
 
+  // Reset stale filter if tag no longer exists
+  if (currentNoteFilterTag && !allTags.has(currentNoteFilterTag)) {
+    currentNoteFilterTag = null;
+  }
+
   // Filtrar notas se tiver tag ativa
   let filteredNotes = notes;
   if (currentNoteFilterTag) {
@@ -1906,10 +1911,11 @@ function saveNote() {
     logAction(I18n.t('log.created_note', { name: title }, `Nota criada: ${title}`));
   }
 
+  const isEditing = !!editingNoteId;
   Store.save(state);
   closeNoteModal();
   renderNotes();
-  DS.toast(editingNoteId ? I18n.t('note.updated', null, 'Nota atualizada') : I18n.t('note.created', null, 'Nota criada'), 'success');
+  DS.toast(isEditing ? I18n.t('note.updated', null, 'Nota atualizada') : I18n.t('note.created', null, 'Nota criada'), 'success');
 }
 
 async function deleteNote() {
