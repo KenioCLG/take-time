@@ -218,7 +218,10 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   background: transparent;
   color: var(--ds-text-tertiary);
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0;
+  width: 32px;
+  min-width: 32px;
+  flex-shrink: 0;
   transition: color var(--ds-duration-fast);
 }
 .week-nav-arrow:hover, .week-nav-arrow:active {

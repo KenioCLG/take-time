@@ -940,7 +940,7 @@ function renderWeekNav() {
   // Btn Prev Week
   const btnPrev = document.createElement('button');
   btnPrev.className = 'week-nav-arrow';
-  btnPrev.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+  btnPrev.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
   btnPrev.addEventListener('click', () => {
     selectedDate.setDate(selectedDate.getDate() - 7);
     render();
@@ -980,7 +980,7 @@ function renderWeekNav() {
   // Btn Next Week
   const btnNext = document.createElement('button');
   btnNext.className = 'week-nav-arrow';
-  btnNext.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+  btnNext.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
   btnNext.addEventListener('click', () => {
     selectedDate.setDate(selectedDate.getDate() + 7);
     render();
