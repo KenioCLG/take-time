@@ -75,6 +75,14 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ===== STICKY HEADER GROUP ===== */
+.sticky-header-group {
+  position: sticky;
+  top: 0;
+  z-index: var(--ds-z-dropdown);
+  background: var(--ds-bg-primary);
+}
+
 /* ===== HEADER ===== */
 .app-header {
   display: flex;
@@ -82,9 +90,6 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   justify-content: space-between;
   padding: calc(var(--ds-safe-top) + 16px) var(--ds-space-1) 12px;
   background: var(--ds-bg-primary);
-  position: sticky;
-  top: 0;
-  z-index: var(--ds-z-dropdown);
 }
 
 .header-title {
@@ -127,9 +132,6 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 /* ===== VERSE MARQUEE ===== */
 .verse-marquee {
-  position: sticky;
-  top: calc(var(--ds-safe-top) + 72px);
-  z-index: var(--ds-z-dropdown);
   overflow: hidden;
   width: 100%;
   height: 20px;
