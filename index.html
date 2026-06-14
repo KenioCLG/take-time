@@ -16,11 +16,19 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="ds.css?v=3">
-  <link rel="stylesheet" href="styles.css?v=33">
+  <link rel="stylesheet" href="styles.css?v=34">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
   <script>
-    // One-time SW + cache nuke (v12)
+    // Force SW update + cache nuke on version change
     (function(){
-      var key = 'tt_cache_v33';
+      var key = 'tt_cache_v34';
+      // Always try to update SW when online
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(function(reg) {
+          if (reg) reg.update();
+        });
+      }
       if (!localStorage.getItem(key)) {
         localStorage.setItem(key, '1');
         if ('serviceWorker' in navigator) {
@@ -725,7 +733,7 @@
   <script src="i18n.js?v=2"></script>
   <script src="auth.js?v=9"></script>
   <script src="notifications.js?v=4"></script>
-  <script src="app.js?v=52"></script>
+  <script src="app.js?v=53"></script>
   <script type="module">
     // Init 3D logo on auth screen
     import SVG3D from './svg3d.js';
