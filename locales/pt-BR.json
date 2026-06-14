@@ -21,8 +21,12 @@
   "auth.signup_btn": "Criar Conta",
 
   "tab.schedule": "Agenda",
+  "tab.notes": "Notas",
   "tab.subjects": "Atividades",
   "tab.settings": "Config",
+
+  "header.today": "hoje",
+  "pizza.done_label": "concluídas",
 
   "type.study": "Estudo",
   "type.training": "Treino",
@@ -348,5 +352,20 @@
   "seed.ex10": "Dead Bug Weighted",
   "seed.weight_dumbbells": "Halteres",
   "seed.weight_ankles": "Caneleiras",
-  "seed.weight_light": "Halteres leves"
+  "seed.weight_light": "Halteres leves",
+
+  "note.empty": "Nenhuma nota ainda. Toque em + para criar.",
+  "note.untitled": "Sem título",
+  "note.new": "Nova Nota",
+  "note.edit": "Editar Nota",
+  "note.empty_warning": "Adicione um título ou conteúdo",
+  "note.updated": "Nota atualizada",
+  "note.created": "Nota criada",
+  "note.delete": "Excluir nota",
+  "note.delete_msg": "Tem certeza que deseja excluir esta nota?",
+  "note.title_label": "Título",
+  "note.title_placeholder": "Título da nota",
+  "note.tags_label": "Etiquetas",
+  "note.tags_placeholder": "Ex: revisão, importante",
+  "note.content_label": "Conteúdo"
 }

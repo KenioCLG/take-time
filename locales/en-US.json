@@ -21,8 +21,12 @@
   "auth.signup_btn": "Create Account",
 
   "tab.schedule": "Schedule",
+  "tab.notes": "Notes",
   "tab.subjects": "Activities",
   "tab.settings": "Settings",
+
+  "header.today": "today",
+  "pizza.done_label": "completed",
 
   "type.study": "Study",
   "type.training": "Training",
@@ -347,5 +351,20 @@
   "seed.ex10": "Dead Bug Weighted",
   "seed.weight_dumbbells": "Dumbbells",
   "seed.weight_ankles": "Ankle Weights",
-  "seed.weight_light": "Light Dumbbells"
+  "seed.weight_light": "Light Dumbbells",
+
+  "note.empty": "No notes yet. Tap + to create one.",
+  "note.untitled": "Untitled",
+  "note.new": "New Note",
+  "note.edit": "Edit Note",
+  "note.empty_warning": "Add a title or content",
+  "note.updated": "Note updated",
+  "note.created": "Note created",
+  "note.delete": "Delete note",
+  "note.delete_msg": "Are you sure you want to delete this note?",
+  "note.title_label": "Title",
+  "note.title_placeholder": "Note title",
+  "note.tags_label": "Tags",
+  "note.tags_placeholder": "e.g.: review, important",
+  "note.content_label": "Content"
 }
