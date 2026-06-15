@@ -4834,6 +4834,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+          setInterval(() => { reg.update(); }, 30 * 60 * 1000);
+
+          reg.addEventListener('updatefound', () => {
+            const newSW = reg.installing;
+            if (!newSW) return;
+            newSW.addEventListener('statechange', () => {
+              if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                DS.toast('Nova versão disponível! Recarregue para atualizar.', 'info');
+              }
+            });
+          });
+
           reg.update();
         }).catch(() => {});
       }
