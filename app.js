@@ -2758,65 +2758,65 @@ function renderAtomic() {
     // Morning form
     const prefill = affirmation?.text || '';
     html += `<div class="atomic-card-form" id="atomicMorningForm">
-      <div class="atomic-circ-row">
-        <div class="atomic-field">
-          <label class="ds-label" style="display:flex; align-items:center; width:100%;">
+      <div class="atomic-gauges-row">
+        <div class="atomic-field atomic-field--sleep">
+          <label class="ds-label" style="display:flex; align-items:center; gap:4px;">
             <span>${DS.icon('moon', { size: 16 })} ${I18n.t('atomic.sleep_label', null, 'Sono')}</span>
-            <span class="atomic-sleep-value" id="atomicSleepValue" style="margin-left:auto; color:var(--ds-accent); font-weight:700;">7h</span>
-            <button type="button" class="atomic-help-btn" data-help="sleep" aria-label="Ajuda" style="margin-left:6px;">${DS.icon('info', { size: 14 })}</button>
+            <button type="button" class="atomic-help-btn" data-help="sleep" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button>
           </label>
-          <div class="atomic-sleep-bubbles-container">
-            <svg class="sleep-track-svg" viewBox="0 0 280 155" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 20 140 A 120 120 0 0 1 260 140" fill="none" stroke="var(--ds-border-tertiary)" stroke-width="3" stroke-linecap="round"/>
-              <path id="sleepTrackFill" d="M 20 140 A 120 120 0 0 1 260 140" fill="none" stroke="var(--ds-accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="999" stroke-dashoffset="999" style="transition: stroke-dashoffset 0.5s var(--ds-ease-spring);"/>
+          <div class="sleep-dial" id="sleepDial">
+            <svg class="sleep-dial-svg" viewBox="0 0 160 160">
+              <circle cx="80" cy="80" r="58" fill="none" stroke="var(--ds-fill-tertiary)" stroke-width="12" opacity="0.5"/>
+              <circle class="sleep-dial-fill" id="sleepDialFill" cx="80" cy="80" r="58" fill="none" stroke="var(--ds-accent)" stroke-width="12" stroke-linecap="round"
+                stroke-dasharray="${2 * Math.PI * 58}" stroke-dashoffset="${2 * Math.PI * 58 * (1 - 3/8)}"
+                transform="rotate(-90 80 80)" style="transition: stroke-dashoffset 0.4s var(--ds-ease-spring);"/>
+              <text x="80" y="72" text-anchor="middle" class="sleep-dial-num" fill="var(--ds-text-primary)">7</text>
+              <text x="80" y="96" text-anchor="middle" class="sleep-dial-unit" fill="var(--ds-text-tertiary)">${I18n.t('atomic.sleep_label', null, 'Sono')}</text>
             </svg>
-            <div class="atomic-sleep-bubbles" id="atomicSleepBubbles">
-              ${(() => {
-                const vals = [4, 5, 6, 7, 8, 9, 10, 11, 12];
-                const R = 120; const cx = 140; const cy = 140;
-                const startAngle = 180; const endAngle = 0;
-                const step = (startAngle - endAngle) / (vals.length - 1);
-                return vals.map((h, i) => {
-                  const deg = startAngle - i * step;
-                  const rad = deg * Math.PI / 180;
-                  const x = cx + R * Math.cos(rad);
-                  const y = cy - R * Math.sin(rad);
-                  return `<button type="button" class="sleep-bubble ${h === 7 ? 'active' : ''}" data-val="${h}" data-angle="${deg}" style="left:${x}px;top:${y}px;"><span class="sleep-bubble-num">${h}<span style="font-size:9px;opacity:0.7;">h</span></span></button>`;
-                }).join('');
-              })()}
-            </div>
-            <div class="sleep-half-toggle-wrapper">
+            <div class="sleep-dial-controls">
+              <button type="button" class="sleep-dial-btn" id="sleepMinus" aria-label="Menos">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
               <button type="button" class="sleep-half-toggle" id="sleepHalfToggle">+30min</button>
+              <button type="button" class="sleep-dial-btn" id="sleepPlus" aria-label="Mais">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
             </div>
             <input type="hidden" id="atomicSleep" value="7">
           </div>
         </div>
-        <div class="atomic-field">
-          <label class="ds-label">${DS.icon('flame', { size: 16 })} ${I18n.t('atomic.mood_label', null, 'Humor')} <button type="button" class="atomic-help-btn" data-help="mood" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
-          <div class="atomic-mood-btns" id="atomicMoodBtns">
-            <svg class="mood-track-svg" viewBox="0 0 280 150" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
-              <path d="M 20 135 A 115 115 0 0 1 260 135" fill="none" stroke="var(--ds-border-tertiary)" stroke-width="2.5" stroke-linecap="round"/>
-              <path id="moodTrackDots" fill="none" stroke="var(--ds-border-tertiary)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="0 999"/>
+        <div class="atomic-field atomic-field--mood">
+          <label class="ds-label" style="display:flex; align-items:center; gap:4px;">
+            <span>${DS.icon('flame', { size: 16 })} ${I18n.t('atomic.mood_label', null, 'Humor')}</span>
+            <button type="button" class="atomic-help-btn" data-help="mood" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button>
+          </label>
+          <div class="mood-pizza" id="moodPizza">
+            <svg class="mood-pizza-svg" viewBox="0 0 160 160">
+              ${(() => {
+                const moods = [
+                  { val: 'great', label: I18n.t('atomic.mood_great', null, 'Energizado'), color: '#34C759' },
+                  { val: 'good',  label: I18n.t('atomic.mood_good', null, 'Bem'),        color: '#8BC34A' },
+                  { val: 'okay',  label: I18n.t('atomic.mood_okay', null, 'Neutro'),      color: '#FF9500' },
+                  { val: 'heavy', label: I18n.t('atomic.mood_heavy', null, 'Pesado'),     color: '#FF6B35' },
+                  { val: 'tough', label: I18n.t('atomic.mood_tough', null, 'Difícil'),    color: '#FF3B30' },
+                ];
+                const cx = 80, cy = 80, R = 62, r = 0;
+                const n = moods.length;
+                const sliceAngle = (2 * Math.PI) / n;
+                return moods.map((m, i) => {
+                  const a1 = -Math.PI / 2 + i * sliceAngle;
+                  const a2 = a1 + sliceAngle;
+                  const ox1 = cx + R * Math.cos(a1), oy1 = cy + R * Math.sin(a1);
+                  const ox2 = cx + R * Math.cos(a2), oy2 = cy + R * Math.sin(a2);
+                  const ix1 = cx + r * Math.cos(a1), iy1 = cy + r * Math.sin(a1);
+                  const ix2 = cx + r * Math.cos(a2), iy2 = cy + r * Math.sin(a2);
+                  const path = 'M '+ix1+' '+iy1+' L '+ox1+' '+oy1+' A '+R+' '+R+' 0 0 1 '+ox2+' '+oy2+' L '+ix2+' '+iy2+' A '+r+' '+r+' 0 0 0 '+ix1+' '+iy1+' Z';
+                  return '<path class="mood-slice'+(i===0?' active':'')+'" d="'+path+'" fill="'+m.color+'" data-val="'+m.val+'" style="cursor:pointer;"/>';
+                }).join('');
+              })()}
+
             </svg>
-            ${(() => {
-              const moods = [
-                { val: 'great', label: I18n.t('atomic.mood_great', null, 'Energizado') },
-                { val: 'good',  label: I18n.t('atomic.mood_good', null, 'Bem') },
-                { val: 'okay',  label: I18n.t('atomic.mood_okay', null, 'Neutro') },
-                { val: 'heavy', label: I18n.t('atomic.mood_heavy', null, 'Pesado') },
-                { val: 'tough', label: I18n.t('atomic.mood_tough', null, 'Difícil') },
-              ];
-              const R = 110; const cx = 140; const cy = 135;
-              const startAngle = 180; const endAngle = 0;
-              const step = (startAngle - endAngle) / (moods.length - 1);
-              return moods.map((m, i) => {
-                const deg = startAngle - i * step;
-                const rad = deg * Math.PI / 180;
-                const x = cx + R * Math.cos(rad);
-                const y = cy - R * Math.sin(rad);
-                return `<button type="button" class="atomic-mood-btn ${i === 0 ? 'active' : ''}" data-val="${m.val}" style="left:${x}px;top:${y}px;">${m.label}</button>`;
-              }).join('');
-            })()}
+            <div class="mood-selected-label" id="moodSelectedLabel">${I18n.t('atomic.mood_great', null, 'Energizado')}</div>
           </div>
         </div>
       </div>
@@ -3059,51 +3059,75 @@ function renderAtomic() {
   }
 
   // ── Event bindings ──
-  // Sleep Bubbles Selector
-  const bubblesContainer = $('#atomicSleepBubbles');
+  // Sleep Dial
   const sleepInput = $('#atomicSleep');
-  if (bubblesContainer && sleepInput) {
-    const bubbles = bubblesContainer.querySelectorAll('.sleep-bubble');
+  const sleepDialFill = $('#sleepDialFill');
+  if (sleepInput && sleepDialFill) {
+    const circumference = 2 * Math.PI * 58;
     const halfToggle = $('#sleepHalfToggle');
-    const valText = $('#atomicSleepValue');
-    
     let baseHours = 7;
     let hasHalf = false;
-    
-    function updateSleepValue() {
+
+    function updateSleepDial() {
       const total = baseHours + (hasHalf ? 0.5 : 0);
       sleepInput.value = total;
-      if (valText) valText.textContent = total + 'h';
-      // Update SVG arc fill
-      const fillPath = document.getElementById('sleepTrackFill');
-      if (fillPath) {
-        const totalSteps = 8; // 9 items - 1
-        const activeIndex = Math.max(0, Math.min(8, Number(baseHours) - 4));
-        const circumference = 376.99; // ~ 2 * PI * 120 / 2 (half circumference for 180° arc)
-        const filledPortion = activeIndex / totalSteps;
-        fillPath.style.strokeDasharray = circumference + ' ' + circumference;
-        fillPath.style.strokeDashoffset = circumference * (1 - filledPortion);
-      }
+      // Update center text
+      const numEl = sleepDialFill.closest('svg').querySelector('.sleep-dial-num');
+      const unitEl = sleepDialFill.closest('svg').querySelector('.sleep-dial-unit');
+      if (numEl) numEl.textContent = hasHalf ? total : baseHours;
+      if (unitEl) unitEl.textContent = I18n.t('atomic.sleep_label', null, 'Sono');
+      // Update arc fill (4-12h range → 0-100%)
+      const fraction = (total - 4) / 8;
+      sleepDialFill.style.strokeDashoffset = circumference * (1 - Math.max(0, Math.min(1, fraction)));
     }
-    
-    bubbles.forEach(bubble => {
-      bubble.addEventListener('click', () => {
-        bubbles.forEach(b => b.classList.remove('active'));
-        bubble.classList.add('active');
-        baseHours = parseFloat(bubble.dataset.val);
-        updateSleepValue();
-        if (navigator.vibrate) navigator.vibrate(10);
-      });
+
+    // +/- buttons
+    const btnMinus = $('#sleepMinus');
+    const btnPlus = $('#sleepPlus');
+    if (btnMinus) btnMinus.addEventListener('click', () => {
+      if (baseHours > 4) { baseHours--; updateSleepDial(); if (navigator.vibrate) navigator.vibrate(10); }
     });
-    
+    if (btnPlus) btnPlus.addEventListener('click', () => {
+      if (baseHours < 12) { baseHours++; updateSleepDial(); if (navigator.vibrate) navigator.vibrate(10); }
+    });
+
+    // Touch drag on dial ring
+    const dialSvg = sleepDialFill.closest('svg');
+    if (dialSvg) {
+      function handleDialTouch(e) {
+        const rect = dialSvg.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const touch = e.touches ? e.touches[0] : e;
+        const angle = Math.atan2(touch.clientY - cy, touch.clientX - cx);
+        // Convert angle to fraction (top = 0, clockwise)
+        let frac = (angle + Math.PI / 2) / (2 * Math.PI);
+        if (frac < 0) frac += 1;
+        const hours = Math.round(4 + frac * 8);
+        const clamped = Math.max(4, Math.min(12, hours));
+        if (clamped !== baseHours) {
+          baseHours = clamped;
+          updateSleepDial();
+          if (navigator.vibrate) navigator.vibrate(10);
+        }
+      }
+      let dragging = false;
+      dialSvg.addEventListener('pointerdown', (e) => { dragging = true; handleDialTouch(e); });
+      dialSvg.addEventListener('pointermove', (e) => { if (dragging) handleDialTouch(e); });
+      dialSvg.addEventListener('pointerup', () => { dragging = false; });
+      dialSvg.addEventListener('pointerleave', () => { dragging = false; });
+    }
+
     if (halfToggle) {
       halfToggle.addEventListener('click', () => {
         hasHalf = !hasHalf;
         halfToggle.classList.toggle('active', hasHalf);
-        updateSleepValue();
+        updateSleepDial();
         if (navigator.vibrate) navigator.vibrate(10);
       });
     }
+
+    updateSleepDial();
   }
 
   // Energy buttons
@@ -3112,10 +3136,18 @@ function renderAtomic() {
     btn.addEventListener('click', () => setActiveGroup(energyBtns, btn));
   });
 
-  // Mood buttons
-  const moodBtns = container.querySelectorAll('.atomic-mood-btn');
-  moodBtns.forEach(btn => {
-    btn.addEventListener('click', () => setActiveGroup(moodBtns, btn));
+  // Mood pizza
+  const moodSlices = container.querySelectorAll('.mood-slice');
+  const moodSelectedLabel = container.querySelector('.mood-selected-label');
+  moodSlices.forEach(slice => {
+    slice.addEventListener('click', () => {
+      moodSlices.forEach(s => s.classList.remove('active'));
+      slice.classList.add('active');
+      // Update center label
+      const moodLabels = { great: I18n.t('atomic.mood_great', null, 'Energizado'), good: I18n.t('atomic.mood_good', null, 'Bem'), okay: I18n.t('atomic.mood_okay', null, 'Neutro'), heavy: I18n.t('atomic.mood_heavy', null, 'Pesado'), tough: I18n.t('atomic.mood_tough', null, 'Difícil') };
+      if (moodSelectedLabel) moodSelectedLabel.textContent = moodLabels[slice.dataset.val] || '';
+      if (navigator.vibrate) navigator.vibrate(10);
+    });
   });
 
   // Confirm buttons (evening)
@@ -3192,8 +3224,8 @@ function renderAtomic() {
       const sleepVal = parseFloat($('#atomicSleep')?.value || '7');
       const energyBtn = container.querySelector('.atomic-energy-btn.active');
       const energy = energyBtn?.dataset.val || 'medium';
-      const moodBtn = container.querySelector('.atomic-mood-btn.active');
-      const mood = moodBtn?.dataset.val || 'okay';
+      const moodSlice = container.querySelector('.mood-slice.active');
+      const mood = moodSlice?.dataset.val || 'okay';
       const identityText = $('#atomicIdentity')?.value?.trim() || '';
       const focus = $('#atomicFocus')?.value?.trim() || '';
 
@@ -3364,15 +3396,16 @@ function updateAtomicTabIcon() {
   const hasMorning = rec?.morning;
   const hasEvening = rec?.evening;
   const hour = now.getHours();
-  
+  const orbits = `<ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none"/><ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none" transform="rotate(120 12 12)"/>`;
+
   if (hasMorning && hasEvening) {
-    svg.innerHTML = `<circle cx="12" cy="12" r="2.5" fill="#34C759"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="#34C759" opacity="0.5"/><polyline points="8 12 11 15 16 9" fill="none" stroke="#34C759" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    svg.innerHTML = `<circle cx="12" cy="12" r="2" fill="#34C759"/>${orbits}<polyline points="8 12 11 15 16 9" fill="none" stroke="#34C759" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
   } else if (hasMorning && !hasEvening && hour >= 18) {
-    svg.innerHTML = `<circle cx="12" cy="12" r="2.5" fill="#FF9500"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="#FF9500" opacity="0.5"/><path d="M17 12.79A7 7 0 1 1 11.21 7 5 5 0 0 0 17 12.79z" fill="none" stroke="#FF9500" stroke-width="2"/>`;
+    svg.innerHTML = `<circle cx="12" cy="12" r="2" fill="#FF9500"/>${orbits}<path d="M17 12.79A7 7 0 1 1 11.21 7 5 5 0 0 0 17 12.79z" fill="none" stroke="#FF9500" stroke-width="2"/>`;
   } else if (hasMorning) {
-    svg.innerHTML = `<circle cx="12" cy="12" r="2.5" fill="#007AFF"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="#007AFF"/><path d="M12 2 A10 10 0 0 1 12 22" fill="none" stroke="#007AFF" stroke-width="2"/>`;
+    svg.innerHTML = `<circle cx="12" cy="12" r="2" fill="#007AFF"/>${orbits}<path d="M12 2 A10 10 0 0 1 12 22" fill="none" stroke="#007AFF" stroke-width="2"/>`;
   } else {
-    svg.innerHTML = `<circle cx="12" cy="12" r="2.5" fill="currentColor"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="currentColor"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="currentColor" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="currentColor" transform="rotate(120 12 12)"/>`;
+    svg.innerHTML = `<circle cx="12" cy="12" r="2"/>${orbits}`;
   }
 }
 
@@ -3438,8 +3471,16 @@ function hydrateSettingsDOM() {
   if (reminderSelect) reminderSelect.value = state.settings.reminderMin || 10;
   if (marqueeToggle) marqueeToggle.checked = state.settings.showMarquee !== false;
 
+  const zoomSelect = $('#zoomSelect');
+  if (zoomSelect) zoomSelect.value = state.settings.zoom || 100;
+  applyZoom(state.settings.zoom || 100);
+
   applyTheme(state.settings.theme || 'auto');
   updateMarqueeVisibility();
+}
+
+function applyZoom(level) {
+  document.getElementById('app').style.zoom = (level / 100);
 }
 
 function initSettings() {
@@ -3868,6 +3909,17 @@ function initSettings() {
       updateMarqueeVisibility();
       Store.save(state);
       logAction(I18n.t(marqueeToggle.checked ? 'log.marquee_on' : 'log.marquee_off', null, marqueeToggle.checked ? 'Letreiro ativado' : 'Letreiro desativado'));
+    });
+  }
+
+  const zoomSelect = $('#zoomSelect');
+  if (zoomSelect) {
+    zoomSelect.addEventListener('change', () => {
+      const level = parseInt(zoomSelect.value);
+      state.settings.zoom = level;
+      applyZoom(level);
+      Store.save(state);
+      logAction(I18n.t('log.changed_zoom', { level: level + '%' }, `Zoom: ${level}%`));
     });
   }
 }
@@ -4755,6 +4807,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       initPriorities();
       render();
       checkNotifications();
+      checkAtomicNotifications();
       initVerseMarquee();
 
       updateClock();
@@ -4776,6 +4829,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         updateAtomicTabBadge();
         checkNotifications();
+        checkAtomicNotifications();
       }, 60000);
     
       if ('serviceWorker' in navigator) {

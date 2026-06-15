@@ -88,16 +88,22 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(var(--ds-safe-top) + 16px) var(--ds-space-1) 12px;
+  padding: calc(var(--ds-safe-top) + 8px) var(--ds-space-1) 6px;
   background: var(--ds-bg-primary);
 }
 
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+}
+
 .header-title {
-  font-size: var(--ds-text-3xl);
+  font-size: var(--ds-text-lg);
   font-weight: var(--ds-weight-bold);
   letter-spacing: var(--ds-tracking-tight);
   color: var(--ds-text-primary);
-  line-height: 1.1;
+  line-height: 1;
 }
 
 .header-subtitle {
@@ -123,7 +129,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 }
 
 .header-clock {
-  font-size: var(--ds-text-lg);
+  font-size: var(--ds-text-base);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-secondary);
   font-variant-numeric: tabular-nums;
@@ -134,8 +140,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border: none;
   background: none;
   color: var(--ds-text-tertiary);
@@ -2282,18 +2288,17 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 }
 .ds-icon--orbit ellipse {
   transform-origin: 12px 12px;
-  stroke-width: 1.3px;
-  opacity: 0.45;
-  transition: opacity var(--ds-duration-normal) var(--ds-ease-default),
-              stroke-width var(--ds-duration-normal) var(--ds-ease-default);
+  stroke: currentColor;
+  stroke-width: 1.5px;
+  opacity: 0.5;
+  transition: opacity var(--ds-duration-normal) var(--ds-ease-default);
 }
 .ds-tab.active .ds-icon--orbit ellipse {
   opacity: 1;
-  stroke-width: 1.7px;
 }
-.ds-tab.active .ds-icon--orbit ellipse:nth-child(2) { animation: atomOrbit 8s linear infinite; }
-.ds-tab.active .ds-icon--orbit ellipse:nth-child(3) { animation: atomOrbit 8s linear infinite reverse; }
-.ds-tab.active .ds-icon--orbit ellipse:nth-child(4) { animation: atomOrbit 12s linear infinite; }
+.ds-tab.active .ds-icon--orbit ellipse:nth-child(2) { animation: atomOrbit 6s linear infinite; }
+.ds-tab.active .ds-icon--orbit ellipse:nth-child(3) { animation: atomOrbit 6s linear infinite reverse; }
+.ds-tab.active .ds-icon--orbit ellipse:nth-child(4) { animation: atomOrbit 9s linear infinite; }
 
 /* Tab badge (evening nudge) */
 .atomic-tab-badge {
@@ -2453,83 +2458,72 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   flex-direction: column;
   gap: 6px;
 }
-.atomic-circ-row {
+/* Sleep & Mood gauges row */
+.atomic-gauges-row {
   display: flex;
   gap: var(--ds-space-3);
+  align-items: flex-start;
+  justify-content: center;
 }
-.atomic-circ-row .atomic-field {
-  flex: 1;
-  min-width: 0;
+.atomic-field--sleep,
+.atomic-field--mood {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Sleep Circular Volume Bar */
-.atomic-sleep-bubbles-container {
-  position: relative;
-  width: 100%;
-  max-width: 280px;
-  height: 155px;
-  margin: var(--ds-space-2) auto;
-  overflow: visible;
+/* Sleep Dial */
+.sleep-dial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
-.atomic-sleep-bubbles-container .sleep-track-svg {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+.sleep-dial-svg {
+  width: 158px;
+  height: 158px;
+  touch-action: none;
+  cursor: pointer;
 }
-.atomic-sleep-bubbles {
-  position: relative;
-  width: 100%;
-  height: 100%;
+.sleep-dial-num {
+  font-size: 36px;
+  font-weight: 800;
+  font-family: var(--ds-font);
 }
-.sleep-bubble {
-  position: absolute;
-  width: 36px;
-  height: 36px;
+.sleep-dial-unit {
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--ds-font);
+}
+.sleep-dial-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sleep-dial-btn {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 2px solid var(--ds-border-tertiary);
+  border: 1.5px solid var(--ds-separator);
   background: var(--ds-bg-primary);
   color: var(--ds-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: var(--ds-weight-bold, 700);
-  font-family: var(--ds-font);
-  transform: translate(-50%, -50%);
-  transition: transform var(--ds-duration-normal) var(--ds-ease-spring),
-              background var(--ds-duration-fast) var(--ds-ease-default),
-              border-color var(--ds-duration-fast) var(--ds-ease-default),
-              box-shadow var(--ds-duration-fast) var(--ds-ease-default);
+  transition: all 0.2s;
   -webkit-tap-highlight-color: transparent;
-  z-index: 2;
 }
 @media (hover: hover) {
-  .sleep-bubble:hover {
+  .sleep-dial-btn:hover {
     border-color: var(--ds-accent);
-    background: color-mix(in srgb, var(--ds-accent) 8%, transparent);
-    transform: translate(-50%, -50%) scale(1.12);
+    color: var(--ds-accent);
+    background: color-mix(in srgb, var(--ds-accent) 6%, transparent);
   }
 }
-.sleep-bubble.active {
-  background: var(--ds-accent);
-  border-color: var(--ds-accent);
-  color: #fff;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-accent) 25%, transparent),
-              0 3px 10px color-mix(in srgb, var(--ds-accent) 30%, transparent);
-  transform: translate(-50%, -50%) scale(1.1);
-}
-.sleep-bubble-num {
-  line-height: 1;
-}
-.sleep-half-toggle-wrapper {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
+.sleep-dial-btn:active {
+  transform: scale(0.92);
 }
 .sleep-half-toggle {
   padding: 4px 14px;
@@ -2691,81 +2685,38 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   color: var(--ds-text-tertiary);
 }
 
-/* Mood Circular Volume Bar */
-.atomic-mood-btns {
-  position: relative;
-  width: 100%;
-  max-width: 280px;
-  height: 150px;
-  margin: var(--ds-space-1) auto;
-}
-.atomic-mood-btns .mood-track-svg {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-.atomic-mood-btn {
-  position: absolute;
-  padding: 5px 10px 5px 6px;
-  border: 2px solid var(--ds-border-tertiary);
-  border-radius: 16px;
-  background: var(--ds-bg-primary);
-  font-size: 11px;
-  font-weight: var(--ds-weight-semibold, 600);
-  font-family: var(--ds-font);
-  cursor: pointer;
-  transition: all var(--ds-duration-fast) var(--ds-ease-default);
-  color: var(--ds-text-secondary);
-  -webkit-tap-highlight-color: transparent;
-  transform: translate(-50%, -50%);
-  display: inline-flex;
+/* Mood Pizza */
+.mood-pizza {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-  z-index: 2;
-  line-height: 1.2;
+  gap: 6px;
 }
-.atomic-mood-btn::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ds-border-tertiary);
-  flex-shrink: 0;
-  transition: background var(--ds-duration-fast) var(--ds-ease-default);
+.mood-pizza-svg {
+  width: 158px;
+  height: 158px;
+}
+.mood-slice {
+  opacity: 0.3;
+  transition: opacity 0.25s;
+  transform-origin: 80px 80px;
+  cursor: pointer;
 }
 @media (hover: hover) {
-  .atomic-mood-btn:hover {
-    border-color: var(--ds-text-tertiary);
-    background: color-mix(in srgb, var(--ds-accent) 4%, transparent);
-    transform: translate(-50%, -50%) scale(1.06);
+  .mood-slice:hover {
+    opacity: 0.55;
   }
 }
-.atomic-mood-btn.active {
-  border-color: currentColor;
-  color: var(--ds-text-primary);
-  background: color-mix(in srgb, currentColor 10%, transparent);
-  transform: translate(-50%, -50%) scale(1.08);
-  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
+.mood-slice.active {
+  opacity: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.18));
 }
-.atomic-mood-btn.active::before {
-  background: currentColor;
-  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 20%, transparent);
-}
-.atomic-mood-btn[data-val="great"] { color: #34C759; }
-.atomic-mood-btn[data-val="good"]  { color: #8BC34A; }
-.atomic-mood-btn[data-val="okay"]  { color: #FF9500; }
-.atomic-mood-btn[data-val="heavy"]  { color: #FF6B35; }
-.atomic-mood-btn[data-val="tough"] { color: #FF3B30; }
-.atomic-mood-btn.active:hover { opacity: 0.9; }
 
 /* Habits summary in evening form */
 .atomic-habits-summary {
   margin: 12px 0;
   padding: 10px 12px;
-  background: var(--ds-surface-secondary, #f5f5f5);
+  background: var(--ds-bg-secondary);
   border-radius: 8px;
 }
 .atomic-habits-list {
@@ -2779,8 +2730,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  background: var(--ds-primary-bg, #E8F0FE);
-  color: var(--ds-primary, #007AFF);
+  background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
+  color: var(--ds-accent);
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
@@ -2798,14 +2749,14 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   align-items: center;
   justify-content: space-between;
   padding: 6px 10px;
-  background: var(--ds-surface, #fff);
+  background: var(--ds-bg-primary);
   border-radius: 8px;
-  border: 1px solid var(--ds-border, #eee);
+  border: 1px solid var(--ds-separator);
 }
 .atomic-habit-quality-label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--ds-text, #333);
+  color: var(--ds-text-primary);
 }
 .atomic-habit-quality-btns {
   display: flex;
@@ -2814,19 +2765,19 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .atomic-quality-btn {
   width: 32px;
   height: 32px;
-  border: 1.5px solid var(--ds-border, #ddd);
+  border: 1.5px solid var(--ds-separator);
   border-radius: 8px;
-  background: var(--ds-surface, #fff);
+  background: var(--ds-bg-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  color: var(--ds-text-secondary, #999);
+  color: var(--ds-text-secondary);
 }
 .atomic-quality-btn:hover {
-  border-color: var(--ds-primary, #007AFF);
-  color: var(--ds-primary, #007AFF);
+  border-color: var(--ds-accent);
+  color: var(--ds-accent);
 }
 .atomic-quality-btn.active[data-val="sharp"] {
   background: #34C759;
@@ -2851,9 +2802,9 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 }
 .atomic-insights-card {
   padding: 12px;
-  background: var(--ds-surface, #fff);
+  background: var(--ds-bg-secondary);
   border-radius: 12px;
-  border: 1px solid var(--ds-border, #eee);
+  border: 1px solid var(--ds-separator);
 }
 .atomic-mood-chart {
   display: flex;
@@ -2869,7 +2820,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   border-radius: 8px;
 }
 .atomic-mood-day--today {
-  background: var(--ds-primary-bg, #E8F0FE);
+  background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
 }
 .atomic-mood-dot {
   width: 20px;
@@ -2879,7 +2830,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 }
 .atomic-mood-day-label {
   font-size: 10px;
-  color: var(--ds-text-secondary, #666);
+  color: var(--ds-text-secondary);
   text-transform: uppercase;
   font-weight: 600;
 }
@@ -2895,15 +2846,15 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .atomic-habits-stat-num {
   font-size: 22px;
   font-weight: 700;
-  color: var(--ds-text, #333);
+  color: var(--ds-text-primary);
 }
 .atomic-habits-stat-label {
   font-size: 12px;
-  color: var(--ds-text-secondary, #666);
+  color: var(--ds-text-secondary);
 }
 .atomic-progress-bar {
   height: 8px;
-  background: var(--ds-surface-secondary, #f0f0f0);
+  background: var(--ds-fill-tertiary);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 4px;
@@ -2916,7 +2867,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .atomic-progress-pct {
   font-size: 12px;
   font-weight: 600;
-  color: var(--ds-text-secondary, #666);
+  color: var(--ds-text-secondary);
 }
 .atomic-insights-streak {
   display: flex;
@@ -2931,7 +2882,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 }
 .atomic-insights-streak-label {
   font-size: 12px;
-  color: var(--ds-text-secondary, #666);
+  color: var(--ds-text-secondary);
 }
 
 /* Responsive: stack cards on small screens */
@@ -2962,7 +2913,10 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 /* ── Atomic Daily Report ── */
 .atomic-daily-report {
-  margin-top: var(--ds-space-4);
+  margin-top: var(--ds-space-6);
+}
+.atomic-daily-report .atomic-card-header {
+  margin-bottom: var(--ds-space-3);
 }
 .atomic-report-date {
   font-size: 12px;
@@ -2972,11 +2926,11 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .atomic-report-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 .atomic-report-section {
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
 }
 .atomic-report-section--done {
   border-left: 3px solid var(--ds-success, #34C759);
@@ -2989,7 +2943,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .atomic-report-head-icon {
   display: inline-flex;
@@ -3015,18 +2969,18 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  margin: 4px 0 2px;
+  margin: 6px 0 4px;
 }
 .atomic-report-metric {
   display: inline-flex;
   align-items: center;
   gap: 3px;
   font-size: 12px;
-  color: var(--ds-text);
-  background: var(--ds-surface);
+  color: var(--ds-text-primary);
+  background: var(--ds-bg-secondary);
   padding: 2px 8px;
   border-radius: 6px;
-  border: 1px solid var(--ds-border);
+  border: 1px solid var(--ds-separator);
 }
 .atomic-report-line {
   display: flex;
@@ -3061,8 +3015,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   align-items: center;
   gap: 3px;
   padding: 2px 8px;
-  background: var(--ds-primary-bg);
-  color: var(--ds-primary);
+  background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
+  color: var(--ds-accent);
   border-radius: 10px;
   font-size: 11px;
   font-weight: 500;
@@ -3089,7 +3043,7 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   justify-content: center;
   gap: 6px;
   padding: 8px;
-  border-top: 1px solid var(--ds-border);
+  border-top: 1px solid var(--ds-separator);
   margin-top: 4px;
 }
 .atomic-report-streak {
@@ -3105,4 +3059,12 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .atomic-report-streak-label {
   font-size: 12px;
   color: var(--ds-text-tertiary);
+}
+.mood-selected-label {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--ds-font);
+  color: var(--ds-text-primary);
+  text-align: center;
+  margin-top: 2px;
 }

@@ -79,6 +79,82 @@ function checkNotifications() {
   });
 }
 
+// ===== ATOMIC CHECK-IN REMINDERS =====
+const notifiedAtomic = new Set();
+
+function checkAtomicNotifications() {
+  if (!state.settings.notifications) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+  const now = new Date();
+  const todayKey = dateKey(now);
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  // Reset daily
+  if (checkAtomicNotifications.lastDate && checkAtomicNotifications.lastDate !== todayKey) {
+    notifiedAtomic.clear();
+  }
+  checkAtomicNotifications.lastDate = todayKey;
+
+  const rec = state.checkins?.records?.find(r => r.date === todayKey);
+
+  // Morning reminder: 8:00-8:30 if not done
+  if (!notifiedAtomic.has('morning') && !rec?.morning && nowMin >= 480 && nowMin <= 510) {
+    sendAtomicNotif('morning',
+      I18n.t('notification.atomic_morning_title', null, 'Bom dia! ☀️'),
+      I18n.t('notification.atomic_morning_body', null, 'Faça seu check-in matinal e comece o dia com foco.')
+    );
+  }
+
+  // Evening reminder: 21:00-21:30 if morning done but evening not
+  if (!notifiedAtomic.has('evening') && rec?.morning && !rec?.evening && nowMin >= 1260 && nowMin <= 1290) {
+    sendAtomicNotif('evening',
+      I18n.t('notification.atomic_evening_title', null, 'Hora de refletir 🌙'),
+      I18n.t('notification.atomic_evening_body', null, 'Registre seu encerramento do dia.')
+    );
+  }
+
+  // "Never fail twice" nudge: 9:00 if yesterday had no completed blocks
+  if (!notifiedAtomic.has('nft') && nowMin >= 540 && nowMin <= 570) {
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const ydKey = dateKey(yesterday);
+    const ydBlocks = state.blocks?.filter(b => b.date === ydKey) || [];
+    const anyDone = ydBlocks.some(b => b.done);
+    if (ydBlocks.length > 0 && !anyDone) {
+      sendAtomicNotif('nft',
+        I18n.t('notification.nft_title', null, 'Nunca falhe duas vezes 💪'),
+        I18n.t('notification.nft_body', null, 'Ontem ficou em branco. Hoje é a chance de voltar ao ritmo!')
+      );
+    }
+  }
+}
+
+function sendAtomicNotif(tag, title, body) {
+  notifiedAtomic.add(tag);
+  DS.toast(`${title} ${body}`, 'info');
+
+  const notifOptions = {
+    body,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/favicon-32.png',
+    tag: 'atomic-' + tag,
+    renotify: true,
+    vibrate: [200, 100, 200],
+    data: { url: '/' }
+  };
+
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title, notifOptions);
+    }).catch(() => {
+      try { new Notification(title, notifOptions); } catch(e) {}
+    });
+  } else {
+    try { new Notification(title, notifOptions); } catch(e) {}
+  }
+}
+
 // ===== PWA INSTALL PROMPT =====
 let deferredInstallPrompt = null;
 

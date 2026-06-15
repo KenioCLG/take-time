@@ -114,6 +114,7 @@
   "settings.day_end": "Day end time",
   "settings.notifications": "Notifications",
   "settings.reminder": "Remind in advance",
+  "settings.zoom": "Zoom",
   "settings.timezone": "Timezone",
   "settings.theme": "Theme",
   "settings.theme_auto": "Automatic",

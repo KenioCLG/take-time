@@ -16,13 +16,13 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="ds.css?v=5">
-  <link rel="stylesheet" href="styles.css?v=48">
+  <link rel="stylesheet" href="styles.css?v=53">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <script>
     // Force SW update + cache nuke on version change
     (function(){
-      var key = 'tt_cache_v51';
+      var key = 'tt_cache_v56';
       // Always try to update SW when online
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(function(reg) {
@@ -153,8 +153,8 @@
     <div class="sticky-header-group">
       <header class="app-header">
         <div class="header-left">
-          <p class="header-subtitle" id="headerDate" style="margin:0;"></p>
           <h1 class="header-title" data-i18n="app.name" style="margin:0;">Take Time</h1>
+          <p class="header-subtitle" id="headerDate" style="margin:0;"></p>
         </div>
         <div class="header-right">
           <a href="#" class="header-today-link" id="btnToday" data-i18n="header.today">hoje</a>
@@ -200,7 +200,7 @@
         <span data-i18n="tab.schedule">Agenda</span>
       </button>
       <button class="ds-tab" data-tab="atomic">
-        <svg id="atomicTabIcon" class="ds-icon ds-icon--orbit" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" transform="rotate(120 12 12)"/></svg>
+        <svg id="atomicTabIcon" class="ds-icon ds-icon--orbit" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none"/><ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none" transform="rotate(120 12 12)"/></svg>
         <span data-i18n="tab.atomic">Atomic</span>
       </button>
       <button class="ds-tab" data-tab="subjects">
@@ -373,6 +373,16 @@
               <option value="10" selected>10 min</option>
               <option value="15">15 min</option>
               <option value="30">30 min</option>
+            </select>
+          </div>
+          <div class="ds-list-item">
+            <span data-i18n="settings.zoom">Zoom</span>
+            <select id="zoomSelect" class="ds-select">
+              <option value="100">100%</option>
+              <option value="110">110%</option>
+              <option value="120">120%</option>
+              <option value="130">130%</option>
+              <option value="150">150%</option>
             </select>
           </div>
           <div class="ds-list-item">
@@ -795,8 +805,8 @@
   <script src="store.js?v=8"></script>
   <script src="i18n.js?v=2"></script>
   <script src="auth.js?v=10"></script>
-  <script src="notifications.js?v=4"></script>
-  <script src="app.js?v=68"></script>
+  <script src="notifications.js?v=5"></script>
+  <script src="app.js?v=74"></script>
   <script type="module">
     // Init 3D logo on auth screen
     import SVG3D from './svg3d.js';
