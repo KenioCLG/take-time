@@ -1,4 +1,4 @@
-const CACHE = 'taketime-v69';
+const CACHE = 'taketime-v70';
 const ASSETS = ['/', '/index.html', '/ds.css', '/ds.js', '/store.js', '/i18n.js', '/styles.css', '/auth.js', '/notifications.js', '/app.js', '/svg3d.js', '/manifest.json', '/locales/pt-BR.json', '/locales/en-US.json', '/icons/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/favicon-32.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
@@ -25,10 +25,13 @@ self.addEventListener('notificationclick', (e) => {
       // Focus existing window if open
       for (const client of windowClients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
-          return client.focus();
+          return client.focus().catch(() => {});
         }
       }
       // Otherwise open a new one
+      return clients.openWindow(url);
+    }).catch(() => {
+      // Failed to match clients — open new window as fallback
       return clients.openWindow(url);
     })
   );
@@ -52,7 +55,8 @@ self.addEventListener('fetch', (e) => {
 
 // Listen for skip-waiting message from the app
 self.addEventListener('message', (e) => {
-  if (e.data?.type === 'SKIP_WAITING') {
+  if (!e.data) return;
+  if (e.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });

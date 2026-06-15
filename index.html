@@ -738,7 +738,7 @@
         <div id="mcpIntegrationsList"></div>
 
         <!-- New integration form -->
-        <form id="mcpNewForm" style="margin-top:12px;" onsubmit="return false;" autocomplete="off">
+        <form id="mcpNewForm" style="margin-top:12px;" onsubmit="return false;" autocomplete="new-password">
           <label class="ds-label" data-i18n="mcp.select_client">Selecione a IA</label>
           <select id="mcpClientSelect" class="ds-select" style="margin-bottom:10px;">
             <option value="claude-code">Claude Code</option>
@@ -749,6 +749,8 @@
             <option value="opencode">OpenCode</option>
             <option value="antigravity">Antigravity</option>
           </select>
+          <!-- Hidden email field for accessibility (Chrome requires username field before password) -->
+          <input type="email" id="mcpEmailHidden" class="ds-input" style="display:none;" autocomplete="email" tabindex="-1" aria-hidden="true">
           <label class="ds-label" style="margin-top:4px;" data-i18n="mcp.your_password">Sua senha</label>
           <input type="password" id="mcpPasswordInput" class="ds-input" placeholder="••••••••" style="margin-bottom:10px;" autocomplete="new-password">
           <p style="font-size:11px; color:var(--ds-text-tertiary); margin:-6px 0 10px; line-height:1.3;" data-i18n="mcp.password_hint">Necessária para gerar o config completo. Não é armazenada.</p>
