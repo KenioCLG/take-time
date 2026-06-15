@@ -2453,6 +2453,14 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   flex-direction: column;
   gap: 6px;
 }
+.atomic-circ-row {
+  display: flex;
+  gap: var(--ds-space-3);
+}
+.atomic-circ-row .atomic-field {
+  flex: 1;
+  min-width: 0;
+}
 
 /* Sleep Circular Volume Bar */
 .atomic-sleep-bubbles-container {
