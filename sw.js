@@ -1,4 +1,4 @@
-const CACHE = 'taketime-v68';
+const CACHE = 'taketime-v69';
 const ASSETS = ['/', '/index.html', '/ds.css', '/ds.js', '/store.js', '/i18n.js', '/styles.css', '/auth.js', '/notifications.js', '/app.js', '/svg3d.js', '/manifest.json', '/locales/pt-BR.json', '/locales/en-US.json', '/icons/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/favicon-32.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
@@ -45,7 +45,14 @@ self.addEventListener('fetch', (e) => {
           cache.put(e.request, response.clone());
         }
         return response;
-      }).catch(() => cache.match(e.request))
+      }    ).catch(() => cache.match(e.request))
     )
   );
+});
+
+// Listen for skip-waiting message from the app
+self.addEventListener('message', (e) => {
+  if (e.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
