@@ -17,11 +17,13 @@ const Store = {
   save(data) {
     try {
       localStorage.setItem(this._key, JSON.stringify(data));
+      return true;
     } catch (e) {
       console.error('Store.save failed:', e);
+      return false;
+    } finally {
+      this._scheduleSync(data);
     }
-    // Debounced cloud sync
-    this._scheduleSync(data);
   },
 
   _scheduleSync(data) {
@@ -75,6 +77,9 @@ const Store = {
     if (!remote.notes && local.notes) {
       remote.notes = local.notes;
     }
+    if (!remote.checkins && local.checkins) {
+      remote.checkins = local.checkins;
+    }
 
     // Merge settings: local wins for keys that remote doesn't have explicitly
     // This prevents a missing profile row from resetting local toggles
@@ -97,6 +102,11 @@ const Store = {
       blocks: [],
       notes: [],
       logs: [],
+      checkins: {
+        affirmations: [],
+        activeAffirmationId: null,
+        records: []
+      },
       settings: { notifications: false, reminderMin: 10, theme: 'auto', showMarquee: true },
       priorities: {
         zone1: [],

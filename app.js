@@ -13,6 +13,7 @@ const DAY_END = 24;
 // Migrate: add logs and type to subjects that don't have one
 if (!state.logs) state.logs = [];
 if (!state.priorities) state.priorities = Store._defaults().priorities;
+if (!state.checkins) state.checkins = { affirmations: [], activeAffirmationId: null, records: [] };
 state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
 
 // ====== AUTHENTICATION FLOW ======
@@ -260,16 +261,13 @@ function timeToMinutes(t) {
 // ===== LOGGER =====
 function logAction(message) {
   const now = new Date();
-  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  const dateStr = formatWeekday(now);
-  state.logs.unshift({
-    id: uid(),
-    timestamp: `${dateStr} ${timeStr}`,
-    message
-  });
+  const lang = state.settings?.language || 'pt-BR';
+  const timestamp = now.toLocaleDateString(lang, { day: '2-digit', month: '2-digit' })
+    + ' ' + now.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+  state.logs.unshift({ id: uid(), timestamp, message });
   if (state.logs.length > MAX_LOG_SIZE) state.logs.pop();
-  Store.save(state);
   renderLogs();
+  Store.save(state);
 }
 
 function renderLogs() {
@@ -352,6 +350,14 @@ function arcPath(startAngle, endAngle, outerR, innerR) {
     `A ${innerR} ${innerR} 0 ${largeArc} 0 ${p4.x} ${p4.y}`,
     'Z'
   ].join(' ');
+}
+
+function addMinutes(time, min) {
+  const [h, m] = time.split(':').map(Number);
+  const total = h * 60 + m + min;
+  const rh = Math.floor(total / 60) % 24;
+  const rm = total % 60;
+  return `${String(rh).padStart(2, '0')}:${String(rm).padStart(2, '0')}`;
 }
 
 function renderPizza() {
@@ -602,6 +608,37 @@ function renderPizza() {
 // ===== RENDER: BLOCK LIST =====
 const activeExpandedBlocks = new Set();
 
+function renderMiniTracker(block, subj, color) {
+  if (!subj || (subj.type !== 'training' && subj.type !== 'inactive')) return '';
+  
+  const items = subj.type === 'training' ? (subj.exercises || []) : (subj.checklist || []);
+  if (items.length === 0) return '';
+  
+  const completedItems = block.completedItems || [];
+  
+  return `
+    <div class="block-mini-tracker">
+      ${items.map((item, idx) => {
+        const isChecked = completedItems.includes(item.id);
+        const label = subj.type === 'training' ? (idx + 1) : (item.task ? item.task.substring(0, 1).toUpperCase() : (idx + 1));
+        const title = subj.type === 'training' ? `${item.name} (${item.sets}x${item.reps})` : item.task;
+        
+        return `
+          <div class="mini-tracker-chip ${isChecked ? 'checked' : ''}" 
+               data-block-id="${block.id}" 
+               data-item-id="${item.id}" 
+               data-type="${subj.type}"
+               title="${DS.escapeHtml(title)}"
+               style="--block-color:${color}"
+          >
+            ${isChecked ? DS.icon('check', { size: 10, strokeWidth: 4 }) : label}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
 function renderBlockList() {
   const container = $('#blockList');
   const dayBlocks = state.blocks
@@ -609,7 +646,17 @@ function renderBlockList() {
     .sort((a, b) => a.start.localeCompare(b.start));
 
   if (dayBlocks.length === 0) {
-    container.innerHTML = '';
+    container.innerHTML = `<div class="block-empty" style="text-align:center; padding:48px 20px;">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--ds-text-quaternary)" stroke-width="1.5" stroke-linecap="round" style="margin-bottom:16px; opacity:0.7;">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <p style="font-size:15px; font-weight:600; color:var(--ds-text-secondary); margin:0 0 4px;">
+        ${I18n.t('block.empty_title', null, 'Nenhum bloco agendado')}
+      </p>
+      <p style="font-size:13px; color:var(--ds-text-tertiary); margin:0;">
+        ${I18n.t('block.empty_hint', null, 'Toque em + para criar seu primeiro bloco')}
+      </p>
+    </div>`;
     return;
   }
 
@@ -622,9 +669,6 @@ function renderBlockList() {
   const doneBlocks = summaryBlocks.filter(b => b.done).length;
   const dayPct = totalBlocks > 0 ? Math.round((doneBlocks / totalBlocks) * 100) : 0;
   const viewBtns = `<div class="view-btns">
-    <button class="view-btn" id="btnWeekView" title="${I18n.t('week_view.title', null, 'Visão Semanal')}">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="22"/><line x1="15" y1="4" x2="15" y2="22"/></svg>
-    </button>
     <button class="view-btn" id="btnMonthView" title="${I18n.t('month_view.title', null, 'Visão Mensal')}">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     </button>
@@ -816,6 +860,7 @@ function renderBlockList() {
               ${dur ? `<span class="block-duration-pill">${dur}</span>` : ''}
             </div>
             <div class="block-topic">${DS.escapeHtml(topicName)}</div>
+            ${renderMiniTracker(block, subj, color)}
           </div>
           <button class="block-check ${block.done ? 'checked' : ''}" data-block-id="${block.id}">
             ${DS.icon('check', { size: 16, strokeWidth: 3 })}
@@ -855,8 +900,6 @@ function renderBlockList() {
   }
 
   // View buttons
-  const bwv = container.querySelector('#btnWeekView');
-  if (bwv) bwv.addEventListener('click', (e) => { e.stopPropagation(); openWeekView(); });
   const bmv = container.querySelector('#btnMonthView');
   if (bmv) bmv.addEventListener('click', (e) => { e.stopPropagation(); openMonthView(); });
   const bst = container.querySelector('#btnStats');
@@ -879,6 +922,62 @@ function renderBlockList() {
         activeExpandedBlocks.add(id);
       }
       renderBlockList();
+    });
+  });
+
+  // Mini tracker chip click binder
+  container.querySelectorAll('.mini-tracker-chip').forEach(chip => {
+    chip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const blockId = chip.dataset.blockId;
+      const itemId = chip.dataset.itemId;
+      const block = state.blocks.find(b => b.id === blockId);
+      if (block) {
+        if (!block.completedItems) block.completedItems = [];
+        const isChecked = block.completedItems.includes(itemId);
+        
+        if (isChecked) {
+          block.completedItems = block.completedItems.filter(id => id !== itemId);
+        } else {
+          block.completedItems.push(itemId);
+        }
+        
+        // Auto-complete block if all items are done
+        const subj = state.subjects.find(s => s.id === block.subjectId);
+        const list = subj?.type === 'training' ? subj.exercises : subj?.checklist;
+        const total = list?.length || 0;
+        
+        if (total > 0 && block.completedItems.length === total) {
+          block.done = true;
+        } else {
+          block.done = false;
+        }
+        
+        // Haptic feedback
+        if (navigator.vibrate) {
+          navigator.vibrate(!isChecked ? [15, 30] : 10);
+        }
+        
+        const itemName = list?.find(x => x.id === itemId)?.name || list?.find(x => x.id === itemId)?.task || itemId;
+        logAction(I18n.t(!isChecked ? 'log.exercise_done' : 'log.exercise_undone', { name: itemName }));
+        
+        // Sincronizar com o habitLog se for rotina (inactive)
+        if (subj?.type === 'inactive') {
+          const hl = getOrCreateTodayHabitLog();
+          const todayKey = block.date;
+          if (!isChecked) {
+            if (!hl.find(h => h.habitId === itemId && h.date === todayKey)) {
+              hl.push({ date: todayKey, habitId: itemId, habitText: itemName, subjectId: block.subjectId, done: true });
+            }
+          } else {
+            const idx = hl.findIndex(h => h.habitId === itemId && h.date === todayKey);
+            if (idx >= 0) hl.splice(idx, 1);
+          }
+        }
+        
+        Store.save(state);
+        render();
+      }
     });
   });
 
@@ -952,7 +1051,20 @@ function renderBlockList() {
           block.done = false;
         }
         const routineItem = subj?.checklist?.find(x => x.id === taskId);
-        logAction(I18n.t(chk.checked ? 'log.routine_done' : 'log.routine_undone', { name: routineItem?.title || taskId }));
+        logAction(I18n.t(chk.checked ? 'log.routine_done' : 'log.routine_undone', { name: routineItem?.task || taskId }));
+
+        // Log to habitLog for today
+        const hl = getOrCreateTodayHabitLog();
+        const todayKey = block.date;
+        if (chk.checked) {
+          if (!hl.find(h => h.habitId === taskId && h.date === todayKey)) {
+            hl.push({ date: todayKey, habitId: taskId, habitText: routineItem?.task || taskId, subjectId: block.subjectId, done: true });
+          }
+        } else {
+          const idx = hl.findIndex(h => h.habitId === taskId && h.date === todayKey);
+          if (idx >= 0) hl.splice(idx, 1);
+        }
+
         Store.save(state);
         render();
       }
@@ -1025,9 +1137,7 @@ function renderBlockList() {
         <span class="ds-label" style="font-size:11px;">${I18n.t('tab.notes', null, 'Notas')} (${dayNotes.length})</span>
       </div>
       ${dayNotes.map(note => {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = note.content || '';
-        const preview = (tmp.textContent || '').substring(0, 60).replace(/\s+/g, ' ').trim();
+        const preview = (note.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 60);
         return `
           <div class="day-note-card" data-note-id="${note.id}">
             <span class="day-note-title">${DS.escapeHtml(note.title || I18n.t('note.untitled', null, 'Sem título'))}</span>
@@ -1163,7 +1273,17 @@ function renderSubjects() {
   });
 
   if (state.subjects.length === 0) {
-    list.innerHTML = `<p class="subject-empty">${I18n.t('subject.empty')}</p>`;
+    list.innerHTML = `<div style="text-align:center; padding:48px 20px;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--ds-text-quaternary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px; opacity:0.6;">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <p style="color:var(--ds-text-tertiary); font-size:15px; font-weight:500; margin:0 0 4px;">
+        ${I18n.t('subject.empty_title', null, 'Nenhuma atividade')}
+      </p>
+      <p style="color:var(--ds-text-quaternary); font-size:13px; margin:0;">
+        ${I18n.t('subject.empty_hint', null, 'Toque em + para criar seu primeiro perfil')}
+      </p>
+    </div>`;
     return;
   }
 
@@ -1278,30 +1398,40 @@ function openBlockModal(blockId = null) {
   editingBlockId = blockId;
   populateSubjectSelect();
 
-  const topicGroup = $('#inputTopic').closest('.form-group');
-  const timeRow = $('#inputStart').closest('.form-row');
+  const editInfo = $('#blockEditInfo');
+  const createSubject = $('#blockCreateSubject');
+  const createTopic = $('#blockCreateTopic');
+  const createTime = $('#blockCreateTime');
 
   if (blockId) {
     const block = state.blocks.find(b => b.id === blockId);
     if (!block) return;
+    const subj = state.subjects.find(s => s.id === block.subjectId);
+    const color = subj?.color || '#8e8e93';
+
     $('#modalTitle').textContent = I18n.t('block.edit');
     $('#inputSubject').value = block.subjectId;
     $('#inputTopic').value = block.topic || '';
     $('#inputStart').value = block.start;
     $('#inputEnd').value = block.end;
     $('#btnDeleteBlock').classList.remove('hidden');
-    $('#btnDeleteBlock').textContent = 'Remover atividade deste dia';
+    $('#btnDeleteBlock').textContent = I18n.t('block.remove_today', null, 'Remover só hoje');
 
-    // Esconder campos globais/estruturais ao editar a instância
-    if (topicGroup) topicGroup.classList.add('hidden');
-    if (timeRow) timeRow.classList.add('hidden');
+    // Edit mode: show info card, hide create fields
+    editInfo.classList.remove('hidden');
+    createSubject.classList.add('hidden');
+    createTopic.classList.add('hidden');
+    createTime.classList.add('hidden');
 
-    // Repeat days
-    const repeatDays = block.repeatDays || (block.repeatDaily ? [0,1,2,3,4,5,6] : []);
-    setRepeatDayButtons(repeatDays);
+    // Fill info card
+    const typeKey = subj?.type || 'study';
+    $('#blockEditBadge').innerHTML = blockTypeIconSvg(typeKey, color);
+    $('#blockEditBadge').style.background = `color-mix(in srgb, ${color} 12%, transparent)`;
+    $('#blockEditName').textContent = subj?.name || I18n.t('block.no_subject');
+    const dur = durationLabel(block.start, block.end);
+    $('#blockEditTime').textContent = `${block.start} – ${block.end}${dur ? ' · ' + dur : ''}`;
 
     // Montar o popup da pizza com os Assuntos para check
-    const subj = state.subjects.find(s => s.id === block.subjectId);
     const checklistContainer = $('#modalBlockSubjectChecklist');
     if (checklistContainer && subj) {
       if (subj.type === 'study') {
@@ -1480,38 +1610,30 @@ function openBlockModal(blockId = null) {
     $('#btnDeleteBlock').classList.add('hidden');
     if (state.subjects.length > 0) $('#inputSubject').value = state.subjects[0].id;
 
-    // Mostrar campos ao criar novo bloco extra
-    if (topicGroup) topicGroup.classList.remove('hidden');
-    if (timeRow) timeRow.classList.remove('hidden');
+    // Create mode: show create fields, hide edit info
+    editInfo.classList.add('hidden');
+    createSubject.classList.remove('hidden');
+    createTopic.classList.remove('hidden');
+    createTime.classList.remove('hidden');
     const checklistContainer = $('#modalBlockSubjectChecklist');
     if (checklistContainer) checklistContainer.classList.add('hidden');
-    setRepeatDayButtons([]);
   }
-
-  // Bind repeat day buttons
-  document.querySelectorAll('.repeat-day-btn').forEach(btn => {
-    btn.onclick = () => btn.classList.toggle('active');
-  });
 
   DS.sheet.open($('#modalBlock'), 0.92);
 }
 
-function setRepeatDayButtons(days) {
-  document.querySelectorAll('.repeat-day-btn').forEach(btn => {
-    const d = parseInt(btn.dataset.day);
-    btn.classList.toggle('active', days.includes(d));
-  });
-}
-
-function getRepeatDays() {
-  const days = [];
-  document.querySelectorAll('.repeat-day-btn.active').forEach(btn => {
-    days.push(parseInt(btn.dataset.day));
-  });
-  return days.sort();
-}
 
 function closeBlockModal() { DS.sheet.close($('#modalBlock')); editingBlockId = null; }
+
+function showHeatmapInfo() {
+  DS.toast('O heatmap mostra seus dias mais produtivos — quanto mais blocos concluídos, mais intenso o tom do quadrado.');
+}
+function showPrioritiesInfo() {
+  DS.toast('Organize suas atividades em 3 círculos: o mais interno é o que importa hoje, os externos são o que pode esperar.');
+}
+function showStudyTipsInfo() {
+  DS.toast('Cadastre matérias e assuntos — use "Matéria" para agrupar (ex: "Dir. Constitucional") e "Assunto" para o tópico específico (ex: "Art. 1º").');
+}
 
 let subjectModalType = 'study';
 let currentEditingSubjectId = null;
@@ -1912,22 +2034,18 @@ function saveBlock() {
 
   const subj = state.subjects.find(s => s.id === subjectId);
 
-  const repeatDays = getRepeatDays();
   const isEditing = !!editingBlockId;
   if (isEditing) {
     const block = state.blocks.find(b => b.id === editingBlockId);
     if (block) {
       block.subjectId = subjectId; block.topic = topic; block.start = start; block.end = end;
-      block.repeatDays = repeatDays;
-      block.repeatDaily = repeatDays.length === 7;
     }
     logAction(I18n.t('log.edited_block', { name: topic || subj?.name, start, end }));
   } else {
     state.blocks.push({
       id: uid(), date: dateKey(selectedDate),
       subjectId, topic, start, end, done: false,
-      repeatDays,
-      repeatDaily: repeatDays.length === 7,
+      completedItems: [],
     });
     logAction(I18n.t('log.created_block', { name: topic || subj?.name, start, end }));
   }
@@ -2054,6 +2172,7 @@ async function deleteBlock() {
 // ===== NOTES =====
 let editingNoteId = null;
 let currentNoteFilterTag = null;
+let _selectedNoteTags = new Set();
 
 function renderNotes() {
   const list = $('#notesList');
@@ -2063,9 +2182,15 @@ function renderNotes() {
 
   if (notes.length === 0) {
     if (tagsFilterContainer) tagsFilterContainer.innerHTML = '';
-    list.innerHTML = `<div class="notes-empty">
-      <p style="color:var(--ds-text-tertiary); text-align:center; padding:40px 20px; font-size:14px;">
-        ${I18n.t('note.empty', null, 'Nenhuma nota ainda. Toque em + para criar.')}
+    list.innerHTML = `<div class="notes-empty" style="text-align:center; padding:48px 20px;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--ds-text-quaternary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px; opacity:0.6;">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
+      </svg>
+      <p style="color:var(--ds-text-tertiary); font-size:15px; font-weight:500; margin:0 0 4px;">
+        ${I18n.t('note.empty_title', null, 'Nenhuma nota ainda')}
+      </p>
+      <p style="color:var(--ds-text-quaternary); font-size:13px; margin:0;">
+        ${I18n.t('note.empty_hint', null, 'Toque em + para criar sua primeira nota')}
       </p>
     </div>`;
     return;
@@ -2122,11 +2247,16 @@ function renderNotes() {
     const tagsHtml = (note.tags || []).map(t => `<span class="note-tag">${DS.escapeHtml(t)}</span>`).join('');
     const noteDate = note.date || '';
     const fallbackDate = note.updatedAt || note.createdAt || '';
-    const dateStr = noteDate || (fallbackDate ? new Date(fallbackDate).toLocaleDateString() : '');
-    // Strip HTML tags for plain text preview
-    const tmp = document.createElement('div');
-    tmp.innerHTML = note.content || '';
-    const preview = (tmp.textContent || '').substring(0, 80).replace(/\s+/g, ' ').trim();
+    const lang = state.settings?.language || 'pt-BR';
+    let dateStr = '';
+    if (noteDate) {
+      dateStr = new Date(noteDate + 'T00:00:00').toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } else if (fallbackDate) {
+      const d = new Date(fallbackDate);
+      dateStr = d.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+    }
+    // Strip HTML tags for plain text preview (safe: regex strip, no innerHTML parse)
+    const preview = ((note.content || '').replace(/<[^>]*>/g, ' ')).replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim().substring(0, 80);
 
     html += `
       <div class="note-card" data-note-id="${note.id}">
@@ -2147,28 +2277,85 @@ function renderNotes() {
   });
 }
 
+function _getAllNoteTags() {
+  const tags = new Set();
+  (state.notes || []).forEach(n => (n.tags || []).forEach(t => tags.add(t)));
+  // Include currently selected tags (new ones not yet saved)
+  _selectedNoteTags.forEach(t => tags.add(t));
+  return Array.from(tags).sort();
+}
+
+function _renderNoteTagSelector() {
+  const container = $('#noteTagsExisting');
+  const preview = $('#noteTagsSelected');
+  if (!container) return;
+
+  const allTags = _getAllNoteTags();
+  container.innerHTML = allTags.map(t => {
+    const sel = _selectedNoteTags.has(t) ? ' selected' : '';
+    return `<button type="button" class="tag-option${sel}" data-tag="${DS.escapeHtml(t)}">${DS.escapeHtml(t)}</button>`;
+  }).join('');
+
+  container.querySelectorAll('.tag-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tag = btn.dataset.tag;
+      if (_selectedNoteTags.has(tag)) _selectedNoteTags.delete(tag);
+      else _selectedNoteTags.add(tag);
+      _renderNoteTagSelector();
+    });
+  });
+
+  if (preview) {
+    const selected = Array.from(_selectedNoteTags);
+    preview.innerHTML = selected.map(t =>
+      `<span class="note-tag" data-tag="${DS.escapeHtml(t)}">${DS.escapeHtml(t)} &times;</span>`
+    ).join('');
+    preview.querySelectorAll('.note-tag').forEach(chip => {
+      chip.addEventListener('click', () => {
+        _selectedNoteTags.delete(chip.dataset.tag);
+        _renderNoteTagSelector();
+      });
+    });
+  }
+}
+
+function _addNewNoteTag() {
+  const input = $('#inputNoteNewTag');
+  if (!input) return;
+  const tag = input.value.trim();
+  if (tag && !_selectedNoteTags.has(tag)) {
+    _selectedNoteTags.add(tag);
+    _renderNoteTagSelector();
+  }
+  input.value = '';
+  input.focus();
+}
+
 function openNoteModal(noteId = null) {
   editingNoteId = noteId;
   const editor = $('#inputNoteContent');
+  _selectedNoteTags = new Set();
 
   if (noteId) {
     const note = (state.notes || []).find(n => n.id === noteId);
     if (!note) return;
     $('#modalNoteTitle').textContent = I18n.t('note.edit', null, 'Editar Nota');
     $('#inputNoteTitle').value = note.title || '';
-    $('#inputNoteTags').value = (note.tags || []).join(', ');
     $('#inputNoteDate').value = note.date || '';
     editor.innerHTML = note.content || '';
     $('#btnDeleteNote').classList.remove('hidden');
+    (note.tags || []).forEach(t => _selectedNoteTags.add(t));
   } else {
     $('#modalNoteTitle').textContent = I18n.t('note.new', null, 'Nova Nota');
     $('#inputNoteTitle').value = '';
-    $('#inputNoteTags').value = '';
     $('#inputNoteDate').value = dateKey(selectedDate);
     editor.innerHTML = '';
     $('#btnDeleteNote').classList.add('hidden');
   }
 
+  const newTagInput = $('#inputNoteNewTag');
+  if (newTagInput) newTagInput.value = '';
+  _renderNoteTagSelector();
   DS.sheet.open($('#modalNote'), 0.92);
 }
 
@@ -2180,8 +2367,7 @@ function saveNote() {
   const content = editor.innerHTML.trim();
   // Treat empty editor (just <br> or whitespace) as empty
   const isEmpty = !content || content === '<br>' || !editor.textContent.trim();
-  const tagsRaw = $('#inputNoteTags').value.trim();
-  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const tags = Array.from(_selectedNoteTags);
   const noteDate = $('#inputNoteDate').value || '';
 
   if (!title && isEmpty) {
@@ -2239,12 +2425,14 @@ async function deleteNote() {
 }
 
 // ===== TABS =====
+let _currentTab = 'schedule';
 function initTabs() {
   const pages = {
-    schedule: { show: ['#pizzaPage', '#weekNav'], hide: ['#pageNotes', '#pageSubjects', '#pageSettings'] },
-    notes: { show: ['#pageNotes'], hide: ['#pizzaPage', '#weekNav', '#pageSubjects', '#pageSettings'] },
-    subjects: { show: ['#pageSubjects'], hide: ['#pizzaPage', '#weekNav', '#pageNotes', '#pageSettings'] },
-    settings: { show: ['#pageSettings'], hide: ['#pizzaPage', '#weekNav', '#pageNotes', '#pageSubjects'] },
+    schedule: { show: ['#pizzaPage', '#weekNav'], hide: ['#pageAtomic', '#pageNotes', '#pageSubjects', '#pageSettings'] },
+    atomic: { show: ['#pageAtomic'], hide: ['#pizzaPage', '#weekNav', '#pageNotes', '#pageSubjects', '#pageSettings'] },
+    notes: { show: ['#pageNotes'], hide: ['#pizzaPage', '#weekNav', '#pageAtomic', '#pageSubjects', '#pageSettings'] },
+    subjects: { show: ['#pageSubjects'], hide: ['#pizzaPage', '#weekNav', '#pageAtomic', '#pageNotes', '#pageSettings'] },
+    settings: { show: ['#pageSettings'], hide: ['#pizzaPage', '#weekNav', '#pageAtomic', '#pageNotes', '#pageSubjects'] },
   };
 
   function switchTab(tabName, animate) {
@@ -2254,6 +2442,10 @@ function initTabs() {
     $$('.ds-tab').forEach(t => t.classList.remove('active'));
     const activeTab = [...$$('.ds-tab')].find(t => t.dataset.tab === tabName);
     if (activeTab) activeTab.classList.add('active');
+    // Settings gear highlight
+    const gearBtn = $('#btnHeaderSettings');
+    if (gearBtn) gearBtn.classList.toggle('active', tabName === 'settings');
+
     const p = pages[tabName];
     if (!p) return;
     p.show.forEach(s => {
@@ -2264,21 +2456,892 @@ function initTabs() {
       }
     });
     p.hide.forEach(s => { const el = $(s); if (el) el.classList.add('hidden'); });
+    _currentTab = tabName;
+    if (tabName === 'atomic') renderAtomic();
     if (tabName === 'notes') renderNotes();
     if (tabName === 'subjects') renderSubjects();
     if (tabName === 'settings' && typeof initPriorities === 'function') initPriorities();
     try { localStorage.setItem('studyplan_tab', tabName); } catch(e) {}
   }
 
+  // Expose globally for header gear button
+  window.switchTab = switchTab;
+
   $$('.ds-tab').forEach(tab => {
     tab.addEventListener('click', () => switchTab(tab.dataset.tab, true));
   });
+
+  // Header gear button → toggle settings
+  const gearBtn = $('#btnHeaderSettings');
+  if (gearBtn) {
+    gearBtn.addEventListener('click', () => {
+      if (_currentTab === 'settings') {
+        // Return to previous non-settings tab
+        const prev = localStorage.getItem('studyplan_prev_tab') || 'schedule';
+        switchTab(prev, true);
+      } else {
+        try { localStorage.setItem('studyplan_prev_tab', _currentTab); } catch(e) {}
+        switchTab('settings', true);
+      }
+    });
+  }
 
   // Restore last active tab
   const saved = localStorage.getItem('studyplan_tab');
   if (saved && pages[saved]) {
     switchTab(saved, false);
   }
+}
+
+// ===== ATOMIC CHECK-IN =====
+function getCheckinForDate(date) {
+  const dk = dateKey(date);
+  return state.checkins.records.find(r => r.date === dk) || null;
+}
+
+function getOrCreateTodayRecord() {
+  const dk = dateKey(new Date());
+  let rec = state.checkins.records.find(r => r.date === dk);
+  if (!rec) {
+    rec = { id: uid(), date: dk, morning: null, evening: null };
+    state.checkins.records.push(rec);
+  }
+  return rec;
+}
+
+function getOrCreateTodayHabitLog() {
+  const dk = dateKey(new Date());
+  let rec = getCheckinForDate(new Date());
+  if (!rec) {
+    rec = getOrCreateTodayRecord();
+  }
+  if (!rec.habitLog) rec.habitLog = [];
+  return rec.habitLog;
+}
+
+function setActiveGroup(buttons, activeBtn) {
+  buttons.forEach(b => b.classList.remove('active'));
+  activeBtn.classList.add('active');
+}
+
+function getActiveAffirmation() {
+  if (!state.checkins.activeAffirmationId) return null;
+  return state.checkins.affirmations.find(a => a.id === state.checkins.activeAffirmationId) || null;
+}
+
+function calculateCheckinStreak() {
+  let streak = 0;
+  const d = new Date();
+  // If today has a complete check-in, count it; otherwise start from yesterday
+  const todayRecord = getCheckinForDate(d);
+  if (!todayRecord?.morning) {
+    d.setDate(d.getDate() - 1);
+  }
+  while (true) {
+    const rec = getCheckinForDate(d);
+    if (rec?.morning && (rec?.evening || (rec?.habitLog?.length || 0) > 0)) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function renderDailyReport() {
+  const today = new Date();
+  const dk = dateKey(today);
+  const rec = getCheckinForDate(today);
+  const m = rec?.morning;
+  const e = rec?.evening;
+  const hasMorning = !!m;
+  const hasEvening = !!e;
+
+  // Today's habits dynamically extracted from the agenda blocks (inactive/routine)
+  const todayBlocks = state.blocks.filter(b => b.date === dk);
+  const todayHabits = [];
+  let totalRoutineTasks = 0;
+
+  todayBlocks.forEach(b => {
+    const s = state.subjects.find(s => s.id === b.subjectId);
+    if (s?.type === 'inactive') {
+      const checklist = s.checklist || [];
+      totalRoutineTasks += checklist.length;
+      
+      checklist.forEach(item => {
+        if ((b.completedItems || []).includes(item.id)) {
+          const logEntry = rec?.habitLog?.find(h => h.habitId === item.id);
+          todayHabits.push({
+            date: dk,
+            habitId: item.id,
+            habitText: item.task,
+            quality: logEntry?.quality || 'sharp',
+            done: true
+          });
+        }
+      });
+    }
+  });
+
+  const doneCount = todayHabits.length;
+
+  const energyLabel = { low: I18n.t('atomic.energy_low'), medium: I18n.t('atomic.energy_medium'), high: I18n.t('atomic.energy_high') };
+  const moodLabel = { great: I18n.t('atomic.mood_great'), good: I18n.t('atomic.mood_good'), okay: I18n.t('atomic.mood_okay'), heavy: I18n.t('atomic.mood_heavy'), tough: I18n.t('atomic.mood_tough') };
+  const confLabel = { yes: I18n.t('atomic.confirm_yes'), partial: I18n.t('atomic.confirm_partial'), no: I18n.t('atomic.confirm_no') };
+
+  const streak = calculateCheckinStreak();
+
+  const pct = totalRoutineTasks > 0 ? Math.round((doneCount / totalRoutineTasks) * 100) : 0;
+  const pctColor = pct >= 80 ? '#34C759' : pct >= 50 ? '#FF9500' : '#FF3B30';
+
+  const dayName = today.toLocaleDateString(I18n.locale, { weekday: 'short', day: '2-digit', month: '2-digit' });
+
+  let html = `<div class="atomic-card atomic-daily-report">
+    <div class="atomic-card-header">
+      <span class="atomic-card-icon">${DS.icon('sun', { size: 16 })}</span>
+      <span class="atomic-card-title">${I18n.t('atomic.report_title', null, 'Relatório do Dia')}</span>
+      <span class="atomic-report-date">${dayName}</span>
+    </div>
+    <div class="atomic-report-body">`;
+
+  // ── Morning section ──
+  if (hasMorning) {
+    const energyIcon = m.energy === 'high' ? 'bolt' : m.energy === 'medium' ? 'battery' : 'plug';
+    html += `<div class="atomic-report-section">
+      <div class="atomic-report-head">
+        <span class="atomic-report-head-icon">${DS.icon('sun', { size: 14 })}</span>
+        <span class="atomic-report-head-label">${I18n.t('atomic.morning_title', null, 'Abertura do Dia')}</span>
+        <span class="atomic-report-head-status">${DS.icon('check', { size: 12 })}</span>
+      </div>
+      <div class="atomic-report-metrics">
+        <span class="atomic-report-metric">${DS.icon('moon', { size: 12 })} ${m.sleepHours}h</span>
+        <span class="atomic-report-metric">${DS.icon(energyIcon, { size: 12 })} ${energyLabel[m.energy] || m.energy}</span>
+        <span class="atomic-report-metric">${DS.icon('star', { size: 12 })} ${moodLabel[m.mood] || m.mood}</span>
+      </div>`;
+    if (m.focus) html += `<div class="atomic-report-line">${DS.icon('target', { size: 12 })} ${DS.escapeHtml(m.focus)}</div>`;
+    if (m.affirmationText) html += `<div class="atomic-report-line atomic-report-identity">${DS.icon('book-open', { size: 12 })} "${DS.escapeHtml(m.affirmationText)}"</div>`;
+    html += `</div>`;
+  } else {
+    html += `<div class="atomic-report-section atomic-report-section--pending">
+      <div class="atomic-report-head">
+        <span class="atomic-report-head-icon">${DS.icon('sun', { size: 14 })}</span>
+        <span class="atomic-report-head-label">${I18n.t('atomic.morning_title', null, 'Abertura do Dia')}</span>
+        <span class="atomic-report-head-status">—</span>
+      </div>
+    </div>`;
+  }
+
+  // ── Habits section ──
+  html += `<div class="atomic-report-section ${totalRoutineTasks > 0 && doneCount === totalRoutineTasks ? 'atomic-report-section--done' : ''}">
+    <div class="atomic-report-head">
+      <span class="atomic-report-head-icon">${DS.icon('check', { size: 14 })}</span>
+      <span class="atomic-report-head-label">${I18n.t('common.habits', null, 'Hábitos')}</span>
+      <span class="atomic-report-head-status">${doneCount}/${totalRoutineTasks}</span>
+    </div>`;
+  if (totalRoutineTasks > 0) {
+    html += `<div class="atomic-report-progress">
+      <div class="atomic-progress-bar">
+        <div class="atomic-progress-fill" style="width:${pct}%;background:${pctColor};"></div>
+      </div>
+      <span class="atomic-progress-pct">${pct}%</span>
+    </div>`;
+    if (todayHabits.length > 0) {
+      html += `<div class="atomic-report-habits">`;
+      todayHabits.forEach(h => {
+        const qual = h.quality || 'sharp';
+        const qualIcon = qual === 'sharp' ? DS.icon('chevronU', { size: 12 }) : DS.icon('chevronD', { size: 12 });
+        const qualColor = qual === 'sharp' ? 'var(--ds-success, #34C759)' : 'var(--ds-danger, #FF3B30)';
+        html += `<span class="atomic-report-habit-tag">
+          <span class="atomic-report-habit-label">${DS.escapeHtml(h.habitText)}</span>
+          <span class="atomic-report-habit-qual" style="color:${qualColor}">${qualIcon}</span>
+        </span>`;
+      });
+      html += `</div>`;
+    }
+  } else {
+    html += `<div class="atomic-report-empty">${I18n.t('atomic.report_no_habits', null, 'Nenhum hábito configurado nas Atividades')}</div>`;
+  }
+  html += `</div>`;
+
+  // ── Evening section ──
+  if (hasEvening) {
+    html += `<div class="atomic-report-section atomic-report-section--done">
+      <div class="atomic-report-head">
+        <span class="atomic-report-head-icon">${DS.icon('moon', { size: 14 })}</span>
+        <span class="atomic-report-head-label">${I18n.t('atomic.evening_title', null, 'Encerramento do Dia')}</span>
+        <span class="atomic-report-head-status">${DS.icon('check', { size: 12 })}</span>
+      </div>
+      <div class="atomic-report-metrics">
+        <span class="atomic-report-metric">${DS.icon('book-open', { size: 12 })} ${confLabel[e.confirmed] || e.confirmed}</span>
+      </div>`;
+    if (e.recharged) html += `<div class="atomic-report-line">${DS.icon('battery', { size: 12 })} ${DS.escapeHtml(e.recharged)}</div>`;
+    if (e.drained) html += `<div class="atomic-report-line">${DS.icon('plug', { size: 12 })} ${DS.escapeHtml(e.drained)}</div>`;
+    if (e.nextVote?.action) html += `<div class="atomic-report-line">${DS.icon('sun', { size: 12 })} ${DS.escapeHtml(e.nextVote.action)}${e.nextVote.time ? ' ' + I18n.t('atomic.report_at', null, 'às') + ' ' + e.nextVote.time : ''}</div>`;
+    html += `</div>`;
+  } else if (hasMorning) {
+    html += `<div class="atomic-report-section atomic-report-section--pending">
+      <div class="atomic-report-head">
+        <span class="atomic-report-head-icon">${DS.icon('moon', { size: 14 })}</span>
+        <span class="atomic-report-head-label">${I18n.t('atomic.evening_title', null, 'Encerramento do Dia')}</span>
+        <span class="atomic-report-head-status">${I18n.t('atomic.report_pending', null, 'pendente')}</span>
+      </div>
+    </div>`;
+  }
+
+  // ── Streak footer ──
+  if (streak > 0) {
+    html += `<div class="atomic-report-footer">
+      <span class="atomic-report-streak">${DS.icon('flame', { size: 16 })}</span>
+      <span class="atomic-report-streak-count">${streak}</span>
+      <span class="atomic-report-streak-label">${I18n.t('atomic.streak_label', null, 'dias consecutivos')}</span>
+    </div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function renderAtomic() {
+  const container = $('#atomicContent');
+  if (!container) return;
+  const today = new Date();
+  const dk = dateKey(today);
+  const record = getCheckinForDate(today) || {};
+  const hasMorning = !!record.morning;
+  const hasEvening = !!record.evening;
+  const affirmation = getActiveAffirmation();
+  const streak = calculateCheckinStreak();
+
+  let html = '';
+
+  // ── Empty state ──
+  if (!affirmation && streak === 0) {
+    html += `<div class="atomic-empty-state">
+      <span class="atomic-empty-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </span>
+      <p class="atomic-empty-title">${I18n.t('atomic.no_affirmation', null, 'Defina sua identidade para começar')}</p>
+      <p class="atomic-empty-hint">Preencha o check-in abaixo com <strong>"quem você quer ser hoje"</strong> — sua identidade para o dia.</p>
+    </div>`;
+  }
+
+  // ── Streak badge ──
+  if (streak > 0) {
+    html += `<div class="atomic-streak">
+      <span class="atomic-streak-fire">${DS.icon('flame', { size: 20 })}</span>
+      <span class="atomic-streak-count">${streak}</span>
+      <span class="atomic-streak-label">${I18n.t('atomic.streak_label', null, 'dias consecutivos')}</span>
+    </div>`;
+  }
+
+  // ── Morning Check-in ──
+  html += `<div class="atomic-card ${hasMorning ? 'atomic-card--done' : ''}">`;
+  html += `<div class="atomic-card-header">
+    <span class="atomic-card-icon">${DS.icon('sun', { size: 18 })}</span>
+    <span class="atomic-card-title">${I18n.t('atomic.morning_title', null, 'Abertura do Dia')}</span>
+    ${hasMorning ? `<span class="atomic-card-check">${DS.icon('check', { size: 16 })}</span>` : ''}
+  </div>`;
+
+  if (hasMorning) {
+    const m = record.morning;
+    const energyMap = { low: I18n.t('atomic.energy_low'), medium: I18n.t('atomic.energy_medium'), high: I18n.t('atomic.energy_high') };
+    const moodMap = { great: I18n.t('atomic.mood_great'), good: I18n.t('atomic.mood_good'), okay: I18n.t('atomic.mood_okay'), heavy: I18n.t('atomic.mood_heavy'), tough: I18n.t('atomic.mood_tough') };
+    html += `<div class="atomic-card-summary">
+      <div class="atomic-summary-row"><span>${DS.icon('moon', { size: 16 })}</span><span>${m.sleepHours}h ${I18n.t('atomic.sleep_label')}</span></div>
+      <div class="atomic-summary-row"><span>${DS.icon('bolt', { size: 16 })}</span><span>${energyMap[m.energy] || m.energy}</span></div>
+      ${m.mood ? `<div class="atomic-summary-row"><span>${DS.icon('flame', { size: 16 })}</span><span>${moodMap[m.mood] || m.mood}</span></div>` : ''}
+      ${m.affirmationText ? `<div class="atomic-summary-row"><span>${DS.icon('book-open', { size: 16 })}</span><span>"${m.affirmationText}"</span></div>` : ''}
+      ${m.focus ? `<div class="atomic-summary-row"><span>${DS.icon('target', { size: 16 })}</span><span>${m.focus}</span></div>` : ''}
+    </div>`;
+  } else {
+    // Morning form
+    const prefill = affirmation?.text || '';
+    html += `<div class="atomic-card-form" id="atomicMorningForm">
+      <div class="atomic-field">
+        <label class="ds-label" style="display:flex; align-items:center; width:100%;">
+          <span>${DS.icon('moon', { size: 16 })} ${I18n.t('atomic.sleep_label', null, 'Sono')}</span>
+          <span class="atomic-sleep-value" id="atomicSleepValue" style="margin-left:auto; color:var(--ds-accent); font-weight:700;">7h</span>
+          <button type="button" class="atomic-help-btn" data-help="sleep" aria-label="Ajuda" style="margin-left:6px;">${DS.icon('info', { size: 14 })}</button>
+        </label>
+        <div class="atomic-sleep-bubbles-container">
+          <div class="atomic-sleep-bubbles" id="atomicSleepBubbles">
+            ${[4, 5, 6, 7, 8, 9, 10, 11, 12].map(h => `
+              <button type="button" class="sleep-bubble ${h === 7 ? 'active' : ''}" data-val="${h}">
+                <span class="sleep-bubble-num">${h}h</span>
+              </button>
+            `).join('')}
+          </div>
+          <button type="button" class="sleep-half-toggle" id="sleepHalfToggle">
+            +30min
+          </button>
+        </div>
+        <input type="hidden" id="atomicSleep" value="7">
+      </div>
+      <div class="atomic-field">
+        <label class="ds-label">${DS.icon('bolt', { size: 16 })} ${I18n.t('atomic.energy_label', null, 'Energia')} <button type="button" class="atomic-help-btn" data-help="energy" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <div class="atomic-energy-btns" id="atomicEnergyBtns">
+          <button type="button" class="atomic-energy-btn" data-val="low">${I18n.t('atomic.energy_low', null, 'Baixa')}</button>
+          <button type="button" class="atomic-energy-btn active" data-val="medium">${I18n.t('atomic.energy_medium', null, 'Média')}</button>
+          <button type="button" class="atomic-energy-btn" data-val="high">${I18n.t('atomic.energy_high', null, 'Alta')}</button>
+        </div>
+      </div>
+      <div class="atomic-field">
+        <label class="ds-label">${DS.icon('flame', { size: 16 })} ${I18n.t('atomic.mood_label', null, 'Humor')} <button type="button" class="atomic-help-btn" data-help="mood" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <div class="atomic-mood-btns" id="atomicMoodBtns">
+          <button type="button" class="atomic-mood-btn active" data-val="great">${I18n.t('atomic.mood_great', null, 'Energizado')}</button>
+          <button type="button" class="atomic-mood-btn" data-val="good">${I18n.t('atomic.mood_good', null, 'Bem')}</button>
+          <button type="button" class="atomic-mood-btn" data-val="okay">${I18n.t('atomic.mood_okay', null, 'Neutro')}</button>
+          <button type="button" class="atomic-mood-btn" data-val="heavy">${I18n.t('atomic.mood_heavy', null, 'Pesado')}</button>
+          <button type="button" class="atomic-mood-btn" data-val="tough">${I18n.t('atomic.mood_tough', null, 'Difícil')}</button>
+        </div>
+      </div>
+      <div class="atomic-field">
+        <label class="ds-label">${DS.icon('book-open', { size: 16 })} ${I18n.t('atomic.identity_prompt', null, 'Hoje eu sou…')} <button type="button" class="atomic-help-btn" data-help="identity" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <input type="text" id="atomicIdentity" class="ds-input" value="${DS.escapeHtml(prefill)}" placeholder="${I18n.t('atomic.identity_placeholder', null, 'a pessoa que estuda todos os dias')}">
+      </div>
+      <div class="atomic-field">
+        <label class="ds-label">${DS.icon('target', { size: 16 })} ${I18n.t('atomic.focus_label', null, 'O essencial de hoje')} <button type="button" class="atomic-help-btn" data-help="focus" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <input type="text" id="atomicFocus" class="ds-input" placeholder="${I18n.t('atomic.focus_placeholder', null, 'abrir o material e ler 1 questão')}">
+      </div>
+      <button class="ds-btn ds-btn-filled ds-btn-block atomic-confirm-btn" id="btnConfirmMorning">
+        ${I18n.t('atomic.confirm_morning', null, 'Confirmar e começar o dia')}
+      </button>
+    </div>`;
+  }
+  html += `</div>`; // end morning card
+
+  // ── Evening Check-in ──
+  html += `<div class="atomic-card ${hasEvening ? 'atomic-card--done' : ''} ${!hasMorning ? 'atomic-card--locked' : ''}">`;
+  html += `<div class="atomic-card-header">
+    <span class="atomic-card-icon">${DS.icon('moon', { size: 18 })}</span>
+    <span class="atomic-card-title">${I18n.t('atomic.evening_title', null, 'Encerramento do Dia')}</span>
+    ${hasEvening ? `<span class="atomic-card-check">${DS.icon('check', { size: 16 })}</span>` : ''}
+  </div>`;
+
+      if (!hasMorning) {
+    html += `<div class="atomic-card-locked-msg" aria-live="polite">${I18n.t('atomic.evening_locked', null, 'Complete o check-in da manhã primeiro')}</div>`;
+  } else if (hasEvening) {
+    const e = record.evening;
+    const confMap = { yes: I18n.t('atomic.confirm_yes'), partial: I18n.t('atomic.confirm_partial'), no: I18n.t('atomic.confirm_no') };
+    html += `<div class="atomic-card-summary">
+      <div class="atomic-summary-row"><span>${DS.icon('book-open', { size: 16 })}</span><span>${confMap[e.confirmed] || e.confirmed}</span></div>
+      ${e.recharged ? `<div class="atomic-summary-row"><span>${DS.icon('battery', { size: 16 })}</span><span>${e.recharged}</span></div>` : ''}
+      ${e.drained ? `<div class="atomic-summary-row"><span>${DS.icon('plug', { size: 16 })}</span><span>${e.drained}</span></div>` : ''}
+      ${e.nextVote?.action ? `<div class="atomic-summary-row"><span>${DS.icon('sun', { size: 14 })}</span><span>${e.nextVote.action}${e.nextVote.time ? ' ' + I18n.t('atomic.next_vote_time') + ' ' + e.nextVote.time : ''}</span></div>` : ''}
+    </div>`;
+  } else {
+    // Evening form
+    // Today's habits summary from agenda blocks (with quality toggles)
+    const todayKey = dateKey(new Date());
+    const recToday = getCheckinForDate(new Date());
+    const todayBlocks = state.blocks.filter(b => b.date === todayKey);
+    const todayHabits = [];
+    
+    todayBlocks.forEach(b => {
+      const s = state.subjects.find(s => s.id === b.subjectId);
+      if (s?.type === 'inactive') {
+        (s.checklist || []).forEach(item => {
+          if ((b.completedItems || []).includes(item.id)) {
+            const logEntry = recToday?.habitLog?.find(h => h.habitId === item.id);
+            todayHabits.push({
+              date: todayKey,
+              habitId: item.id,
+              habitText: item.task,
+              quality: logEntry?.quality || 'sharp'
+            });
+          }
+        });
+      }
+    });
+
+    if (todayHabits.length > 0) {
+      html += `<div class="atomic-habits-summary">
+        <div class="ds-label">${DS.icon('check', { size: 14 })} ${I18n.t('atomic.habits_done', null, 'Hábitos de hoje')}</div>
+        <div class="atomic-habits-quality-list" id="atomicHabitsQuality">`;
+      todayHabits.forEach(h => {
+        const qual = h.quality || 'sharp';
+        html += `<div class="atomic-habit-quality-row" data-habit-id="${DS.escapeHtml(h.habitId)}">
+          <span class="atomic-habit-quality-label">${DS.escapeHtml(h.habitText)}</span>
+          <span class="atomic-habit-quality-btns">
+            <button type="button" class="atomic-quality-btn ${qual === 'sharp' ? 'active' : ''}" data-val="sharp" title="${I18n.t('atomic.quality_sharp', null, 'Sustenido — bem executado')}">${DS.icon('chevronU', { size: 16 })}</button>
+            <button type="button" class="atomic-quality-btn ${qual === 'flat' ? 'active' : ''}" data-val="flat" title="${I18n.t('atomic.quality_flat', null, 'Bemol — abaixo do esperado')}">${DS.icon('chevronD', { size: 16 })}</button>
+          </span>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+    html += `<div class="atomic-card-form" id="atomicEveningForm">
+      <div class="atomic-field">
+        <label class="ds-label">${DS.icon('book-open', { size: 16 })} ${I18n.t('atomic.confirmed_identity', null, 'Confirmei minha identidade?')} <button type="button" class="atomic-help-btn" data-help="confirmation" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <div class="atomic-confirm-btns" id="atomicConfirmBtns">
+          <button type="button" class="atomic-confirm-opt" data-val="yes">${I18n.t('atomic.confirm_yes', null, 'Sim')}</button>
+          <button type="button" class="atomic-confirm-opt" data-val="partial">${I18n.t('atomic.confirm_partial', null, 'Em parte')}</button>
+          <button type="button" class="atomic-confirm-opt" data-val="no">${I18n.t('atomic.confirm_no', null, 'Não')}</button>
+        </div>
+      </div>
+      <div class="atomic-field">
+        <label class="ds-label">${DS.icon('battery', { size: 16 })} ${I18n.t('atomic.recharged_label', null, 'O que me recarregou')} <button type="button" class="atomic-help-btn" data-help="recharged" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <input type="text" id="atomicRecharged" class="ds-input" placeholder="${I18n.t('atomic.recharged_placeholder', null, 'Ex: caminhada, boa conversa…')}">
+      </div>
+      <div class="atomic-field">
+        <label class="ds-label">${DS.icon('plug', { size: 16 })} ${I18n.t('atomic.drained_label', null, 'O que me drenou')} <button type="button" class="atomic-help-btn" data-help="drained" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <input type="text" id="atomicDrained" class="ds-input" placeholder="${I18n.t('atomic.drained_placeholder', null, 'Ex: reunião longa, insônia…')}">
+      </div>
+      <div class="atomic-field">
+        <label class="ds-label">${DS.icon('sun', { size: 16 })} ${I18n.t('atomic.next_vote_label', null, 'Primeiro voto de amanhã')} <button type="button" class="atomic-help-btn" data-help="nextvote" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <div class="atomic-next-vote-row">
+          <input type="text" id="atomicNextVote" class="ds-input" placeholder="${I18n.t('atomic.next_vote_placeholder', null, 'Ex: revisar flashcards')}" style="flex:1">
+          <span class="atomic-next-vote-at">${I18n.t('atomic.next_vote_time', null, 'às')}</span>
+          <input type="time" id="atomicNextVoteTime" class="ds-input" value="07:00" style="width:90px">
+        </div>
+      </div>
+      <button class="ds-btn ds-btn-filled ds-btn-block atomic-confirm-btn" id="btnConfirmEvening">
+        ${I18n.t('atomic.confirm_evening', null, 'Registrar e encerrar dia')}
+      </button>
+    </div>`;
+  }
+  html += `</div>`; // end evening card
+
+  // ── Daily Report ──
+  html += renderDailyReport();
+
+  // ── Timeline ──
+  html += `<div class="atomic-timeline">`;
+  html += `<h3 class="atomic-timeline-title">${I18n.t('atomic.timeline_title', null, 'Linha do Tempo')}</h3>`;
+  html += `<div class="atomic-timeline-grid">`;
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay());
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    const rec = getCheckinForDate(d);
+    const isToday = dateKey(d) === dk;
+    const dayLabel = d.toLocaleDateString(I18n.locale, { weekday: 'short' }).slice(0, 3);
+    const mornDone = rec?.morning ? `<span class="atomic-tl-sun">${DS.icon('sun', { size: 10 })}</span>` : '';
+    const eveDone = rec?.evening ? `<span class="atomic-tl-moon">${DS.icon('moon', { size: 10 })}</span>` : '';
+    html += `<div class="atomic-timeline-day ${isToday ? 'atomic-timeline-day--today' : ''} ${rec?.morning ? 'atomic-timeline-day--has' : ''}">
+      <span class="atomic-timeline-indicators">${mornDone}${eveDone}</span>
+      <span class="atomic-timeline-date">${d.getDate()}</span>
+      <span class="atomic-timeline-label">${dayLabel}</span>
+    </div>`;
+  }
+  html += `</div>`; // end grid
+
+  // Active affirmation display
+  if (affirmation) {
+    const since = new Date(affirmation.createdAt).toLocaleDateString(I18n.locale, { day: '2-digit', month: '2-digit' });
+    html += `<div class="atomic-affirmation-display">
+      <span class="atomic-affirmation-quote">"${DS.escapeHtml(affirmation.text)}"</span>
+      <span class="atomic-affirmation-since">— ${I18n.t('atomic.since', null, 'desde')} ${since}</span>
+    </div>`;
+  }
+  html += `</div>`; // end timeline
+
+  // ── Weekly Insights Dashboard ──
+  html += `<div class="atomic-insights">
+    <h3 class="atomic-timeline-title">${DS.icon('info', { size: 16 })} ${I18n.t('atomic.insights_title', null, 'Insights da Semana')}</h3>
+    <div class="atomic-insights-grid">`;
+
+  // Mood chart: 7 colored circles
+  html += `<div class="atomic-insights-card">
+    <div class="ds-label">${DS.icon('flame', { size: 14 })} ${I18n.t('atomic.insights_mood', null, 'Humor')}</div>
+    <div class="atomic-mood-chart">`;
+  const moodColors = { great: '#34C759', good: '#8BC34A', okay: '#FF9500', heavy: '#FF6B35', tough: '#FF3B30' };
+  const moodLabels = { great: I18n.t('atomic.mood_great'), good: I18n.t('atomic.mood_good'), okay: I18n.t('atomic.mood_okay'), heavy: I18n.t('atomic.mood_heavy'), tough: I18n.t('atomic.mood_tough') };
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    const rec = getCheckinForDate(d);
+    const isToday = dateKey(d) === dk;
+    const mood = rec?.morning?.mood;
+    const dayLabel = d.toLocaleDateString(I18n.locale, { weekday: 'short' }).slice(0, 3);
+    html += `<div class="atomic-mood-day ${isToday ? 'atomic-mood-day--today' : ''}" title="${dayLabel}: ${mood ? (moodLabels[mood] || mood) : '—'}">
+      <span class="atomic-mood-dot" style="${mood ? `background:${moodColors[mood] || '#ddd'};` : 'background:#eee;'}${isToday ? 'box-shadow:0 0 0 2px var(--ds-primary);' : ''}"></span>
+      <span class="atomic-mood-day-label">${dayLabel}</span>
+    </div>`;
+  }
+  html += `</div></div>`;
+
+  // Habit completion stats
+  html += `<div class="atomic-insights-card">
+    <div class="ds-label">${DS.icon('check', { size: 14 })} ${I18n.t('atomic.insights_habits', null, 'Hábitos')}</div>
+    <div class="atomic-habits-chart">`;
+  let totalWeekHabits = 0;
+  let doneWeekHabits = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    const rec = getCheckinForDate(d);
+    const dayHabits = rec?.habitLog?.filter(h => h.date === dateKey(d)) || [];
+    totalWeekHabits += dayHabits.length;
+    doneWeekHabits += dayHabits.filter(h => h.quality !== 'flat').length;
+  }
+  const pct = totalWeekHabits > 0 ? Math.round((doneWeekHabits / totalWeekHabits) * 100) : 0;
+  const barColor = pct >= 80 ? '#34C759' : pct >= 50 ? '#FF9500' : '#FF3B30';
+  html += `<div class="atomic-habits-stat">
+    <span class="atomic-habits-stat-num">${doneWeekHabits}/${totalWeekHabits}</span>
+    <span class="atomic-habits-stat-label">${I18n.t('atomic.insights_completed', null, 'executados')}</span>
+  </div>
+  <div class="atomic-progress-bar">
+    <div class="atomic-progress-fill" style="width:${pct}%;background:${barColor};"></div>
+  </div>
+  <span class="atomic-progress-pct">${pct}%</span>`;
+
+  html += `</div></div>`;
+
+  // Mood streak
+  let moodStreak = 0;
+  const d = new Date();
+  const todayRec = getCheckinForDate(d);
+  if (!todayRec?.morning) d.setDate(d.getDate() - 1);
+  while (true) {
+    const rec = getCheckinForDate(d);
+    if (rec?.morning?.mood) {
+      moodStreak++;
+      d.setDate(d.getDate() - 1);
+    } else break;
+  }
+  if (moodStreak > 0) {
+    html += `<div class="atomic-insights-card">
+      <div class="ds-label">${DS.icon('flame', { size: 14 })} ${I18n.t('atomic.insights_mood_streak', null, 'Humor consecutivo')}</div>
+      <div class="atomic-insights-streak">
+        <span class="atomic-insights-streak-num">${moodStreak}</span>
+        <span class="atomic-insights-streak-label">${I18n.t('atomic.streak_label', null, 'dias consecutivos')}</span>
+      </div>
+    </div>`;
+  }
+
+  html += `</div></div>`; // end insights grid and insights container
+
+  container.innerHTML = html;
+  updateAtomicTabIcon();
+
+  // ── Locked card: disable keyboard focus ──
+  const lockedForm = container.querySelector('#atomicEveningForm');
+  if (!hasMorning && lockedForm) {
+    lockedForm.querySelectorAll('input, button, textarea, select').forEach(el => {
+      el.tabIndex = -1;
+      el.setAttribute('aria-disabled', 'true');
+    });
+  }
+
+  // ── Event bindings ──
+  // Sleep Bubbles Selector
+  const bubblesContainer = $('#atomicSleepBubbles');
+  const sleepInput = $('#atomicSleep');
+  if (bubblesContainer && sleepInput) {
+    const bubbles = bubblesContainer.querySelectorAll('.sleep-bubble');
+    const halfToggle = $('#sleepHalfToggle');
+    const valText = $('#atomicSleepValue');
+    
+    let baseHours = 7;
+    let hasHalf = false;
+    
+    function updateSleepValue() {
+      const total = baseHours + (hasHalf ? 0.5 : 0);
+      sleepInput.value = total;
+      if (valText) valText.textContent = total + 'h';
+    }
+    
+    bubbles.forEach(bubble => {
+      bubble.addEventListener('click', () => {
+        bubbles.forEach(b => b.classList.remove('active'));
+        bubble.classList.add('active');
+        baseHours = parseFloat(bubble.dataset.val);
+        updateSleepValue();
+        if (navigator.vibrate) navigator.vibrate(10);
+      });
+    });
+    
+    if (halfToggle) {
+      halfToggle.addEventListener('click', () => {
+        hasHalf = !hasHalf;
+        halfToggle.classList.toggle('active', hasHalf);
+        updateSleepValue();
+        if (navigator.vibrate) navigator.vibrate(10);
+      });
+    }
+  }
+
+  // Energy buttons
+  const energyBtns = container.querySelectorAll('.atomic-energy-btn');
+  energyBtns.forEach(btn => {
+    btn.addEventListener('click', () => setActiveGroup(energyBtns, btn));
+  });
+
+  // Mood buttons
+  const moodBtns = container.querySelectorAll('.atomic-mood-btn');
+  moodBtns.forEach(btn => {
+    btn.addEventListener('click', () => setActiveGroup(moodBtns, btn));
+  });
+
+  // Confirm buttons (evening)
+  const confirmBtns = container.querySelectorAll('.atomic-confirm-opt');
+  confirmBtns.forEach(btn => {
+    btn.addEventListener('click', () => setActiveGroup(confirmBtns, btn));
+  });
+
+  // Habit quality buttons (evening)
+  const qualityContainer = document.getElementById('atomicHabitsQuality');
+  if (qualityContainer) {
+    qualityContainer.querySelectorAll('.atomic-quality-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const row = btn.closest('.atomic-habit-quality-row');
+        if (!row) return;
+        const habitId = row.dataset.habitId;
+        const val = btn.dataset.val;
+        // Update UI
+        row.querySelectorAll('.atomic-quality-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // Save quality to state
+        const rec = getCheckinForDate(new Date());
+        if (rec) {
+          if (!rec.habitLog) rec.habitLog = [];
+          let entry = rec.habitLog.find(h => h.habitId === habitId && h.date === dateKey(new Date()));
+          if (!entry) {
+            const taskLabel = row.querySelector('.atomic-habit-quality-label')?.textContent || habitId;
+            entry = { date: dateKey(new Date()), habitId, habitText: taskLabel, done: true, quality: val };
+            rec.habitLog.push(entry);
+          } else {
+            entry.quality = val;
+          }
+          Store.save(state);
+        }
+      });
+    });
+  }
+
+  // Field help buttons
+  container.querySelectorAll('.atomic-help-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const help = btn.dataset.help;
+      const titles = {
+        sleep: I18n.t('atomic.help_sleep_title', null, 'Sono'),
+        energy: I18n.t('atomic.help_energy_title', null, 'Energia'),
+        mood: I18n.t('atomic.help_mood_title', null, 'Humor'),
+        identity: I18n.t('atomic.help_identity_title', null, 'Afirmação de Identidade'),
+        focus: I18n.t('atomic.help_focus_title', null, 'Foco'),
+        confirmation: I18n.t('atomic.help_confirmation_title', null, 'Confirmação'),
+        recharged: I18n.t('atomic.help_recharged_title', null, 'Recarga'),
+        drained: I18n.t('atomic.help_drained_title', null, 'Drenagem'),
+        nextvote: I18n.t('atomic.help_nextvote_title', null, 'Primeiro Voto')
+      };
+      const bodies = {
+        sleep: I18n.t('atomic.help_sleep_body', null, 'Quantas horas de sono você teve hoje? <em>7-8h</em> é o ideal para adultos. Menos de 6h pode afetar sua cognição.'),
+        energy: I18n.t('atomic.help_energy_body', null, 'Como está sua energia agora? <br><strong>Alta</strong> — pronto para qualquer desafio<br><strong>Média</strong> — funciona, mas sem brilho<br><strong>Baixa</strong> — precisa de recuperação'),
+        mood: I18n.t('atomic.help_mood_body', null, 'Como você está se sentindo? <br><strong>Ótimo</strong> — animado, grato<br><strong>Ok</strong> — neutro, estável<br><strong>Pesado</strong> — cansado, irritado, ansioso'),
+        identity: I18n.t('atomic.help_identity_body', null, 'Escreva uma afirmação curta de identidade no presente. <br><em>"Hoje eu sou consistente."</em> <br><em>"Hoje eu sou curioso."</em> <br>Isso ancora seu comportamento no dia.'),
+        focus: I18n.t('atomic.help_focus_body', null, 'Qual é a <strong>única coisa</strong> que precisa acontecer hoje? <br>Se nada mais for feito, isso precisa estar feito.'),
+        confirmation: I18n.t('atomic.help_confirmation_body', null, 'Você agiu alinhado à sua afirmação de identidade hoje?<br><strong>Sim</strong> — viveu o propósito<br><strong>Em parte</strong> — tentou, mas escorregou<br><strong>Não</strong> — deixou passar'),
+        recharged: I18n.t('atomic.help_recharged_body', null, 'O que te deu energia hoje? <br>Pode ser uma pessoa, uma atividade, um momento de descanso. Reconhecer recargas ajuda a repeti-las.'),
+        drained: I18n.t('atomic.help_drained_body', null, 'O que te tirou energia hoje? <br>Identificar drenos ajuda a evitá-los ou preparar-se para eles.'),
+        nextvote: I18n.t('atomic.help_nextvote_body', null, 'Qual será seu <strong>primeiro compromisso</strong> amanhã? <br>Definir o primeiro voto cria momentum. Um bloco será criado automaticamente na agenda de amanhã.')
+      };
+      showFieldHelp(titles[help] || help, bodies[help] || '');
+    });
+  });
+
+  // Morning submit
+  const btnMorning = $('#btnConfirmMorning');
+  if (btnMorning) {
+    btnMorning.addEventListener('click', () => {
+      const sleepVal = parseFloat($('#atomicSleep')?.value || '7');
+      const energyBtn = container.querySelector('.atomic-energy-btn.active');
+      const energy = energyBtn?.dataset.val || 'medium';
+      const moodBtn = container.querySelector('.atomic-mood-btn.active');
+      const mood = moodBtn?.dataset.val || 'okay';
+      const identityText = $('#atomicIdentity')?.value?.trim() || '';
+      const focus = $('#atomicFocus')?.value?.trim() || '';
+
+      // Save or update affirmation — always create a new version for today
+      if (identityText) {
+        const todayStr = dk;
+        const existing = state.checkins.affirmations.find(
+          a => a.text === identityText && !a.retiredAt && a.createdAt === todayStr
+        );
+        if (!existing) {
+          const aff = { id: uid(), text: identityText, version: state.checkins.affirmations.length + 1, createdAt: dateKey(new Date()), retiredAt: null };
+          state.checkins.affirmations.push(aff);
+          state.checkins.activeAffirmationId = aff.id;
+        } else {
+          state.checkins.activeAffirmationId = existing.id;
+        }
+      }
+
+      // Save morning record
+      let rec = getOrCreateTodayRecord();
+      rec.morning = {
+        sleepHours: sleepVal,
+        energy,
+        mood,
+        affirmationText: identityText,
+        focus,
+        timestamp: new Date().toISOString()
+      };
+
+      if (Store.save(state)) {
+        logAction(I18n.t('atomic.morning_done', null, 'Manhã registrada'));
+        DS.toast(I18n.t('atomic.morning_done', null, 'Manhã registrada') + ' ✓');
+        renderAtomic();
+        updateAtomicTabIcon();
+
+        // Offer to create focus block
+        if (focus) {
+          const now = new Date();
+          const h = String(now.getHours()).padStart(2, '0');
+          const m = String(now.getMinutes()).padStart(2, '0');
+          DS.toast(
+            `<span style="display:flex;align-items:center;gap:8px">
+              <span>${DS.icon('target', { size: 14 })} Criar bloco para "${focus}" agora?</span>
+              <button class="ds-btn ds-btn-sm ds-btn-filled" id="toastCreateFocusBlock" style="font-size:12px;padding:2px 10px">Sim</button>
+            </span>`,
+            'info', 10000
+          );
+          setTimeout(() => {
+            const btn = document.getElementById('toastCreateFocusBlock');
+            if (btn) {
+              btn.addEventListener('click', () => {
+                const endIdx = (parseInt(h) + 1) % 24;
+                const endStr = String(endIdx).padStart(2, '0') + ':' + m;
+                state.blocks.push({
+                  id: uid(), date: dateKey(new Date()),
+                  subjectId: null,
+                  topic: focus,
+                  start: h + ':' + m,
+                  end: endStr,
+                  done: false,
+                  completedItems: []
+                });
+                Store.save(state);
+                render();
+                DS.toast(I18n.t('block.created'), 'success');
+              });
+            }
+          }, 100);
+        }
+      } else {
+        DS.toast('Erro ao salvar', 'error');
+      }
+    });
+  }
+
+  // Evening submit
+  const btnEvening = $('#btnConfirmEvening');
+  if (btnEvening) {
+    btnEvening.addEventListener('click', () => {
+      const confirmBtn = container.querySelector('.atomic-confirm-opt.active');
+      const confirmed = confirmBtn?.dataset.val || 'partial';
+      const recharged = $('#atomicRecharged')?.value?.trim() || '';
+      const drained = $('#atomicDrained')?.value?.trim() || '';
+      const nextAction = $('#atomicNextVote')?.value?.trim() || '';
+      const nextTime = $('#atomicNextVoteTime')?.value || '';
+
+      let rec = getCheckinForDate(new Date());
+      if (!rec) return;
+      rec.evening = {
+        confirmed,
+        recharged,
+        drained,
+        nextVote: { action: nextAction, time: nextTime },
+        timestamp: new Date().toISOString()
+      };
+
+      // Ensure all today's habits have quality set
+      const todayKey = dateKey(new Date());
+      const habitLog = rec.habitLog || [];
+      habitLog.forEach(h => {
+        if (h.date === todayKey && !h.quality) {
+          h.quality = 'sharp';
+        }
+      });
+
+      // Auto-create block from next vote
+      if (nextAction && nextTime) {
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        const tomorrowKey = dateKey(tomorrow);
+        const exists = state.blocks.some(b =>
+          b.date === tomorrowKey && b.start === nextTime && b.topic === nextAction
+        );
+        if (!exists) {
+          state.blocks.push({
+            id: uid(),
+            date: tomorrowKey,
+            subjectId: null,
+            topic: nextAction,
+            start: nextTime,
+            end: addMinutes(nextTime, 30),
+            done: false,
+            completedItems: []
+          });
+        }
+      }
+
+      if (Store.save(state)) {
+        logAction(I18n.t('atomic.evening_done', null, 'Dia encerrado'));
+        const extra = nextAction ? ' + bloco amanhã' : '';
+        DS.toast(I18n.t('atomic.evening_done', null, 'Dia encerrado') + extra + ' ✓');
+        renderAtomic();
+        updateAtomicTabIcon();
+      } else {
+        DS.toast('Erro ao salvar', 'error');
+      }
+    });
+  }
+}
+
+function updateAtomicTabBadge() {
+  const tab = document.querySelector('[data-tab="atomic"]');
+  if (!tab) return;
+  const now = new Date();
+  const hour = now.getHours();
+  const dk = dateKey(now);
+  const record = getCheckinForDate(now);
+  const hasEvening = record?.evening;
+  const eveningOverdue = hour >= 18 && !hasEvening;
+  const badge = tab.querySelector('.atomic-tab-badge');
+  if (eveningOverdue) {
+    if (!badge) {
+      const b = document.createElement('span');
+      b.className = 'atomic-tab-badge';
+      b.innerHTML = DS.icon('moon', { size: 10 });
+      tab.appendChild(b);
+    }
+  } else {
+    if (badge) badge.remove();
+  }
+}
+
+function updateAtomicTabIcon() {
+  const svg = document.getElementById('atomicTabIcon');
+  if (!svg) return;
+  const now = new Date();
+  const rec = getCheckinForDate(now);
+  const hasMorning = rec?.morning;
+  const hasEvening = rec?.evening;
+  const hour = now.getHours();
+  
+  if (hasMorning && hasEvening) {
+    svg.innerHTML = `<circle cx="12" cy="12" r="2.5" fill="#34C759"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="#34C759" opacity="0.5"/><polyline points="8 12 11 15 16 9" fill="none" stroke="#34C759" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  } else if (hasMorning && !hasEvening && hour >= 18) {
+    svg.innerHTML = `<circle cx="12" cy="12" r="2.5" fill="#FF9500"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="#FF9500" opacity="0.5"/><path d="M17 12.79A7 7 0 1 1 11.21 7 5 5 0 0 0 17 12.79z" fill="none" stroke="#FF9500" stroke-width="2"/>`;
+  } else if (hasMorning) {
+    svg.innerHTML = `<circle cx="12" cy="12" r="2.5" fill="#007AFF"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="#007AFF"/><path d="M12 2 A10 10 0 0 1 12 22" fill="none" stroke="#007AFF" stroke-width="2"/>`;
+  } else {
+    svg.innerHTML = `<circle cx="12" cy="12" r="2.5" fill="currentColor"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="currentColor"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="currentColor" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="3.5" fill="none" stroke="currentColor" transform="rotate(120 12 12)"/>`;
+  }
+}
+
+function showFieldHelp(title, body) {
+  const modal = document.getElementById('modalInfo');
+  const titleEl = document.getElementById('modalInfoTitle');
+  const bodyEl = document.getElementById('modalInfoBody');
+  if (!modal || !titleEl || !bodyEl) return;
+  titleEl.textContent = title;
+  bodyEl.innerHTML = body;
+  DS.sheet.open(modal, 0.6);
 }
 
 // ===== SETTINGS =====
@@ -2388,6 +3451,7 @@ function initSettings() {
       state.settings.timezone = tzSelect.value;
       Store.save(state);
       updateClock();
+      logAction(I18n.t('log.changed_timezone', { tz: tzSelect.value }, `Fuso horário: ${tzSelect.value}`));
     });
   }
 
@@ -2470,9 +3534,8 @@ function initSettings() {
   if ($btnClearLogs) {
     $btnClearLogs.addEventListener('click', () => {
       state.logs = [];
-      Store.save(state);
-      renderLogs();
       logAction(I18n.t('log.cleared_logs'));
+      Store.save(state);
     });
   }
 
@@ -2762,6 +3825,7 @@ function initSettings() {
       state.settings.showMarquee = marqueeToggle.checked;
       updateMarqueeVisibility();
       Store.save(state);
+      logAction(I18n.t(marqueeToggle.checked ? 'log.marquee_on' : 'log.marquee_off', null, marqueeToggle.checked ? 'Letreiro ativado' : 'Letreiro desativado'));
     });
   }
 }
@@ -2786,49 +3850,6 @@ function updateThemeColor() {
     (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
   const color = isDark ? '#0a0a0c' : '#f2f2f7';
   document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', color));
-}
-
-function autoRepeatDailyBlocks() {
-  const todayKey = dateKey(selectedDate);
-  const todayDow = selectedDate.getDay(); // 0=Sun, 6=Sat
-
-  // Find all blocks with repeat settings from any past date
-  const repeatBlocks = state.blocks.filter(b => {
-    if (b.date >= todayKey) return false;
-    // Support both legacy repeatDaily and new repeatDays
-    if (b.repeatDaily) return true;
-    if (b.repeatDays && b.repeatDays.length > 0) return b.repeatDays.includes(todayDow);
-    return false;
-  });
-
-  // Group by signature to get the most recent version of each repeating block
-  const seen = new Map();
-  repeatBlocks.sort((a, b) => b.date.localeCompare(a.date));
-  repeatBlocks.forEach(b => {
-    const key = `${b.subjectId}|${b.start}|${b.end}`;
-    if (!seen.has(key)) seen.set(key, b);
-  });
-
-  seen.forEach(b => {
-    const alreadyExists = state.blocks.some(
-      other => other.date === todayKey && other.subjectId === b.subjectId && other.start === b.start && other.end === b.end
-    );
-    if (!alreadyExists) {
-      state.blocks.push({
-        id: uid(),
-        date: todayKey,
-        subjectId: b.subjectId,
-        topic: b.topic,
-        start: b.start,
-        end: b.end,
-        done: false,
-        repeatDaily: b.repeatDaily || false,
-        repeatDays: b.repeatDays || (b.repeatDaily ? [0,1,2,3,4,5,6] : []),
-        selectedSyllabusId: b.selectedSyllabusId || null,
-        completedItems: [],
-      });
-    }
-  });
 }
 
 // ===== DAILY BLOCKS GENERATOR FROM WEEKLY SLOTS =====
@@ -3020,13 +4041,32 @@ function renderHeatmap() {
 
 // ===== MAIN RENDER =====
 function render() {
-  autoRepeatDailyBlocks();
   initDailyBlocksFromProfiles(selectedDate);
   $('#headerDate').textContent = formatFullDate(selectedDate);
   renderWeekNav();
   renderPizza();
+  renderFocusBanner();
   renderBlockList();
   renderHeatmap();
+}
+
+function renderFocusBanner() {
+  const banner = $('#todayFocusBanner');
+  if (!banner) return;
+  const dk = dateKey(selectedDate);
+  const todayStr = dateKey(new Date());
+  if (dk !== todayStr) { banner.classList.add('hidden'); return; }
+  const rec = getCheckinForDate(new Date());
+  const focus = rec?.morning?.focus;
+  const identity = rec?.morning?.affirmationText;
+  if (!focus && !identity) { banner.classList.add('hidden'); return; }
+  banner.className = 'focus-banner';
+  banner.innerHTML = `
+    <span class="focus-banner-icon">${DS.icon('target', { size: 16, strokeWidth: 2.5 })}</span>
+    <span class="focus-banner-label">
+      <strong>${DS.escapeHtml(focus || identity || '')}</strong>
+    </span>
+  `;
 }
 
 // iOS Safari detection — show manual install hint
@@ -3138,59 +4178,6 @@ function initPullToRefresh() {
     }
     dy = 0;
   });
-}
-
-// ===== WEEKLY VIEW =====
-function openWeekView() {
-  const body = $('#weekViewBody');
-  const startOfWeek = new Date(selectedDate);
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-
-  const hours = [];
-  for (let h = 0; h < 24; h++) hours.push(h);
-
-  let html = '<div class="week-grid">';
-  // Header row
-  html += '<div class="week-grid-header"><span class="week-grid-hour-label"></span>';
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(startOfWeek);
-    d.setDate(startOfWeek.getDate() + i);
-    const isToday = dateKey(d) === dateKey(new Date());
-    html += `<span class="week-grid-day-header ${isToday ? 'today' : ''}">${formatWeekday(d)}<br><strong>${d.getDate()}</strong></span>`;
-  }
-  html += '</div>';
-
-  // Body rows — one per hour
-  html += '<div class="week-grid-body">';
-  hours.forEach(h => {
-    html += `<div class="week-grid-row">`;
-    html += `<span class="week-grid-hour-label">${h}h</span>`;
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(startOfWeek);
-      d.setDate(startOfWeek.getDate() + i);
-      const dk = dateKey(d);
-      // Find blocks that overlap this hour
-      const blocksInHour = state.blocks.filter(b => {
-        if (b.date !== dk) return false;
-        const [sh] = b.start.split(':').map(Number);
-        const [eh] = b.end.split(':').map(Number);
-        return h >= sh && h < eh;
-      });
-      if (blocksInHour.length > 0) {
-        const b = blocksInHour[0];
-        const subj = state.subjects.find(s => s.id === b.subjectId);
-        const color = subj?.color || '#8e8e93';
-        html += `<span class="week-grid-cell filled ${b.done ? 'done' : ''}" style="background:${color};" title="${subj?.name || ''}"></span>`;
-      } else {
-        html += `<span class="week-grid-cell"></span>`;
-      }
-    }
-    html += '</div>';
-  });
-  html += '</div></div>';
-
-  body.innerHTML = html;
-  DS.sheet.open($('#modalWeekView'), 0.95);
 }
 
 // ===== MONTHLY VIEW =====
@@ -3517,6 +4504,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!state.priorities[k]) state.priorities[k] = [];
           });
         }
+        if (!state.checkins) state.checkins = { affirmations: [], activeAffirmationId: null, records: [] };
         state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
         render();
         renderSubjects();
@@ -3579,6 +4567,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const $btnDeleteNote = $('#btnDeleteNote');
   if ($btnDeleteNote) $btnDeleteNote.addEventListener('click', deleteNote);
 
+  // Add new tag button + Enter key
+  const $btnAddNoteTag = $('#btnAddNoteTag');
+  if ($btnAddNoteTag) $btnAddNoteTag.addEventListener('click', _addNewNoteTag);
+  const $inputNoteNewTag = $('#inputNoteNewTag');
+  if ($inputNoteNewTag) $inputNoteNewTag.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); _addNewNoteTag(); } });
+
   // Note editor toolbar
   document.querySelectorAll('#noteToolbar .note-tb-btn').forEach(btn => {
     btn.addEventListener('mousedown', (e) => {
@@ -3590,8 +4584,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Views: Weekly, Monthly, Stats
-  const $weekViewClose = $('#weekViewClose');
-  if ($weekViewClose) $weekViewClose.addEventListener('click', () => DS.sheet.close($('#modalWeekView')));
   const $monthViewClose = $('#monthViewClose');
   if ($monthViewClose) $monthViewClose.addEventListener('click', () => DS.sheet.close($('#modalMonthView')));
   const $monthViewPrev = $('#monthViewPrev');
@@ -3623,8 +4615,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const segmentBtns = document.querySelectorAll('#subjectTypeSegments .ds-segment-btn');
     segmentBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        segmentBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        setActiveGroup(segmentBtns, btn);
         $inputSubjectType.value = btn.dataset.val;
         $inputSubjectType.dispatchEvent(new Event('change'));
       });
@@ -3707,6 +4698,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Enter key for content inputs
+  ['inputSyllabusTitle', 'inputSyllabusMateria'].forEach(id => {
+    const el = $(`#${id}`);
+    if (el) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('#btnSyllabusAdd')?.click(); } });
+  });
+  ['inputExerciseName', 'inputExerciseSets', 'inputExerciseReps', 'inputExerciseWeight'].forEach(id => {
+    const el = $(`#${id}`);
+    if (el) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('#btnExerciseAdd')?.click(); } });
+  });
+  const $inputRoutine = $('#inputRoutineTask');
+  if ($inputRoutine) $inputRoutine.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('#btnRoutineTaskAdd')?.click(); } });
+
       initPriorities();
       render();
       checkNotifications();
@@ -3729,6 +4732,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (pizzaPage && !pizzaPage.classList.contains('hidden') && dateKey(selectedDate) === todayStr) {
           renderPizza();
         }
+        updateAtomicTabBadge();
         checkNotifications();
       }, 60000);
     

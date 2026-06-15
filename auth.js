@@ -172,7 +172,7 @@ const Supabase = {
   async loadRelationalData() {
     if (!this._user) return null;
     try {
-      const [subjects, items, blocks, profiles, priorities, logs, notes] = await Promise.all([
+      const [subjects, items, blocks, profiles, priorities, logs, notes, checkins, affirmations] = await Promise.all([
         this._restGet('subjects', '&order=sort_order'),
         this._restGet('subject_items', '&order=sort_order'),
         this._restGet('blocks'),
@@ -180,6 +180,8 @@ const Supabase = {
         this._restGet('priorities', '&order=sort_order'),
         this._restGet('logs', '&order=created_at.desc&limit=50'),
         this._restGet('notes', '&order=updated_at.desc').catch(() => []),
+        this._restGet('checkins'),
+        this._restGet('affirmations'),
       ]);
 
       const mappedSubjects = subjects.map(s => {
@@ -239,7 +241,42 @@ const Supabase = {
         updatedAt: n.updated_at,
       }));
 
-      return { subjects: mappedSubjects, blocks: mappedBlocks, notes: mappedNotes, logs: mappedLogs, settings: mappedSettings, priorities: mappedPriorities };
+      const mappedCheckins = {
+        records: (checkins || []).map(c => ({
+          id: c.id,
+          date: c.date,
+          morning: c.morning_sleep ? {
+            sleepHours: c.morning_sleep,
+            energy: c.morning_energy,
+            mood: c.morning_mood,
+            affirmationText: c.morning_affirmation,
+            focus: c.morning_focus,
+            timestamp: c.morning_ts
+          } : null,
+          evening: c.evening_confirmed ? {
+            confirmed: c.evening_confirmed,
+            recharged: c.evening_recharged,
+            drained: c.evening_drained,
+            nextVote: c.evening_next_action ? { action: c.evening_next_action, time: c.evening_next_time } : null,
+            timestamp: c.evening_ts
+          } : null,
+          habitLog: c.habit_log || [],
+        })),
+        affirmations: (affirmations || []).map(a => ({
+          id: a.id,
+          text: a.text,
+          version: a.version,
+          createdAt: a.created_at,
+          retiredAt: a.retired_at,
+        })),
+        activeAffirmationId: null,
+      };
+
+      // Try to restore activeAffirmationId from non-retired affirmations
+      const active = mappedCheckins.affirmations.find(a => !a.retiredAt);
+      if (active) mappedCheckins.activeAffirmationId = active.id;
+
+      return { subjects: mappedSubjects, blocks: mappedBlocks, notes: mappedNotes, logs: mappedLogs, settings: mappedSettings, priorities: mappedPriorities, checkins: mappedCheckins };
     } catch (e) {
       console.warn('[Sync] loadRelationalData failed:', e);
       return null;
@@ -314,7 +351,46 @@ const Supabase = {
       await this._restUpsert('priorities', dbPriorities);
       await this._restDeleteOrphans('priorities', dbPriorities.map(p => p.id));
 
-      // 6. Notes
+      // 6. Checkins
+      const dbCheckins = (state.checkins?.records || []).map(r => ({
+        id: r.id, user_id: userId,
+        date: r.date,
+        morning_sleep: r.morning?.sleepHours ?? null,
+        morning_energy: r.morning?.energy ?? null,
+        morning_mood: r.morning?.mood ?? null,
+        morning_affirmation: r.morning?.affirmationText ?? null,
+        morning_focus: r.morning?.focus ?? null,
+        morning_ts: r.morning?.timestamp ?? null,
+        evening_confirmed: r.evening?.confirmed ?? null,
+        evening_recharged: r.evening?.recharged ?? null,
+        evening_drained: r.evening?.drained ?? null,
+        evening_next_action: r.evening?.nextVote?.action ?? null,
+        evening_next_time: r.evening?.nextVote?.time ?? null,
+        evening_ts: r.evening?.timestamp ?? null,
+        habit_log: r.habitLog || [],
+        created_at: r.createdAt || null,
+        updated_at: new Date().toISOString(),
+      }));
+      try {
+        await this._restUpsert('checkins', dbCheckins);
+        await this._restDeleteOrphans('checkins', dbCheckins.map(c => c.id));
+      } catch (e) { console.warn('[Sync] Checkins sync failed (table may not exist yet):', e); }
+
+      // 7. Affirmations
+      const dbAffirmations = (state.checkins?.affirmations || []).map(a => ({
+        id: a.id, user_id: userId,
+        text: a.text,
+        version: a.version || 1,
+        created_at: a.createdAt || null,
+        retired_at: a.retiredAt || null,
+        updated_at: new Date().toISOString(),
+      }));
+      try {
+        await this._restUpsert('affirmations', dbAffirmations);
+        await this._restDeleteOrphans('affirmations', dbAffirmations.map(a => a.id));
+      } catch (e) { console.warn('[Sync] Affirmations sync failed (table may not exist yet):', e); }
+
+      // 8. Notes
       const dbNotes = (state.notes || []).map(n => ({
         id: n.id, user_id: userId,
         title: n.title || '', content: n.content || '',

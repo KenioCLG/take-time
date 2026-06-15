@@ -1,0 +1,16 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - banner [ref=e4]
+      - generic [ref=e32]
+    - navigation [ref=e21]:
+      - button "Agenda" [ref=e22] [cursor=pointer]
+      - button "Atomic" [ref=e24] [cursor=pointer]
+      - button "Atividades" [ref=e26] [cursor=pointer]
+      - button "Notas" [ref=e28] [cursor=pointer]
+    - main [ref=e65]:
+      - heading "Check-in de Baseline" [level=2] [ref=e67]
+      - generic [ref=e68]
+  - text: Escreva sua nota...
+  - generic:
+    - img
