@@ -2454,71 +2454,80 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   gap: 6px;
 }
 
-/* Sleep Chips Selector — pizza-inspired clean pill layout */
+/* Sleep Circular Volume Bar */
 .atomic-sleep-bubbles-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  margin: var(--ds-space-2) 0;
-  padding: 2px 0;
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  height: 155px;
+  margin: var(--ds-space-2) auto;
+  overflow: visible;
 }
-.atomic-sleep-bubbles-container::-webkit-scrollbar { display: none; }
+.atomic-sleep-bubbles-container .sleep-track-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 .atomic-sleep-bubbles {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 .sleep-bubble {
+  position: absolute;
+  width: 36px;
   height: 36px;
-  min-width: 44px;
-  padding: 0 14px;
-  border-radius: 18px;
-  border: 1px solid var(--ds-border-tertiary);
-  background: transparent;
+  border-radius: 50%;
+  border: 2px solid var(--ds-border-tertiary);
+  background: var(--ds-bg-primary);
   color: var(--ds-text-secondary);
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  font-size: 13px;
-  font-weight: var(--ds-weight-semibold, 600);
+  font-size: 12px;
+  font-weight: var(--ds-weight-bold, 700);
   font-family: var(--ds-font);
+  transform: translate(-50%, -50%);
   transition: transform var(--ds-duration-normal) var(--ds-ease-spring),
               background var(--ds-duration-fast) var(--ds-ease-default),
               border-color var(--ds-duration-fast) var(--ds-ease-default),
               box-shadow var(--ds-duration-fast) var(--ds-ease-default);
   -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
+  z-index: 2;
 }
-.sleep-bubble-num {
-  font-size: 14px;
-  font-weight: var(--ds-weight-bold, 700);
-  line-height: 1;
-}@media (hover: hover) {
+@media (hover: hover) {
   .sleep-bubble:hover {
     border-color: var(--ds-accent);
-    background: color-mix(in srgb, var(--ds-accent) 6%, transparent);
+    background: color-mix(in srgb, var(--ds-accent) 8%, transparent);
+    transform: translate(-50%, -50%) scale(1.12);
   }
 }
 .sleep-bubble.active {
   background: var(--ds-accent);
   border-color: var(--ds-accent);
   color: #fff;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--ds-accent) 25%, transparent);
-  transform: scale(1.05);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-accent) 25%, transparent),
+              0 3px 10px color-mix(in srgb, var(--ds-accent) 30%, transparent);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+.sleep-bubble-num {
+  line-height: 1;
+}
+.sleep-half-toggle-wrapper {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
 }
 .sleep-half-toggle {
-  flex-shrink: 0;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 18px;
+  padding: 4px 14px;
+  border-radius: var(--ds-radius-full, 20px);
   border: 1px solid var(--ds-border-tertiary);
-  background: transparent;
+  background: var(--ds-bg-primary);
   color: var(--ds-text-tertiary);
   font-size: 11px;
   font-weight: var(--ds-weight-semibold, 600);
@@ -2674,28 +2683,41 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   color: var(--ds-text-tertiary);
 }
 
-/* Mood Chips — pizza-inspired clean pill selector */
+/* Mood Circular Volume Bar */
 .atomic-mood-btns {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  height: 150px;
+  margin: var(--ds-space-1) auto;
+}
+.atomic-mood-btns .mood-track-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 .atomic-mood-btn {
-  padding: 7px 14px 7px 10px;
-  border: 1.5px solid var(--ds-border-tertiary);
-  border-radius: 18px;
-  background: transparent;
-  font-size: 12px;
+  position: absolute;
+  padding: 5px 10px 5px 6px;
+  border: 2px solid var(--ds-border-tertiary);
+  border-radius: 16px;
+  background: var(--ds-bg-primary);
+  font-size: 11px;
   font-weight: var(--ds-weight-semibold, 600);
   font-family: var(--ds-font);
   cursor: pointer;
   transition: all var(--ds-duration-fast) var(--ds-ease-default);
   color: var(--ds-text-secondary);
   -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
+  transform: translate(-50%, -50%);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  white-space: nowrap;
+  z-index: 2;
+  line-height: 1.2;
 }
 .atomic-mood-btn::before {
   content: '';
@@ -2710,12 +2732,15 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   .atomic-mood-btn:hover {
     border-color: var(--ds-text-tertiary);
     background: color-mix(in srgb, var(--ds-accent) 4%, transparent);
+    transform: translate(-50%, -50%) scale(1.06);
   }
 }
 .atomic-mood-btn.active {
   border-color: currentColor;
   color: var(--ds-text-primary);
   background: color-mix(in srgb, currentColor 10%, transparent);
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
 }
 .atomic-mood-btn.active::before {
   background: currentColor;

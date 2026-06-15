@@ -2765,18 +2765,35 @@ function renderAtomic() {
           <button type="button" class="atomic-help-btn" data-help="sleep" aria-label="Ajuda" style="margin-left:6px;">${DS.icon('info', { size: 14 })}</button>
         </label>
         <div class="atomic-sleep-bubbles-container">
+          <svg class="sleep-track-svg" viewBox="0 0 280 155" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background arc (gray track) -->
+            <path d="M 20 140 A 120 120 0 0 1 260 140" fill="none" stroke="var(--ds-border-tertiary)" stroke-width="3" stroke-linecap="round"/>
+            <!-- Filled arc (active level) — filled up to active bubble's position -->
+            <path id="sleepTrackFill" d="M 20 140 A 120 120 0 0 1 260 140" fill="none" stroke="var(--ds-accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="999" stroke-dashoffset="999" style="transition: stroke-dashoffset 0.5s var(--ds-ease-spring);"/>
+          </svg>
           <div class="atomic-sleep-bubbles" id="atomicSleepBubbles">
-            ${[4, 5, 6, 7, 8, 9, 10, 11, 12].map(h => `
-              <button type="button" class="sleep-bubble ${h === 7 ? 'active' : ''}" data-val="${h}">
-                <span class="sleep-bubble-num">${h}h</span>
-              </button>
-            `).join('')}
+            ${(() => {
+              const vals = [4, 5, 6, 7, 8, 9, 10, 11, 12];
+              const R = 120; // arc radius
+              const cx = 140; // center X
+              const cy = 140; // center Y
+              const startAngle = 180; // degrees - left
+              const endAngle = 0; // degrees - right
+              const step = (startAngle - endAngle) / (vals.length - 1);
+              return vals.map((h, i) => {
+                const deg = startAngle - i * step;
+                const rad = deg * Math.PI / 180;
+                const x = cx + R * Math.cos(rad);
+                const y = cy - R * Math.sin(rad);
+                return `<button type="button" class="sleep-bubble ${h === 7 ? 'active' : ''}" data-val="${h}" data-angle="${deg}" style="left:${x}px;top:${y}px;"><span class="sleep-bubble-num">${h}<span style="font-size:9px;opacity:0.7;">h</span></span></button>`;
+              }).join('');
+            })()}
           </div>
-          <button type="button" class="sleep-half-toggle" id="sleepHalfToggle">
-            +30min
-          </button>
+          <div class="sleep-half-toggle-wrapper">
+            <button type="button" class="sleep-half-toggle" id="sleepHalfToggle">+30min</button>
+          </div>
+          <input type="hidden" id="atomicSleep" value="7">
         </div>
-        <input type="hidden" id="atomicSleep" value="7">
       </div>
       <div class="atomic-field">
         <label class="ds-label">${DS.icon('bolt', { size: 16 })} ${I18n.t('atomic.energy_label', null, 'Energia')} <button type="button" class="atomic-help-btn" data-help="energy" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
@@ -2789,11 +2806,32 @@ function renderAtomic() {
       <div class="atomic-field">
         <label class="ds-label">${DS.icon('flame', { size: 16 })} ${I18n.t('atomic.mood_label', null, 'Humor')} <button type="button" class="atomic-help-btn" data-help="mood" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
         <div class="atomic-mood-btns" id="atomicMoodBtns">
-          <button type="button" class="atomic-mood-btn active" data-val="great">${I18n.t('atomic.mood_great', null, 'Energizado')}</button>
-          <button type="button" class="atomic-mood-btn" data-val="good">${I18n.t('atomic.mood_good', null, 'Bem')}</button>
-          <button type="button" class="atomic-mood-btn" data-val="okay">${I18n.t('atomic.mood_okay', null, 'Neutro')}</button>
-          <button type="button" class="atomic-mood-btn" data-val="heavy">${I18n.t('atomic.mood_heavy', null, 'Pesado')}</button>
-          <button type="button" class="atomic-mood-btn" data-val="tough">${I18n.t('atomic.mood_tough', null, 'Difícil')}</button>
+          <svg class="mood-track-svg" viewBox="0 0 280 150" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
+            <path d="M 20 135 A 115 115 0 0 1 260 135" fill="none" stroke="var(--ds-border-tertiary)" stroke-width="2.5" stroke-linecap="round"/>
+            <path id="moodTrackDots" fill="none" stroke="var(--ds-border-tertiary)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="0 999"/>
+          </svg>
+          ${(() => {
+            const moods = [
+              { val: 'great', label: I18n.t('atomic.mood_great', null, 'Energizado') },
+              { val: 'good',  label: I18n.t('atomic.mood_good', null, 'Bem') },
+              { val: 'okay',  label: I18n.t('atomic.mood_okay', null, 'Neutro') },
+              { val: 'heavy', label: I18n.t('atomic.mood_heavy', null, 'Pesado') },
+              { val: 'tough', label: I18n.t('atomic.mood_tough', null, 'Difícil') },
+            ];
+            const R = 110; // arc radius
+            const cx = 140; // center X
+            const cy = 135; // center Y (bottom of arc)
+            const startAngle = 180; // degrees - left
+            const endAngle = 0; // degrees - right
+            const step = (startAngle - endAngle) / (moods.length - 1);
+            return moods.map((m, i) => {
+              const deg = startAngle - i * step;
+              const rad = deg * Math.PI / 180;
+              const x = cx + R * Math.cos(rad);
+              const y = cy - R * Math.sin(rad);
+              return `<button type="button" class="atomic-mood-btn ${i === 0 ? 'active' : ''}" data-val="${m.val}" style="left:${x}px;top:${y}px;">${m.label}</button>`;
+            }).join('');
+          })()}
         </div>
       </div>
       <div class="atomic-field">
@@ -3042,6 +3080,16 @@ function renderAtomic() {
       const total = baseHours + (hasHalf ? 0.5 : 0);
       sleepInput.value = total;
       if (valText) valText.textContent = total + 'h';
+      // Update SVG arc fill
+      const fillPath = document.getElementById('sleepTrackFill');
+      if (fillPath) {
+        const totalSteps = 8; // 9 items - 1
+        const activeIndex = Math.max(0, Math.min(8, Number(baseHours) - 4));
+        const circumference = 376.99; // ~ 2 * PI * 120 / 2 (half circumference for 180° arc)
+        const filledPortion = activeIndex / totalSteps;
+        fillPath.style.strokeDasharray = circumference + ' ' + circumference;
+        fillPath.style.strokeDashoffset = circumference * (1 - filledPortion);
+      }
     }
     
     bubbles.forEach(bubble => {
