@@ -121,6 +121,7 @@ async function loginUser() {
 
   if (typeof render === 'function') render();
   if (typeof renderSubjects === 'function') renderSubjects();
+  if (typeof renderNotes === 'function') renderNotes();
   if (typeof initPriorities === 'function') initPriorities();
   if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
   if (typeof hydrateSettingsDOM === 'function') hydrateSettingsDOM();
@@ -4603,6 +4604,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         render();
         renderSubjects();
         if (!state.notes) state.notes = [];
+        renderNotes();
+        if (_currentTab === 'atomic') renderAtomic();
         if (typeof initPriorities === 'function') initPriorities();
         if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
         hydrateSettingsDOM();
