@@ -3397,16 +3397,16 @@ function updateAtomicTabIcon() {
   const hasMorning = rec?.morning;
   const hasEvening = rec?.evening;
   const hour = now.getHours();
-  const orbits = `<ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none"/><ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none" transform="rotate(120 12 12)"/>`;
+  const orbits = `<g class="ai-o1"><ellipse cx="12" cy="12" rx="9" ry="3.4"/><circle cx="21" cy="12" r="1.2" fill="currentColor" stroke="none"/></g><g class="ai-o2"><ellipse cx="12" cy="12" rx="9" ry="3.4"/><circle cx="3" cy="12" r="1.2" fill="currentColor" stroke="none"/></g>`;
 
   if (hasMorning && hasEvening) {
-    svg.innerHTML = `<circle cx="12" cy="12" r="2" fill="#34C759"/>${orbits}<polyline points="8 12 11 15 16 9" fill="none" stroke="#34C759" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    svg.innerHTML = `<circle cx="12" cy="12" r="1.6" fill="#34C759" stroke="none"/>${orbits}<polyline points="8 12 11 15 16 9" fill="none" stroke="#34C759" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
   } else if (hasMorning && !hasEvening && hour >= 18) {
-    svg.innerHTML = `<circle cx="12" cy="12" r="2" fill="#FF9500"/>${orbits}<path d="M17 12.79A7 7 0 1 1 11.21 7 5 5 0 0 0 17 12.79z" fill="none" stroke="#FF9500" stroke-width="2"/>`;
+    svg.innerHTML = `<circle cx="12" cy="12" r="1.6" fill="#FF9500" stroke="none"/>${orbits}<path d="M17 12.79A7 7 0 1 1 11.21 7 5 5 0 0 0 17 12.79z" fill="none" stroke="#FF9500" stroke-width="2"/>`;
   } else if (hasMorning) {
-    svg.innerHTML = `<circle cx="12" cy="12" r="2" fill="#007AFF"/>${orbits}<path d="M12 2 A10 10 0 0 1 12 22" fill="none" stroke="#007AFF" stroke-width="2"/>`;
+    svg.innerHTML = `<circle cx="12" cy="12" r="1.6" fill="#007AFF" stroke="none"/>${orbits}<path d="M12 2 A10 10 0 0 1 12 22" fill="none" stroke="#007AFF" stroke-width="2"/>`;
   } else {
-    svg.innerHTML = `<circle cx="12" cy="12" r="2"/>${orbits}`;
+    svg.innerHTML = `<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>${orbits}`;
   }
 }
 

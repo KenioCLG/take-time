@@ -2043,6 +2043,8 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   .ds-icon--spin-slow,
   .ds-icon--rock,
   .ds-icon--write line,
+  .ds-icon--atom .ai-o1,
+  .ds-icon--atom .ai-o2,
   .ds-icon-ray {
     animation: none !important;
   }
@@ -2293,28 +2295,25 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 
 /* ===== ATOMIC CHECK-IN ===== */
 
-/* Atom icon orbit animation */
-@keyframes atomOrbit {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.ds-icon--orbit circle {
-  fill: currentColor;
-  stroke: none;
-}
-.ds-icon--orbit ellipse {
+/* Atom icon — two counter-rotating orbits with electron dots */
+@keyframes atomRot { to { transform: rotate(360deg); } }
+@keyframes atomRotRev { to { transform: rotate(-360deg); } }
+.ds-icon--atom .ai-o1,
+.ds-icon--atom .ai-o2 {
   transform-origin: 12px 12px;
+  animation-play-state: paused;
+}
+.ds-icon--atom .ai-o1 ellipse,
+.ds-icon--atom .ai-o2 ellipse {
   stroke: currentColor;
   stroke-width: 1.5px;
   opacity: 0.5;
   transition: opacity var(--ds-duration-normal) var(--ds-ease-default);
 }
-.ds-tab.active .ds-icon--orbit ellipse {
-  opacity: 1;
-}
-.ds-tab.active .ds-icon--orbit ellipse:nth-child(2) { animation: atomOrbit 6s linear infinite; }
-.ds-tab.active .ds-icon--orbit ellipse:nth-child(3) { animation: atomOrbit 6s linear infinite reverse; }
-.ds-tab.active .ds-icon--orbit ellipse:nth-child(4) { animation: atomOrbit 9s linear infinite; }
+.ds-tab.active .ds-icon--atom .ai-o1 ellipse,
+.ds-tab.active .ds-icon--atom .ai-o2 ellipse { opacity: 1; }
+.ds-tab.active .ds-icon--atom .ai-o1 { animation: atomRot 4s linear infinite; }
+.ds-tab.active .ds-icon--atom .ai-o2 { animation: atomRotRev 5s linear infinite; }
 
 /* Tab badge (evening nudge) */
 .atomic-tab-badge {
