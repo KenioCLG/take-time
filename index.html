@@ -20,13 +20,13 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="ds.css?v=5">
-  <link rel="stylesheet" href="styles.css?v=56">
+  <link rel="stylesheet" href="styles.css?v=57">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <script>
     // Force SW update + cache nuke on version change
     (function(){
-      var key = 'tt_cache_v60';
+      var key = 'tt_cache_v61';
       // Always try to update SW when online
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(function(reg) {
@@ -200,19 +200,19 @@
     <!-- Bottom Tab Bar -->
     <nav class="ds-tabbar">
       <button class="ds-tab active" data-tab="schedule">
-        <svg class="ds-icon ds-icon--spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="12" x2="12" y2="7"/><line x1="12" y1="12" x2="15.5" y2="13.5"/></svg>
+        <svg class="ds-icon tt-aicon tt-aicon--clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-trigger="active"><circle cx="12" cy="12.5" r="8.5"/><path class="ai-h" d="M12 12.5V7.8"/><path class="ai-m" d="M12 12.5l3.2 1.5" opacity="0.85"/><circle cx="12" cy="12.5" r="0.9" fill="currentColor" stroke="none"/></svg>
         <span data-i18n="tab.schedule">Agenda</span>
       </button>
       <button class="ds-tab" data-tab="subjects">
-        <svg class="ds-icon ds-icon--rock" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <svg class="ds-icon tt-aicon tt-aicon--book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-trigger="active"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2z"/><path d="M12 3.4v14.4" opacity="0.4"/><path class="ai-page" d="M12.4 4.3H18a.6.6 0 0 1 .6.6v10.8a.6.6 0 0 1-.6.6h-5.6" opacity="0.9"/></svg>
         <span data-i18n="tab.subjects">Atividades</span>
       </button>
       <button class="ds-tab" data-tab="atomic">
-        <svg id="atomicTabIcon" class="ds-icon ds-icon--atom" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><g class="ai-o1"><ellipse cx="12" cy="12" rx="9" ry="3.4"/><circle cx="21" cy="12" r="1.2" fill="currentColor" stroke="none"/></g><g class="ai-o2"><ellipse cx="12" cy="12" rx="9" ry="3.4"/><circle cx="3" cy="12" r="1.2" fill="currentColor" stroke="none"/></g></svg>
+        <svg id="atomicTabIcon" class="ds-icon tt-aicon tt-aicon--atom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-trigger="active"><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><g class="ai-o1"><ellipse cx="12" cy="12" rx="9" ry="3.4"/><circle cx="21" cy="12" r="1.2" fill="currentColor" stroke="none"/></g><g class="ai-o2"><ellipse cx="12" cy="12" rx="9" ry="3.4"/><circle cx="3" cy="12" r="1.2" fill="currentColor" stroke="none"/></g></svg>
         <span data-i18n="tab.atomic">Atomic</span>
       </button>
       <button class="ds-tab" data-tab="notes">
-        <svg class="ds-icon ds-icon--write" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="9" x2="10" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+        <svg class="ds-icon tt-aicon tt-aicon--notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-trigger="active"><path d="M15 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6.5z"/><path d="M14.5 2.5V7H19"/><path class="ai-line" d="M8.5 12.5h7"/><path class="ai-line ai-line2" d="M8.5 16.5h5"/></svg>
         <span data-i18n="tab.notes">Notas</span>
       </button>
     </nav>
