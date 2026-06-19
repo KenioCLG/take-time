@@ -83,6 +83,7 @@ const DS = (() => {
     dumbbell: '<path d="M6.5 5v14M17.5 5v14"/><path d="M3.5 8v8M20.5 8v8"/><path d="M6.5 12h11"/>',
     trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 5H4.5a2.5 2.5 0 0 0 2.5 4M17 5h2.5a2.5 2.5 0 0 1-2.5 4"/><path d="M12 14v3M9 21h6M10 21l.5-4h3l.5 4"/>',
     chart: '<path d="M4 4v16h16"/><path d="M8 14v3M12.5 10v7M17 6v11"/>',
+    share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/>',
     star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
 
     // --- App icon (512x512 viewBox) ---

@@ -2017,6 +2017,14 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
   to { transform: rotate(360deg) !important; }
 }
 
+/* ===== EMPTY STATE ICONS ===== */
+.ds-empty-icon {
+  display: block;
+  margin: 0 auto 12px;
+  color: var(--ds-text-quaternary);
+  opacity: 0.6;
+}
+
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
   .page-enter,

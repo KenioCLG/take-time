@@ -102,9 +102,23 @@ async function loginUser() {
   app.addEventListener('animationend', () => app.classList.remove('app-fade-in'), { once: true });
   renderUserProfile();
 
-  // Sync data from cloud
-  try {
-    const synced = await Store.syncOnLogin();
+  // Render IMMEDIATELY with local data — no waiting for network
+  render();
+  renderSubjects();
+  renderNotes();
+  if (typeof initPriorities === 'function') initPriorities();
+  if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
+  if (typeof hydrateSettingsDOM === 'function') hydrateSettingsDOM();
+
+  // Onboarding automatico (sync-independent)
+  if (state.subjects && state.subjects.length === 0) {
+    seedDefaultWorkout();
+    render();
+    renderSubjects();
+  }
+
+  // Sync from cloud in background — re-render when done
+  Store.syncOnLogin().then(synced => {
     if (synced) {
       state = synced;
       if (!state.logs) state.logs = [];
@@ -116,22 +130,14 @@ async function loginUser() {
         });
       }
       state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
+      render();
+      renderSubjects();
+      renderNotes();
+      if (_currentTab === 'atomic') renderAtomic();
+      if (typeof initPriorities === 'function') initPriorities();
+      hydrateSettingsDOM();
     }
-  } catch (e) { console.warn('Sync on login failed:', e); }
-
-  if (typeof render === 'function') render();
-  if (typeof renderSubjects === 'function') renderSubjects();
-  if (typeof renderNotes === 'function') renderNotes();
-  if (typeof initPriorities === 'function') initPriorities();
-  if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
-  if (typeof hydrateSettingsDOM === 'function') hydrateSettingsDOM();
-
-  // Onboarding automático
-  if (state.subjects && state.subjects.length === 0) {
-    seedDefaultWorkout();
-    if (typeof render === 'function') render();
-    if (typeof renderSubjects === 'function') renderSubjects();
-  }
+  }).catch(e => console.warn('Sync on login failed:', e));
 }
 
 function setAuthLoading(loading) {
@@ -317,21 +323,11 @@ function iconContrastColor(hex) {
 }
 
 
-// Inline SVG icon string for block cards (type badge)
+// Type badge icon for block cards
 function blockTypeIconSvg(type, color) {
-  const icons = {
-    study: `<svg class="ds-icon ds-icon--sm ds-icon--rock" viewBox="0 0 24 24" style="color:${color}">
-      <path d="M2 3c0 0 4-1 10 1v18c-6-2-10-1-10-1z"/><path d="M22 3c0 0-4-1-10 1v18c6-2 10-1 10-1z"/>
-    </svg>`,
-    training: `<svg class="ds-icon ds-icon--sm ds-icon--bounce" viewBox="0 0 24 24" style="color:${color}">
-      <line x1="7" y1="12" x2="17" y2="12" stroke-width="2.5" stroke-linecap="round"/>
-      <rect x="2" y="7" width="4" height="10" rx="1.5"/><rect x="18" y="7" width="4" height="10" rx="1.5"/>
-    </svg>`,
-    inactive: `<svg class="ds-icon ds-icon--sm ds-icon--wobble" viewBox="0 0 24 24" style="color:${color}">
-      <rect x="4" y="4" width="16" height="16" rx="4"/><polyline points="8 12.5 11 15.5 16 9"/>
-    </svg>`,
-  };
-  return icons[type] || icons.study;
+  const iconMap = { study: 'book', training: 'dumbbell', inactive: 'checkCircle' };
+  const name = iconMap[type] || 'book';
+  return `<span style="color:${color}">${DS.icon(name, { size: 16 })}</span>`;
 }
 
 function arcPath(startAngle, endAngle, outerR, innerR) {
@@ -648,9 +644,7 @@ function renderBlockList() {
 
   if (dayBlocks.length === 0) {
     container.innerHTML = `<div class="block-empty" style="text-align:center; padding:48px 20px;">
-      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--ds-text-quaternary)" stroke-width="1.5" stroke-linecap="round" style="margin-bottom:16px; opacity:0.7;">
-        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
+${DS.icon('calendar', { size: 56, strokeWidth: 1.5, class: 'ds-empty-icon' })}
       <p style="font-size:15px; font-weight:600; color:var(--ds-text-secondary); margin:0 0 4px;">
         ${I18n.t('block.empty_title', null, 'Nenhum bloco agendado')}
       </p>
@@ -671,19 +665,19 @@ function renderBlockList() {
   const dayPct = totalBlocks > 0 ? Math.round((doneBlocks / totalBlocks) * 100) : 0;
   const viewBtns = `<div class="view-btns">
     <button class="view-btn" id="btnMonthView" title="${I18n.t('month_view.title', null, 'Visão Mensal')}">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      ${DS.icon('calendar', { size: 16 })}
     </button>
     <button class="view-btn" id="btnStats" title="${I18n.t('stats.title', null, 'Estatísticas')}">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      ${DS.icon('chart', { size: 16 })}
     </button>
     <button class="view-btn" id="btnShare" title="Compartilhar">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      ${DS.icon('share', { size: 16 })}
     </button>
     <button class="view-btn" id="btnSaveTemplate" title="${I18n.t('template.save', null, 'Salvar template')}">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      ${DS.icon('notes', { size: 16 })}
     </button>
     <button class="view-btn" id="btnApplyTemplate" title="${I18n.t('template.apply', null, 'Aplicar template')}">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
+      ${DS.icon('notes', { size: 16 })}
     </button>
   </div>`;
 
@@ -1165,7 +1159,7 @@ function renderWeekNav() {
   // Btn Prev Week
   const btnPrev = document.createElement('button');
   btnPrev.className = 'week-nav-arrow';
-  btnPrev.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+  btnPrev.innerHTML = DS.icon('chevronL', { size: 16, strokeWidth: 2.5 });
   btnPrev.addEventListener('click', () => {
     selectedDate.setDate(selectedDate.getDate() - 7);
     render();
@@ -1205,7 +1199,7 @@ function renderWeekNav() {
   // Btn Next Week
   const btnNext = document.createElement('button');
   btnNext.className = 'week-nav-arrow';
-  btnNext.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+  btnNext.innerHTML = DS.icon('chevronR', { size: 16, strokeWidth: 2.5 });
   btnNext.addEventListener('click', () => {
     selectedDate.setDate(selectedDate.getDate() + 7);
     render();
@@ -1275,9 +1269,7 @@ function renderSubjects() {
 
   if (state.subjects.length === 0) {
     list.innerHTML = `<div style="text-align:center; padding:48px 20px;">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--ds-text-quaternary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px; opacity:0.6;">
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-      </svg>
+${DS.icon('book', { size: 48, strokeWidth: 1.5, class: 'ds-empty-icon' })}
       <p style="color:var(--ds-text-tertiary); font-size:15px; font-weight:500; margin:0 0 4px;">
         ${I18n.t('subject.empty_title', null, 'Nenhuma atividade')}
       </p>
@@ -1289,9 +1281,9 @@ function renderSubjects() {
   }
 
   const sectionIcons = {
-    study: `<svg class="ds-icon ds-icon--rock" viewBox="0 0 24 24"><path d="M2 3c0 0 4-1 10 1v18c-6-2-10-1-10-1z"/><path d="M22 3c0 0-4-1-10 1v18c6-2 10-1 10-1z"/></svg>`,
-    training: `<svg class="ds-icon ds-icon--bounce" viewBox="0 0 24 24"><line x1="7" y1="12" x2="17" y2="12" stroke-width="2.5" stroke-linecap="round"/><rect x="2" y="7" width="4" height="10" rx="1.5"/><rect x="18" y="7" width="4" height="10" rx="1.5"/></svg>`,
-    inactive: `<svg class="ds-icon ds-icon--wobble" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><polyline points="8 12.5 11 15.5 16 9"/></svg>`,
+    study: DS.aicon('book', { size: 18, trigger: 'hover' }),
+    training: DS.icon('dumbbell', { size: 18 }),
+    inactive: DS.aicon('checkCircle', { size: 18, trigger: 'hover' }),
   };
 
   list.innerHTML = sections.map(({ type, cfg, items }) => `
@@ -1916,7 +1908,7 @@ function renderPriorities() {
       <div class="priority-item" data-id="${item.id}">
         <span>${DS.escapeHtml(item.name)}</span>
         <button class="priority-delete-btn" onclick="deletePriorityItem('${item.id}')" style="background:none; border:none; cursor:pointer; color:var(--ds-text-tertiary); padding:0 2px; margin-left:auto; display:flex; align-items:center; opacity:0.5;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          ${DS.icon('x', { size: 14 })}
         </button>
       </div>
     `).join('');
@@ -2184,9 +2176,7 @@ function renderNotes() {
   if (notes.length === 0) {
     if (tagsFilterContainer) tagsFilterContainer.innerHTML = '';
     list.innerHTML = `<div class="notes-empty" style="text-align:center; padding:48px 20px;">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--ds-text-quaternary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px; opacity:0.6;">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
-      </svg>
+${DS.icon('notes', { size: 48, strokeWidth: 1.5, class: 'ds-empty-icon' })}
       <p style="color:var(--ds-text-tertiary); font-size:15px; font-weight:500; margin:0 0 4px;">
         ${I18n.t('note.empty_title', null, 'Nenhuma nota ainda')}
       </p>
@@ -2720,7 +2710,7 @@ function renderAtomic() {
   if (!affirmation && streak === 0) {
     html += `<div class="atomic-empty-state">
       <span class="atomic-empty-icon">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+${DS.icon('user', { size: 28, strokeWidth: 1.8 })}
       </span>
       <p class="atomic-empty-title">${I18n.t('atomic.no_affirmation', null, 'Defina sua identidade para começar')}</p>
       <p class="atomic-empty-hint">Preencha o check-in abaixo com <strong>"quem você quer ser hoje"</strong> — sua identidade para o dia.</p>
@@ -3729,7 +3719,7 @@ function initSettings() {
           </div>
           <div style="display:flex; gap:6px;">
             ${!isVerified ? `<button class="ds-btn ds-btn-plain mcp-verify-btn" data-idx="${idx}" style="font-size:11px; padding:4px 8px; color:var(--ds-accent);">${__('mcp.verify')}</button>` : ''}
-            <button class="ds-btn ds-btn-plain mcp-remove-btn" data-idx="${idx}" style="font-size:11px; padding:4px 8px; color:var(--ds-danger);">✕</button>
+            <button class="ds-btn ds-btn-plain mcp-remove-btn" data-idx="${idx}" style="font-size:11px; padding:4px 8px; color:var(--ds-danger);">${DS.icon('x', { size: 14 })}</button>
           </div>`;
         list.appendChild(card);
       });
@@ -4212,7 +4202,7 @@ function initPullToRefresh() {
   // Persistent indicator in DOM
   const indicator = document.createElement('div');
   indicator.className = 'ptr-indicator';
-  indicator.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ds-color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`;
+  indicator.innerHTML = DS.aicon('repeat', { size: 22, strokeWidth: 2.5, trigger: 'loop' });
   document.body.appendChild(indicator);
 
   document.addEventListener('touchstart', (e) => {
@@ -4587,7 +4577,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#authScreen').style.display = 'none';
     $('#app').style.display = 'block';
     renderUserProfile();
-    // Sync data from cloud in background
+
+    // Render IMMEDIATELY with local data (offline-first)
+    render();
+    renderSubjects();
+    renderNotes();
+    if (_currentTab === 'atomic') renderAtomic();
+    if (typeof initPriorities === 'function') initPriorities();
+    if (typeof updateMarqueeVisibility === 'function') updateMarqueeVisibility();
+
+    // Then sync from cloud in background — re-render only if data changed
     Store.syncOnLogin().then(synced => {
       if (synced) {
         state = synced;
@@ -4600,10 +4599,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           });
         }
         if (!state.checkins) state.checkins = { affirmations: [], activeAffirmationId: null, records: [] };
+        if (!state.notes) state.notes = [];
         state.subjects.forEach(s => { if (!s.type) s.type = 'study'; });
         render();
         renderSubjects();
-        if (!state.notes) state.notes = [];
         renderNotes();
         if (_currentTab === 'atomic') renderAtomic();
         if (typeof initPriorities === 'function') initPriorities();
