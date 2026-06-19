@@ -10,7 +10,8 @@
  * COMPONENTS:
  *   DS.toast(msg, type?)        — push notification toast
  *   DS.confirm(title, msg, btn?) — promise-based confirm dialog
- *   DS.icon(name, opts?)        — inline SVG icon string
+ *   DS.icon(name, opts?)        — inline SVG icon string (static)
+ *   DS.aicon(name, opts?)       — inline SVG icon string (animated)
  *   DS.el(tag, attrs, children) — DOM element factory
  *   DS.html(tag, attrs, inner)  — HTML string builder
  *   DS.escapeHtml(str)          — XSS-safe text
@@ -19,41 +20,97 @@
 const DS = (() => {
 
   /* ============================================================
-     ICONS — SVG inline icon library (stroke-based, 24x24 viewBox)
+     ICONS — Timekeeper family (2px round stroke, 24x24 viewBox)
+     Source: Take Time Design System handoff
      ============================================================ */
 
   const ICON_PATHS = {
-    plus: "<line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/>",
-    x: "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/>",
-    check: "<polyline points=\"20 6 9 17 4 12\"/>",
-    chevronR: "<polyline points=\"9 18 15 12 9 6\"/>",
-    chevronL: "<polyline points=\"15 18 9 12 15 6\"/>",
-    chevronD: "<polyline points=\"6 9 12 15 18 9\"/>",
-    clock: "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>",
-    book: "<path d=\"M4 19.5A2.5 2.5 0 0 1 6.5 17H20\"/><path d=\"M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z\"/>",
-    gear: "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42\"/>",
-    trash: "<polyline points=\"3 6 5 6 21 6\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/>",
-    edit: "<path d=\"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7\"/><path d=\"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z\"/>",
-    star: "<polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/>",
-    bell: "<path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"/><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"/>",
-    sun: "<circle cx=\"12\" cy=\"12\" r=\"5\"/><line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"3\"/><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"23\"/><line x1=\"4.22\" y1=\"4.22\" x2=\"5.64\" y2=\"5.64\"/><line x1=\"18.36\" y1=\"18.36\" x2=\"19.78\" y2=\"19.78\"/><line x1=\"1\" y1=\"12\" x2=\"3\" y2=\"12\"/><line x1=\"21\" y1=\"12\" x2=\"23\" y2=\"12\"/><line x1=\"4.22\" y1=\"19.78\" x2=\"5.64\" y2=\"18.36\"/><line x1=\"18.36\" y1=\"5.64\" x2=\"19.78\" y2=\"4.22\"/>",
-    info: "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"12\"/><line x1=\"12\" y1=\"8\" x2=\"12.01\" y2=\"8\"/>",
-    warning: "<path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"/><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"13\"/><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"/>",
-    success: "<path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"/><polyline points=\"22 4 12 14.01 9 11.01\"/>",
-    dumbbell: "<path d=\"M6.5 6.5h11M17.5 4v5M6.5 4v5\"/><rect x=\"3\" y=\"5\" width=\"3.5\" height=\"3\" rx=\"0.5\"/><rect x=\"17.5\" y=\"5\" width=\"3.5\" height=\"3\" rx=\"0.5\"/><path d=\"M6.5 17.5h11M17.5 15v5M6.5 15v5\"/><rect x=\"3\" y=\"16\" width=\"3.5\" height=\"3\" rx=\"0.5\"/><rect x=\"17.5\" y=\"16\" width=\"3.5\" height=\"3\" rx=\"0.5\"/>",
-    'bell-ring': "<path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"/><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"/><line x1=\"1\" y1=\"8\" x2=\"3\" y2=\"8\"/><line x1=\"21\" y1=\"8\" x2=\"23\" y2=\"8\"/><line x1=\"2\" y1=\"2\" x2=\"4\" y2=\"4\"/><line x1=\"22\" y1=\"2\" x2=\"20\" y2=\"4\"/>",
-    'book-open': "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>",
-    moon: "<path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"/>",
-    coffee: "<path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"/><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"/><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"/><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"/><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"/>",
-    'calendar-check': "<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/><polyline points=\"9 16 11 18 15 14\"/>",
-    target: "<circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"2\" fill=\"currentColor\" stroke=\"none\"/>",
-    bolt: "<path d=\"M13 2L3 14h9l-1 8 10-12h-9l1-8z\"/>",
-    flame: "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\"/>",
-    battery: "<rect x=\"1\" y=\"6\" width=\"18\" height=\"12\" rx=\"2\"/><line x1=\"23\" y1=\"10\" x2=\"23\" y2=\"14\"/><line x1=\"7\" y1=\"10\" x2=\"7\" y2=\"14\"/><line x1=\"11\" y1=\"10\" x2=\"11\" y2=\"14\"/><line x1=\"15\" y1=\"10\" x2=\"15\" y2=\"14\"/>",
-    repeat: "<polyline points=\"17 1 21 5 17 9\"/><path d=\"M3 11V9a4 4 0 0 1 4-4h14\"/><polyline points=\"7 23 3 19 7 15\"/><path d=\"M21 13v2a4 4 0 0 1-4 4H3\"/>",
-    plug: "<path d=\"M7 2v4h10V2M12 6v12M5 18h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z\"/>",
-    chevronU: "<polyline points=\"18 15 12 9 6 15\"/>",
-    icon: "<rect width=\"512\" height=\"512\" rx=\"108\" fill=\"#007AFF\"/> <g transform=\"translate(256,256)\"> <rect x=\"-120\" y=\"-140\" width=\"240\" height=\"280\" rx=\"24\" fill=\"white\" opacity=\"0.95\"/> <rect x=\"-90\" y=\"-90\" width=\"180\" height=\"6\" rx=\"3\" fill=\"#007AFF\" opacity=\"0.3\"/> <rect x=\"-90\" y=\"-65\" width=\"120\" height=\"6\" rx=\"3\" fill=\"#007AFF\" opacity=\"0.2\"/> <rect x=\"-90\" y=\"-30\" width=\"180\" height=\"6\" rx=\"3\" fill=\"#34C759\" opacity=\"0.3\"/> <rect x=\"-90\" y=\"-5\" width=\"140\" height=\"6\" rx=\"3\" fill=\"#34C759\" opacity=\"0.2\"/> <rect x=\"-90\" y=\"30\" width=\"180\" height=\"6\" rx=\"3\" fill=\"#FF9500\" opacity=\"0.3\"/> <rect x=\"-90\" y=\"55\" width=\"100\" height=\"6\" rx=\"3\" fill=\"#FF9500\" opacity=\"0.2\"/> <circle cx=\"70\" cy=\"-87\" r=\"12\" fill=\"none\" stroke=\"#007AFF\" stroke-width=\"3\"/> <circle cx=\"70\" cy=\"-27\" r=\"12\" fill=\"#34C759\"/> <polyline points=\"63,-27 68,-22 77,-32\" fill=\"none\" stroke=\"white\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <circle cx=\"70\" cy=\"33\" r=\"12\" fill=\"none\" stroke=\"#FF9500\" stroke-width=\"3\"/> </g>",
+    // --- Navigation ---
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    x: '<path d="M6 6l12 12M18 6 6 18"/>',
+    close: '<path d="M6 6l12 12M18 6 6 18"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    chevronR: '<path d="M9 5l7 7-7 7"/>',
+    chevronL: '<path d="M15 5l-7 7 7 7"/>',
+    chevronD: '<path d="M6 9l6 6 6-6"/>',
+    chevronU: '<path d="M18 15l-6-6-6 6"/>',
+    chevron: '<path d="M9 5l7 7-7 7"/>',
+    arrow: '<path d="M4 12h15M13 6l6 6-6 6"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+
+    // --- Time ---
+    clock: '<circle cx="12" cy="12.5" r="8.5"/><path d="M12 12.5V7.5"/><path d="M12 12.5l3.4 1.6" opacity="0.85"/>',
+    hourglass: '<path d="M6 3h12"/><path d="M6 21h12"/><path d="M7 3c0 4 4 5.5 5 9 1-3.5 5-5 5-9"/><path d="M7 21c0-4 4-5.5 5-9 1 3.5 5 5 5 9"/>',
+    timer: '<path d="M9 2h6"/><path d="M12 4v3.5"/><circle cx="12" cy="14" r="8"/><path d="M12 14l3-2"/>',
+    calendar: '<rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9h18"/><path d="M8 2.5v4M16 2.5v4"/>',
+    'calendar-check': '<rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9h18"/><path d="M8 2.5v4M16 2.5v4"/><path d="M9 15l2 2 4-4"/>',
+
+    // --- Content ---
+    book: '<path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2z"/><path d="M4 18.5A2 2 0 0 1 6 21h13"/>',
+    'book-open': '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+    notes: '<path d="M15 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6.5z"/><path d="M14.5 2.5V7H19"/><path d="M8.5 12.5h7M8.5 16.5h5"/>',
+    pencil: '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+    edit: '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+
+    // --- Actions ---
+    trash: '<path d="M4 6.5h16M9 6.5V4.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 4.5v2M6.5 6.5 7.5 20a1.5 1.5 0 0 0 1.5 1.4h6a1.5 1.5 0 0 0 1.5-1.4l1-13.5"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3"/>',
+    repeat: '<path d="M4 8a4 4 0 0 1 4-4h9l-2.5-2.5M20 16a4 4 0 0 1-4 4H7l2.5 2.5"/><path d="M17 4l2.5 2.5L17 9M7 20l-2.5-2.5L7 15"/>',
+    play: '<path d="M7 4.5v15l13-7.5z"/>',
+    pause: '<path d="M8 4.5v15M16 4.5v15"/>',
+
+    // --- Status ---
+    checkCircle: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
+    success: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
+    info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+    warning: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+
+    // --- Atomic / Wellness ---
+    sun: '<circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+    moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>',
+    flame: '<path d="M12 3c1.5 3 5 4.5 5 9a5 5 0 0 1-10 0c0-2 1-3 1.5-4 .8 1 1.5 1.3 2.5 1.5C11.5 7 11 5 12 3z"/>',
+    bolt: '<path d="M13.5 2.5 4.5 13.5h6L9.5 21.5l9-11h-6z"/>',
+    target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/>',
+    coffee: '<path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 10.5h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 2.5c-.6 1 .6 1.8 0 3M12 2.5c-.6 1 .6 1.8 0 3" opacity="0.85"/>',
+    battery: '<rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/><path d="M7 11v2M11 11v2M15 11v2"/>',
+    plug: '<path d="M12 2v6M8 2v6M16 2v6"/><path d="M5 8h14v4a7 7 0 0 1-14 0V8z"/><path d="M12 16v5"/>',
+
+    // --- People & Objects ---
+    bell: '<path d="M18 8.5a6 6 0 1 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 14.5 18 8.5z"/><path d="M10.5 19.5a2 2 0 0 0 3 0"/>',
+    'bell-ring': '<path d="M18 8.5a6 6 0 1 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 14.5 18 8.5z"/><path d="M10.5 19.5a2 2 0 0 0 3 0"/><path d="M2 8h2M20 8h2M3 3l2 2M21 3l-2 2"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
+    dumbbell: '<path d="M6.5 5v14M17.5 5v14"/><path d="M3.5 8v8M20.5 8v8"/><path d="M6.5 12h11"/>',
+    trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 5H4.5a2.5 2.5 0 0 0 2.5 4M17 5h2.5a2.5 2.5 0 0 1-2.5 4"/><path d="M12 14v3M9 21h6M10 21l.5-4h3l.5 4"/>',
+    chart: '<path d="M4 4v16h16"/><path d="M8 14v3M12.5 10v7M17 6v11"/>',
+    star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+
+    // --- App icon (512x512 viewBox) ---
+    icon: '<rect width="512" height="512" rx="108" fill="#007AFF"/> <g transform="translate(256,256)"> <rect x="-120" y="-140" width="240" height="280" rx="24" fill="white" opacity="0.95"/> <rect x="-90" y="-90" width="180" height="6" rx="3" fill="#007AFF" opacity="0.3"/> <rect x="-90" y="-65" width="120" height="6" rx="3" fill="#007AFF" opacity="0.2"/> <rect x="-90" y="-30" width="180" height="6" rx="3" fill="#34C759" opacity="0.3"/> <rect x="-90" y="-5" width="140" height="6" rx="3" fill="#34C759" opacity="0.2"/> <rect x="-90" y="30" width="180" height="6" rx="3" fill="#FF9500" opacity="0.3"/> <rect x="-90" y="55" width="100" height="6" rx="3" fill="#FF9500" opacity="0.2"/> <circle cx="70" cy="-87" r="12" fill="none" stroke="#007AFF" stroke-width="3"/> <circle cx="70" cy="-27" r="12" fill="#34C759"/> <polyline points="63,-27 68,-22 77,-32" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/> <circle cx="70" cy="33" r="12" fill="none" stroke="#FF9500" stroke-width="3"/> </g>',
+  };
+
+  /* ============================================================
+     ANIMATED ICONS — SF Symbols-style motion (rotate/pulse/draw/wiggle)
+     Animation plays when parent has .active or svg has data-play="1"
+     ============================================================ */
+
+  const ANIM_PATHS = {
+    clock: '<circle cx="12" cy="12.5" r="8.5"/><path class="ai-h" d="M12 12.5V7.8"/><path class="ai-m" d="M12 12.5l3.2 1.5" opacity="0.85"/><circle cx="12" cy="12.5" r="0.9" fill="currentColor" stroke="none"/>',
+    timer: '<path d="M9 2.5h6"/><path d="M12 4.5v3"/><circle cx="12" cy="14" r="8"/><path class="ai-sweep" d="M12 14V9.2"/>',
+    bell: '<g class="ai-bell"><path d="M18 8.5a6 6 0 1 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 14.5 18 8.5z"/></g><path d="M10.3 19.5a2 2 0 0 0 3.4 0"/>',
+    flame: '<path class="ai-flame" d="M12 3c1.6 3 5 4.5 5 9a5 5 0 0 1-10 0c0-2 1-3 1.6-4 .8 1 1.5 1.3 2.4 1.5C11.5 7 11 5 12 3z"/>',
+    atom: '<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><g class="ai-o1"><ellipse cx="12" cy="12" rx="9" ry="3.4"/><circle cx="21" cy="12" r="1.2" fill="currentColor" stroke="none"/></g><g class="ai-o2"><ellipse cx="12" cy="12" rx="9" ry="3.4"/><circle cx="3" cy="12" r="1.2" fill="currentColor" stroke="none"/></g>',
+    notes: '<path d="M15 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6.5z"/><path d="M14.5 2.5V7H19"/><path class="ai-line" d="M8.5 12.5h7"/><path class="ai-line ai-line2" d="M8.5 16.5h5"/>',
+    checkCircle: '<circle cx="12" cy="12" r="8.5"/><path class="ai-check" d="M8.3 12.3l2.5 2.5 4.8-5.2"/>',
+    settings: '<g class="ai-spin"><path d="M12 2.2l1.4 2.1 2.5-.5.3 2.5 2.3 1-.8 2.4 1.7 1.8-1.7 1.8.8 2.4-2.3 1-.3 2.5-2.5-.5L12 21.8l-1.4-2.1-2.5.5-.3-2.5-2.3-1 .8-2.4L4.6 12l1.7-1.8-.8-2.4 2.3-1 .3-2.5 2.5.5z"/></g><circle cx="12" cy="12" r="3"/>',
+    hourglass: '<path d="M6 2.5h12M6 21.5h12"/><g class="ai-flip"><path d="M7 2.5c0 4 4 5.5 5 9 1-3.5 5-5 5-9"/><path d="M7 21.5c0-4 4-5.5 5-9 1 3.5 5 5 5 9"/></g>',
+    target: '<circle class="ai-ring" cx="12" cy="12" r="8.5" opacity="0.9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none"/>',
+    bolt: '<path class="ai-bolt" d="M13.5 2.5 4.5 13.5h6L9.5 21.5l9-11h-6z"/>',
+    book: '<path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2z"/><path d="M12 3.4v14.4" opacity="0.4"/><path class="ai-page" d="M12.4 4.3H18a.6.6 0 0 1 .6.6v10.8a.6.6 0 0 1-.6.6h-5.6" opacity="0.9"/>',
+    repeat: '<g class="ai-spin"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></g>',
+    plus: '<path class="ai-bob" d="M12 5v14M5 12h14"/>',
+    sun: '<circle cx="12" cy="12" r="4.5"/><g class="ai-spin-slow"><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></g>',
+    moon: '<path class="ai-bob" d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>',
   };
 
   function icon(name, opts = {}) {
@@ -62,6 +119,16 @@ const DS = (() => {
     const sw = opts.strokeWidth || 2;
     const paths = ICON_PATHS[name] || '';
     return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${paths}</svg>`;
+  }
+
+  function aicon(name, opts = {}) {
+    const size = opts.size || 24;
+    const cls = opts.class || '';
+    const sw = opts.strokeWidth || 2;
+    const trigger = opts.trigger || 'play';
+    const play = opts.play ? '1' : '0';
+    const paths = ANIM_PATHS[name] || ICON_PATHS[name] || '';
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" class="tt-aicon tt-aicon--${name} ${cls}" data-trigger="${trigger}" data-play="${play}">${paths}</svg>`;
   }
 
 
@@ -419,6 +486,7 @@ const DS = (() => {
 
   return {
     icon,
+    aicon,
     toast,
     confirm,
     el,
@@ -426,6 +494,7 @@ const DS = (() => {
     escapeHtml,
     sheet,
     ICONS: ICON_PATHS,
+    AICONS: ANIM_PATHS,
   };
 
 })();
