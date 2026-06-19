@@ -2366,6 +2366,10 @@ button, .ds-tab, .week-day, .block-check, .color-dot {
 .tt-aicon--book .ai-page { transform-origin:12px 12px; animation: tt-bookpage 2.8s ease-in-out infinite; }
 /* plus */
 .tt-aicon--plus .ai-bob { transform-origin:12px 12px; animation: tt-bob 1.4s ease-in-out infinite; }
+/* sun */
+.tt-aicon--sun .ai-spin-slow { transform-origin:12px 12px; animation: tt-rot 12s linear infinite; }
+/* moon */
+.tt-aicon--moon .ai-bob { transform-origin:12px 12px; animation: tt-bob 2s ease-in-out infinite; }
 
 /* Tab badge (evening nudge) */
 .atomic-tab-badge {

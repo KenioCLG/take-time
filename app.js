@@ -766,7 +766,7 @@ function renderBlockList() {
             ` : ''}
             <div class="block-details-footer" style="display:flex; gap:8px;">
               <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="flex:1; font-size:11px; padding:4px 8px;">
-                ${DS.icon('clock', { size: 14 })} ${I18n.t('block.edit_time')}
+                ${DS.aicon('clock', { size: 14 })} ${I18n.t('block.edit_time')}
               </button>
               <button class="ds-btn ds-btn-plain btn-edit-subject-content" data-subject-type="study" data-subject-id="${subj?.id}" style="flex:1; font-size:11px; padding:4px 8px;">
                 ${DS.icon('edit', { size: 14 })} ${I18n.t('block.edit_syllabus')}
@@ -799,7 +799,7 @@ function renderBlockList() {
             }
             <div class="block-details-footer" style="display:flex; gap:8px;">
               <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="flex:1; font-size:11px; padding:4px 8px;">
-                ${DS.icon('clock', { size: 14 })} ${I18n.t('block.edit_time')}
+                ${DS.aicon('clock', { size: 14 })} ${I18n.t('block.edit_time')}
               </button>
               <button class="ds-btn ds-btn-plain btn-edit-subject-content" data-subject-type="training" data-subject-id="${subj?.id}" style="flex:1; font-size:11px; padding:4px 8px;">
                 ${DS.icon('edit', { size: 14 })} ${I18n.t('block.edit_exercise')}
@@ -831,7 +831,7 @@ function renderBlockList() {
             }
             <div class="block-details-footer" style="display:flex; gap:8px;">
               <button class="ds-btn ds-btn-plain btn-edit-block-time" data-block-id="${block.id}" style="flex:1; font-size:11px; padding:4px 8px;">
-                ${DS.icon('clock', { size: 14 })} ${I18n.t('block.edit_time')}
+                ${DS.aicon('clock', { size: 14 })} ${I18n.t('block.edit_time')}
               </button>
               <button class="ds-btn ds-btn-plain btn-edit-subject-content" data-subject-type="inactive" data-subject-id="${subj?.id}" style="flex:1; font-size:11px; padding:4px 8px;">
                 ${DS.icon('edit', { size: 14 })} ${I18n.t('block.edit_routine')}
@@ -1301,7 +1301,7 @@ function renderSubjects() {
         <span class="subject-section-title">${DS.escapeHtml(I18n.t(cfg.i18nKey))}</span>
         <span class="subject-section-count">${items.length}</span>
         <button class="ds-btn ds-btn-icon-sm subject-section-add" data-type="${type}" aria-label="${I18n.t(cfg.i18nKey)}">
-          ${DS.icon('plus', { size: 16, strokeWidth: 2.5 })}
+          ${DS.aicon('plus', { size: 16, strokeWidth: 2.5 })}
         </button>
       </div>
       <div class="subject-sortable-list" data-type="${type}">
@@ -2600,7 +2600,7 @@ function renderDailyReport() {
 
   let html = `<div class="atomic-card atomic-daily-report">
     <div class="atomic-card-header">
-      <span class="atomic-card-icon">${DS.icon('sun', { size: 16 })}</span>
+      <span class="atomic-card-icon">${DS.aicon('sun', { size: 16, trigger: 'loop' })}</span>
       <span class="atomic-card-title">${I18n.t('atomic.report_title', null, 'Relatório do Dia')}</span>
       <span class="atomic-report-date">${dayName}</span>
     </div>
@@ -2611,22 +2611,22 @@ function renderDailyReport() {
     const energyIcon = m.energy === 'high' ? 'bolt' : m.energy === 'medium' ? 'battery' : 'plug';
     html += `<div class="atomic-report-section">
       <div class="atomic-report-head">
-        <span class="atomic-report-head-icon">${DS.icon('sun', { size: 14 })}</span>
+        <span class="atomic-report-head-icon">${DS.aicon('sun', { size: 14, trigger: 'loop' })}</span>
         <span class="atomic-report-head-label">${I18n.t('atomic.morning_title', null, 'Abertura do Dia')}</span>
         <span class="atomic-report-head-status">${DS.icon('check', { size: 12 })}</span>
       </div>
       <div class="atomic-report-metrics">
-        <span class="atomic-report-metric">${DS.icon('moon', { size: 12 })} ${m.sleepHours}h</span>
+        <span class="atomic-report-metric">${DS.aicon('moon', { size: 12, trigger: 'loop' })} ${m.sleepHours}h</span>
         <span class="atomic-report-metric">${DS.icon(energyIcon, { size: 12 })} ${energyLabel[m.energy] || m.energy}</span>
         <span class="atomic-report-metric">${DS.icon('star', { size: 12 })} ${moodLabel[m.mood] || m.mood}</span>
       </div>`;
-    if (m.focus) html += `<div class="atomic-report-line">${DS.icon('target', { size: 12 })} ${DS.escapeHtml(m.focus)}</div>`;
+    if (m.focus) html += `<div class="atomic-report-line">${DS.aicon('target', { size: 12, trigger: 'loop' })} ${DS.escapeHtml(m.focus)}</div>`;
     if (m.affirmationText) html += `<div class="atomic-report-line atomic-report-identity">${DS.icon('book-open', { size: 12 })} "${DS.escapeHtml(m.affirmationText)}"</div>`;
     html += `</div>`;
   } else {
     html += `<div class="atomic-report-section atomic-report-section--pending">
       <div class="atomic-report-head">
-        <span class="atomic-report-head-icon">${DS.icon('sun', { size: 14 })}</span>
+        <span class="atomic-report-head-icon">${DS.aicon('sun', { size: 14, trigger: 'loop' })}</span>
         <span class="atomic-report-head-label">${I18n.t('atomic.morning_title', null, 'Abertura do Dia')}</span>
         <span class="atomic-report-head-status">—</span>
       </div>
@@ -2669,7 +2669,7 @@ function renderDailyReport() {
   if (hasEvening) {
     html += `<div class="atomic-report-section atomic-report-section--done">
       <div class="atomic-report-head">
-        <span class="atomic-report-head-icon">${DS.icon('moon', { size: 14 })}</span>
+        <span class="atomic-report-head-icon">${DS.aicon('moon', { size: 14, trigger: 'loop' })}</span>
         <span class="atomic-report-head-label">${I18n.t('atomic.evening_title', null, 'Encerramento do Dia')}</span>
         <span class="atomic-report-head-status">${DS.icon('check', { size: 12 })}</span>
       </div>
@@ -2678,12 +2678,12 @@ function renderDailyReport() {
       </div>`;
     if (e.recharged) html += `<div class="atomic-report-line">${DS.icon('battery', { size: 12 })} ${DS.escapeHtml(e.recharged)}</div>`;
     if (e.drained) html += `<div class="atomic-report-line">${DS.icon('plug', { size: 12 })} ${DS.escapeHtml(e.drained)}</div>`;
-    if (e.nextVote?.action) html += `<div class="atomic-report-line">${DS.icon('sun', { size: 12 })} ${DS.escapeHtml(e.nextVote.action)}${e.nextVote.time ? ' ' + I18n.t('atomic.report_at', null, 'às') + ' ' + e.nextVote.time : ''}</div>`;
+    if (e.nextVote?.action) html += `<div class="atomic-report-line">${DS.aicon('sun', { size: 12, trigger: 'loop' })} ${DS.escapeHtml(e.nextVote.action)}${e.nextVote.time ? ' ' + I18n.t('atomic.report_at', null, 'às') + ' ' + e.nextVote.time : ''}</div>`;
     html += `</div>`;
   } else if (hasMorning) {
     html += `<div class="atomic-report-section atomic-report-section--pending">
       <div class="atomic-report-head">
-        <span class="atomic-report-head-icon">${DS.icon('moon', { size: 14 })}</span>
+        <span class="atomic-report-head-icon">${DS.aicon('moon', { size: 14, trigger: 'loop' })}</span>
         <span class="atomic-report-head-label">${I18n.t('atomic.evening_title', null, 'Encerramento do Dia')}</span>
         <span class="atomic-report-head-status">${I18n.t('atomic.report_pending', null, 'pendente')}</span>
       </div>
@@ -2693,7 +2693,7 @@ function renderDailyReport() {
   // ── Streak footer ──
   if (streak > 0) {
     html += `<div class="atomic-report-footer">
-      <span class="atomic-report-streak">${DS.icon('flame', { size: 16 })}</span>
+      <span class="atomic-report-streak">${DS.aicon('flame', { size: 16, trigger: 'loop' })}</span>
       <span class="atomic-report-streak-count">${streak}</span>
       <span class="atomic-report-streak-label">${I18n.t('atomic.streak_label', null, 'dias consecutivos')}</span>
     </div>`;
@@ -2730,7 +2730,7 @@ function renderAtomic() {
   // ── Streak badge ──
   if (streak > 0) {
     html += `<div class="atomic-streak">
-      <span class="atomic-streak-fire">${DS.icon('flame', { size: 20 })}</span>
+      <span class="atomic-streak-fire">${DS.aicon('flame', { size: 20, trigger: 'loop' })}</span>
       <span class="atomic-streak-count">${streak}</span>
       <span class="atomic-streak-label">${I18n.t('atomic.streak_label', null, 'dias consecutivos')}</span>
     </div>`;
@@ -2739,7 +2739,7 @@ function renderAtomic() {
   // ── Morning Check-in ──
   html += `<div class="atomic-card ${hasMorning ? 'atomic-card--done' : ''}">`;
   html += `<div class="atomic-card-header">
-    <span class="atomic-card-icon">${DS.icon('sun', { size: 18 })}</span>
+    <span class="atomic-card-icon">${DS.aicon('sun', { size: 18, trigger: 'loop' })}</span>
     <span class="atomic-card-title">${I18n.t('atomic.morning_title', null, 'Abertura do Dia')}</span>
     ${hasMorning ? `<span class="atomic-card-check">${DS.icon('check', { size: 16 })}</span>` : ''}
   </div>`;
@@ -2749,11 +2749,11 @@ function renderAtomic() {
     const energyMap = { low: I18n.t('atomic.energy_low'), medium: I18n.t('atomic.energy_medium'), high: I18n.t('atomic.energy_high') };
     const moodMap = { great: I18n.t('atomic.mood_great'), good: I18n.t('atomic.mood_good'), okay: I18n.t('atomic.mood_okay'), heavy: I18n.t('atomic.mood_heavy'), tough: I18n.t('atomic.mood_tough') };
     html += `<div class="atomic-card-summary">
-      <div class="atomic-summary-row"><span>${DS.icon('moon', { size: 16 })}</span><span>${m.sleepHours}h ${I18n.t('atomic.sleep_label')}</span></div>
-      <div class="atomic-summary-row"><span>${DS.icon('bolt', { size: 16 })}</span><span>${energyMap[m.energy] || m.energy}</span></div>
-      ${m.mood ? `<div class="atomic-summary-row"><span>${DS.icon('flame', { size: 16 })}</span><span>${moodMap[m.mood] || m.mood}</span></div>` : ''}
+      <div class="atomic-summary-row"><span>${DS.aicon('moon', { size: 16, trigger: 'loop' })}</span><span>${m.sleepHours}h ${I18n.t('atomic.sleep_label')}</span></div>
+      <div class="atomic-summary-row"><span>${DS.aicon('bolt', { size: 16, trigger: 'loop' })}</span><span>${energyMap[m.energy] || m.energy}</span></div>
+      ${m.mood ? `<div class="atomic-summary-row"><span>${DS.aicon('flame', { size: 16, trigger: 'loop' })}</span><span>${moodMap[m.mood] || m.mood}</span></div>` : ''}
       ${m.affirmationText ? `<div class="atomic-summary-row"><span>${DS.icon('book-open', { size: 16 })}</span><span>"${m.affirmationText}"</span></div>` : ''}
-      ${m.focus ? `<div class="atomic-summary-row"><span>${DS.icon('target', { size: 16 })}</span><span>${m.focus}</span></div>` : ''}
+      ${m.focus ? `<div class="atomic-summary-row"><span>${DS.aicon('target', { size: 16, trigger: 'loop' })}</span><span>${m.focus}</span></div>` : ''}
     </div>`;
   } else {
     // Morning form
@@ -2762,7 +2762,7 @@ function renderAtomic() {
       <div class="atomic-gauges-row">
         <div class="atomic-field atomic-field--sleep">
           <label class="ds-label" style="display:flex; align-items:center; gap:4px;">
-            <span>${DS.icon('moon', { size: 16 })} ${I18n.t('atomic.sleep_label', null, 'Sono')}</span>
+            <span>${DS.aicon('moon', { size: 16, trigger: 'loop' })} ${I18n.t('atomic.sleep_label', null, 'Sono')}</span>
             <button type="button" class="atomic-help-btn" data-help="sleep" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button>
           </label>
           <div class="sleep-dial" id="sleepDial">
@@ -2788,7 +2788,7 @@ function renderAtomic() {
         </div>
         <div class="atomic-field atomic-field--mood">
           <label class="ds-label" style="display:flex; align-items:center; gap:4px;">
-            <span>${DS.icon('flame', { size: 16 })} ${I18n.t('atomic.mood_label', null, 'Humor')}</span>
+            <span>${DS.aicon('flame', { size: 16, trigger: 'loop' })} ${I18n.t('atomic.mood_label', null, 'Humor')}</span>
             <button type="button" class="atomic-help-btn" data-help="mood" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button>
           </label>
           <div class="mood-pizza" id="moodPizza">
@@ -2822,7 +2822,7 @@ function renderAtomic() {
         </div>
       </div>
       <div class="atomic-field">
-        <label class="ds-label">${DS.icon('bolt', { size: 16 })} ${I18n.t('atomic.energy_label', null, 'Energia')} <button type="button" class="atomic-help-btn" data-help="energy" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <label class="ds-label">${DS.aicon('bolt', { size: 16, trigger: 'loop' })} ${I18n.t('atomic.energy_label', null, 'Energia')} <button type="button" class="atomic-help-btn" data-help="energy" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
         <div class="atomic-energy-btns" id="atomicEnergyBtns">
           <button type="button" class="atomic-energy-btn" data-val="low">${I18n.t('atomic.energy_low', null, 'Baixa')}</button>
           <button type="button" class="atomic-energy-btn active" data-val="medium">${I18n.t('atomic.energy_medium', null, 'Média')}</button>
@@ -2834,7 +2834,7 @@ function renderAtomic() {
         <input type="text" id="atomicIdentity" class="ds-input" value="${DS.escapeHtml(prefill)}" placeholder="${I18n.t('atomic.identity_placeholder', null, 'a pessoa que estuda todos os dias')}">
       </div>
       <div class="atomic-field">
-        <label class="ds-label">${DS.icon('target', { size: 16 })} ${I18n.t('atomic.focus_label', null, 'O essencial de hoje')} <button type="button" class="atomic-help-btn" data-help="focus" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <label class="ds-label">${DS.aicon('target', { size: 16, trigger: 'loop' })} ${I18n.t('atomic.focus_label', null, 'O essencial de hoje')} <button type="button" class="atomic-help-btn" data-help="focus" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
         <input type="text" id="atomicFocus" class="ds-input" placeholder="${I18n.t('atomic.focus_placeholder', null, 'abrir o material e ler 1 questão')}">
       </div>
       <button class="ds-btn ds-btn-filled ds-btn-block atomic-confirm-btn" id="btnConfirmMorning">
@@ -2847,7 +2847,7 @@ function renderAtomic() {
   // ── Evening Check-in ──
   html += `<div class="atomic-card ${hasEvening ? 'atomic-card--done' : ''} ${!hasMorning ? 'atomic-card--locked' : ''}">`;
   html += `<div class="atomic-card-header">
-    <span class="atomic-card-icon">${DS.icon('moon', { size: 18 })}</span>
+    <span class="atomic-card-icon">${DS.aicon('moon', { size: 18, trigger: 'loop' })}</span>
     <span class="atomic-card-title">${I18n.t('atomic.evening_title', null, 'Encerramento do Dia')}</span>
     ${hasEvening ? `<span class="atomic-card-check">${DS.icon('check', { size: 16 })}</span>` : ''}
   </div>`;
@@ -2861,7 +2861,7 @@ function renderAtomic() {
       <div class="atomic-summary-row"><span>${DS.icon('book-open', { size: 16 })}</span><span>${confMap[e.confirmed] || e.confirmed}</span></div>
       ${e.recharged ? `<div class="atomic-summary-row"><span>${DS.icon('battery', { size: 16 })}</span><span>${e.recharged}</span></div>` : ''}
       ${e.drained ? `<div class="atomic-summary-row"><span>${DS.icon('plug', { size: 16 })}</span><span>${e.drained}</span></div>` : ''}
-      ${e.nextVote?.action ? `<div class="atomic-summary-row"><span>${DS.icon('sun', { size: 14 })}</span><span>${e.nextVote.action}${e.nextVote.time ? ' ' + I18n.t('atomic.next_vote_time') + ' ' + e.nextVote.time : ''}</span></div>` : ''}
+      ${e.nextVote?.action ? `<div class="atomic-summary-row"><span>${DS.aicon('sun', { size: 14, trigger: 'loop' })}</span><span>${e.nextVote.action}${e.nextVote.time ? ' ' + I18n.t('atomic.next_vote_time') + ' ' + e.nextVote.time : ''}</span></div>` : ''}
     </div>`;
   } else {
     // Evening form
@@ -2922,7 +2922,7 @@ function renderAtomic() {
         <input type="text" id="atomicDrained" class="ds-input" placeholder="${I18n.t('atomic.drained_placeholder', null, 'Ex: reunião longa, insônia…')}">
       </div>
       <div class="atomic-field">
-        <label class="ds-label">${DS.icon('sun', { size: 16 })} ${I18n.t('atomic.next_vote_label', null, 'Primeiro voto de amanhã')} <button type="button" class="atomic-help-btn" data-help="nextvote" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
+        <label class="ds-label">${DS.aicon('sun', { size: 16, trigger: 'loop' })} ${I18n.t('atomic.next_vote_label', null, 'Primeiro voto de amanhã')} <button type="button" class="atomic-help-btn" data-help="nextvote" aria-label="Ajuda">${DS.icon('info', { size: 14 })}</button></label>
         <div class="atomic-next-vote-row">
           <input type="text" id="atomicNextVote" class="ds-input" placeholder="${I18n.t('atomic.next_vote_placeholder', null, 'Ex: revisar flashcards')}" style="flex:1">
           <span class="atomic-next-vote-at">${I18n.t('atomic.next_vote_time', null, 'às')}</span>
@@ -2951,8 +2951,8 @@ function renderAtomic() {
     const rec = getCheckinForDate(d);
     const isToday = dateKey(d) === dk;
     const dayLabel = d.toLocaleDateString(I18n.locale, { weekday: 'short' }).slice(0, 3);
-    const mornDone = rec?.morning ? `<span class="atomic-tl-sun">${DS.icon('sun', { size: 10 })}</span>` : '';
-    const eveDone = rec?.evening ? `<span class="atomic-tl-moon">${DS.icon('moon', { size: 10 })}</span>` : '';
+    const mornDone = rec?.morning ? `<span class="atomic-tl-sun">${DS.aicon('sun', { size: 10, trigger: 'loop' })}</span>` : '';
+    const eveDone = rec?.evening ? `<span class="atomic-tl-moon">${DS.aicon('moon', { size: 10, trigger: 'loop' })}</span>` : '';
     html += `<div class="atomic-timeline-day ${isToday ? 'atomic-timeline-day--today' : ''} ${rec?.morning ? 'atomic-timeline-day--has' : ''}">
       <span class="atomic-timeline-indicators">${mornDone}${eveDone}</span>
       <span class="atomic-timeline-date">${d.getDate()}</span>
@@ -2978,7 +2978,7 @@ function renderAtomic() {
 
   // Mood chart: 7 colored circles
   html += `<div class="atomic-insights-card">
-    <div class="ds-label">${DS.icon('flame', { size: 14 })} ${I18n.t('atomic.insights_mood', null, 'Humor')}</div>
+    <div class="ds-label">${DS.aicon('flame', { size: 14, trigger: 'loop' })} ${I18n.t('atomic.insights_mood', null, 'Humor')}</div>
     <div class="atomic-mood-chart">`;
   const moodColors = { great: '#34C759', good: '#8BC34A', okay: '#FF9500', heavy: '#FF6B35', tough: '#FF3B30' };
   const moodLabels = { great: I18n.t('atomic.mood_great'), good: I18n.t('atomic.mood_good'), okay: I18n.t('atomic.mood_okay'), heavy: I18n.t('atomic.mood_heavy'), tough: I18n.t('atomic.mood_tough') };
@@ -2998,7 +2998,7 @@ function renderAtomic() {
 
   // Habit completion stats
   html += `<div class="atomic-insights-card">
-    <div class="ds-label">${DS.icon('check', { size: 14 })} ${I18n.t('atomic.insights_habits', null, 'Hábitos')}</div>
+    <div class="ds-label">${DS.aicon('checkCircle', { size: 14, trigger: 'loop' })} ${I18n.t('atomic.insights_habits', null, 'Hábitos')}</div>
     <div class="atomic-habits-chart">`;
   let totalWeekHabits = 0;
   let doneWeekHabits = 0;
@@ -3037,7 +3037,7 @@ function renderAtomic() {
   }
   if (moodStreak > 0) {
     html += `<div class="atomic-insights-card">
-      <div class="ds-label">${DS.icon('flame', { size: 14 })} ${I18n.t('atomic.insights_mood_streak', null, 'Humor consecutivo')}</div>
+      <div class="ds-label">${DS.aicon('flame', { size: 14, trigger: 'loop' })} ${I18n.t('atomic.insights_mood_streak', null, 'Humor consecutivo')}</div>
       <div class="atomic-insights-streak">
         <span class="atomic-insights-streak-num">${moodStreak}</span>
         <span class="atomic-insights-streak-label">${I18n.t('atomic.streak_label', null, 'dias consecutivos')}</span>
@@ -3269,7 +3269,7 @@ function renderAtomic() {
           const m = String(now.getMinutes()).padStart(2, '0');
           DS.toast(
             `<span style="display:flex;align-items:center;gap:8px">
-              <span>${DS.icon('target', { size: 14 })} Criar bloco para "${focus}" agora?</span>
+              <span>${DS.aicon('target', { size: 14, trigger: 'loop' })} Criar bloco para "${focus}" agora?</span>
               <button class="ds-btn ds-btn-sm ds-btn-filled" id="toastCreateFocusBlock" style="font-size:12px;padding:2px 10px">Sim</button>
             </span>`,
             'info', 10000
@@ -3381,7 +3381,7 @@ function updateAtomicTabBadge() {
     if (!badge) {
       const b = document.createElement('span');
       b.className = 'atomic-tab-badge';
-      b.innerHTML = DS.icon('moon', { size: 10 });
+      b.innerHTML = DS.aicon('moon', { size: 10, trigger: 'loop' });
       tab.appendChild(b);
     }
   } else {
@@ -4157,7 +4157,7 @@ function renderFocusBanner() {
   if (!focus && !identity) { banner.classList.add('hidden'); return; }
   banner.className = 'focus-banner';
   banner.innerHTML = `
-    <span class="focus-banner-icon">${DS.icon('target', { size: 16, strokeWidth: 2.5 })}</span>
+    <span class="focus-banner-icon">${DS.aicon('target', { size: 16, strokeWidth: 2.5, trigger: 'loop' })}</span>
     <span class="focus-banner-label">
       <strong>${DS.escapeHtml(focus || identity || '')}</strong>
     </span>
