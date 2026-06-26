@@ -1148,6 +1148,50 @@ ${DS.icon('calendar', { size: 56, strokeWidth: 1.5, class: 'ds-empty-icon' })}
   }
 }
 
+// ===== RENDER: DAY NOTES =====
+function renderDayNotes() {
+  const container = $('#dayNotesList');
+  if (!container) return;
+  
+  const dk = dateKey(selectedDate);
+  const dayNotes = (state.notes || []).filter(n => n.date === dk);
+  
+  if (dayNotes.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  let html = `
+    <div style="margin-top: 24px; padding: 0 var(--ds-space-2);">
+      <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ds-text-tertiary); margin-bottom: 12px; border-bottom: 1px solid var(--ds-separator); padding-bottom: 4px;">${I18n.t('tab.notes')} do Dia</h3>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+  `;
+  
+  dayNotes.forEach(note => {
+    const tagsHtml = (note.tags || []).map(t => `<span class="note-tag">${DS.escapeHtml(t)}</span>`).join('');
+    const preview = ((note.content || '').replace(/<[^>]*>/g, ' ')).replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim().substring(0, 80);
+    
+    html += `
+      <div class="note-card" data-note-id="${note.id}" style="margin: 0;">
+        <div class="note-card-header">
+          <h4 class="note-card-title">${DS.escapeHtml(note.title || I18n.t('note.untitled', null, 'Sem título'))}</h4>
+        </div>
+        ${preview ? `<p class="note-card-preview">${DS.escapeHtml(preview)}</p>` : ''}
+        ${tagsHtml ? `<div class="note-card-tags">${tagsHtml}</div>` : ''}
+      </div>
+    `;
+  });
+  
+  html += `</div></div>`;
+  container.innerHTML = html;
+  
+  container.querySelectorAll('.note-card').forEach(card => {
+    card.addEventListener('click', () => {
+      openNoteModal(card.dataset.noteId);
+    });
+  });
+}
+
 // ===== RENDER: WEEK NAV =====
 function renderWeekNav() {
   const nav = $('#weekNav');
@@ -2396,6 +2440,7 @@ function saveNote() {
   Store.save(state);
   closeNoteModal();
   renderNotes();
+  renderDayNotes();
   DS.toast(isEditing ? I18n.t('note.updated', null, 'Nota atualizada') : I18n.t('note.created', null, 'Nota criada'), 'success');
 }
 
@@ -2412,6 +2457,7 @@ async function deleteNote() {
     Store.save(state);
     closeNoteModal();
     renderNotes();
+    renderDayNotes();
   }
 }
 
@@ -4132,6 +4178,7 @@ function render() {
   renderPizza();
   renderFocusBanner();
   renderBlockList();
+  renderDayNotes();
   renderHeatmap();
 }
 
